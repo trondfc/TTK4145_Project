@@ -21,9 +21,9 @@ int main(){
 
   udp_startReceiving(30000,udpmessageReceived);
     // LAB udp server ip: 10.100.23.129
-  char * ip = "10.100.23.129";
+  char * server_ip = "10.100.23.129";
 
-  udp_send(ip,20014,"Hello World",12);
+  udp_send(server_ip,20014,"Hello World",12);
 
   free(ip);
 
