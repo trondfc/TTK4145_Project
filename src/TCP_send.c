@@ -4,7 +4,6 @@
 
 
     // LAB udp server ip: 10.100.23.129
-const String ip = "10.100.23.129";
 
 void 
 messageReceived(const char * ip, char * data, int datalength){
@@ -24,9 +23,9 @@ int main(){
 
   tcp_init(messageReceived,connectionStatus);
 
-  tcp_openConnection(ip,33546);
+  tcp_openConnection("10.100.23.129",33546);
 
-  tcp_send(ip,"Hello!",7);
+  tcp_send("10.100.23.129","Hello!",7);
 
   return 0;
 }
