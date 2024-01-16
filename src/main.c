@@ -24,6 +24,7 @@ int main(){
   char * server_ip = "10.100.23.129";
 
   udp_send(server_ip,20014,"Hello World",12);
+  sleep(100);
 
   free(ip);
 
