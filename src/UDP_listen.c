@@ -13,8 +13,8 @@ udpmessageReceived(const char * ip, char * data, int datalength){
 
 int main(){
 
-  udp_startReceiving(4321,udpmessageReceived);
-
+  udp_startReceiving(30000,udpmessageReceived);
+    // LAB udp server ip: 10.100.23.129
   sleep(100);
   return 0;
 }
