@@ -1,0 +1,7 @@
+# output files
+.out
+.exe
+.o
+build/*
+
+#secrets
