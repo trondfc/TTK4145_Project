@@ -18,7 +18,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
-#include "inc/sverresnetwork.h"
+#include "sverresnetwork.h"
 
 
 void 

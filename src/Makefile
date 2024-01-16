@@ -2,9 +2,9 @@ CC = gcc
 
 CFLAGS = -Wall -g -std=gnu99 
 LDFLAGS = -lpthread -g
-SRC = main.c
+SRC = main.c sverresnetwork.c
 
-TARGET = boundedbuffer
+TARGET = result.exe
 
 all: $(TARGET)
 
