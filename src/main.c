@@ -15,12 +15,11 @@ void udpmessageReceived(const char * ip, char * data, int datalength){
   // Assuming an ascii string here - a binary blob (including '0's) will
   // be ugly/truncated.
   printf("Received UDP message from %s: '%s'\n",ip,data);
-  if(strcmp(data,"ping") == 0){
+  if(!strcmp(data,"ping")){
     sleep(1);
     udp_send(server_ip, udp_port,"pong",5);
   }
-  else if (strcmp(data,"pong") == 0)
-  {
+  else if (!strcmp(data,"pong")){
     sleep(1);
     udp_send(server_ip,udp_port,"ping",5);
   }
@@ -36,8 +35,8 @@ int main(int argc, char * argv[]){
   }
   
   if(argc >= 3){
-    if(!strcmp(argv[1], "start")){
-      printf("Starting ping-pong");
+    if(!strcmp(argv[2], "start")){
+      printf("Starting ping-pong\n");
       udp_send(server_ip,udp_port,"ping",5);
     }
   }
