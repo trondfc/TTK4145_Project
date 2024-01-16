@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "sverresnetwork.h"
+#include "inc/sverresnetwork.h"
 
 int main(){
   char * ip = getMyIpAddress("enp4s0");

@@ -18,9 +18,8 @@
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
-#include "sverresnetwork.h"
+#include "inc/sverresnetwork.h"
 
-#include "sverresnetwork.h"
 
 void 
 error(char *s)
