@@ -36,7 +36,7 @@ int main(int argc, char * argv[]){
   }
   
   if(argc >= 3){
-    if(strncmp(strToTest,"start",5) == 0){
+    if(strncmp(argv[2],"start",5) == 0){
       printf("Starting ping-pong");
       udp_send(server_ip,udp_port,"ping",5);
     }
