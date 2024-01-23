@@ -9,7 +9,7 @@
 
 pthread_mutex_t elevator_struct_mutex;
 
-struct elevator_floor_button_inputs_t* elevator_struct
+struct elevator_floor_button_inputs_t* elevator_struct;
 
 void* print_elevator_struct(){
     while(1){
