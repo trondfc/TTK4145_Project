@@ -15,10 +15,10 @@ struct elevator_button_inputs_t
 
 struct elevator_floor_button_inputs_t
 {
-    elevator_button_inputs_t floor_inputs[N_FLOORS];
+    struct elevator_button_inputs_t floor_inputs[N_FLOORS];
 };
 
 
-elevator_button_inputs_t poll_elevator_buttons_pressed(int floor);
-elevator_floor_button_inputs_t poll_elevator_floor_buttons_pressed(void);
+struct elevator_button_inputs_t poll_elevator_buttons_pressed(int floor);
+void poll_elevator_floor_buttons_pressed(struct elevator_floor_button_inputs_t* floor_button_inputs);
 #endif // ELEVATOR_BUTTON_INPUTS_H
