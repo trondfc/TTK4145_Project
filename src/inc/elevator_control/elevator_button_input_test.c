@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <pthread.h>
 
 #include "elevator_button_inputs.h"
@@ -8,7 +9,7 @@
 
 pthread_mutex_t elevator_struct_mutex;
 
-void* print_elevator_struct(elevator_floor_button_inputs_t* elevator_struct){
+void* print_elevator_struct(struct elevator_floor_button_inputs_t* elevator_struct){
     while(1){
         pthread_mutex_lock(&elevator_struct_mutex);
         printf("Elevator struct:\n");
@@ -47,7 +48,7 @@ int main(){
     pthread_t thread_button_poller;
     pthread_t thread_print;
 
-    if(pthread_create(&thread_button_poller, NULL, poll_elevator_floor_buttons_pressed, NULL) != 0){
+    if(pthread_create(&thread_button_poller, NULL, poll_elevator_buttons_wrapper, NULL) != 0){
         printf("Thread creation failed\n");
         exit(1);
     }
