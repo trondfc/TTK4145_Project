@@ -9,7 +9,9 @@
 
 pthread_mutex_t elevator_struct_mutex;
 
-void* print_elevator_struct(struct elevator_floor_button_inputs_t* elevator_struct){
+struct elevator_floor_button_inputs_t* elevator_struct
+
+void* print_elevator_struct(){
     while(1){
         pthread_mutex_lock(&elevator_struct_mutex);
         printf("Elevator struct:\n");
@@ -30,7 +32,7 @@ void* print_elevator_struct(struct elevator_floor_button_inputs_t* elevator_stru
     }
 }
 
-void* poll_elevator_buttons_wrapper(void* elevator_struct){
+void* poll_elevator_buttons_wrapper(){
     while(1){
         pthread_mutex_lock(&elevator_struct_mutex);
         poll_elevator_floor_buttons_pressed(elevator_struct);
