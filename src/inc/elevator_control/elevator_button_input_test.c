@@ -59,5 +59,13 @@ int main(){
         exit(1);
     }
 
+    if(pthread_join(thread_button_poller, NULL) != 0){
+        printf("Thread join failed\n");
+        exit(2);
+    }
+    if(pthread_join(thread_print, NULL) != 0){
+        printf("Thread join failed\n");
+        exit(2);
+    }
 
 }
