@@ -46,11 +46,11 @@ void* poll_elevator_buttons_wrapper(){
 }
 
 int main(){
-    clear_elevator_struct();    // Dont need to lock mutex here, since no other thread is running yet
-    
     elevator_hardware_init();
 
     elevator_struct = malloc(sizeof(struct elevator_floor_button_inputs_t));
+
+    clear_elevator_struct();    // Dont need to lock mutex here, since no other thread is running yet
 
     if(pthread_mutex_init(&elevator_struct_mutex, NULL) != 0){
         printf("Mutex init failed\n");
