@@ -42,7 +42,7 @@ floor_buttons.floor[1].requenst_up; // check for request up at floor 1
 ```
 ### Elevator lights
 ```c
-typedef struct elevator_single_cab_lights_t
+typedef struct elevator_single_lights_t
 {
 	bool floor_button[N_FLOORS];
     bool stop_button;
@@ -50,7 +50,7 @@ typedef struct elevator_single_cab_lights_t
     bool up_button[N_FLOORS];
     bool down_button[N_FLOORS];
     bool cab_floor[N_FLOORS];
-}elevator_single_cab_lights_t;
+}elevator_single_lights_t;
 typedef struct elevator_multiple_lights_t
 {
 	elevator_single_cab_lights_t elevator[N_ELEVATORS];

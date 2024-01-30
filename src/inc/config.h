@@ -1,8 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define N_FLOORS 4
-#define N_ELEVATORS 3
-#define N_CONTROLLERS 3
+#define NO_FLOORS 4
+#define NO_ELEVATORS 3
+#define NO_CONTROLLERS 3
 
 #endif
