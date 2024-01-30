@@ -1,10 +1,13 @@
 # Interface types
 - [Interface types](#interface-types)
   - [Elevator panel interface types](#elevator-panel-interface-types)
+    - [Elevator buttons](#elevator-buttons)
+    - [Elevator lights](#elevator-lights)
   - [Elevator status interface types](#elevator-status-interface-types)
   - [Elevator controlle interface types](#elevator-controlle-interface-types)
   
 ## Elevator panel interface types
+### Elevator buttons
 ```c
 typedef struct elevator_single_cab_buttons_t
 {
@@ -36,7 +39,9 @@ typedef struct elevator_multiple_floors_buttons_t
 elevator_multiple_floors_buttons_t floor_buttons;
 floor_buttons.floor[1].requenst_up; // check for request up at floor 1
 
-////////////////////////////////////////////////////////////////////////////
+```
+### Elevator lights
+```c
 typedef struct elevator_single_cab_lights_t
 {
 	bool floor_button[N_FLOORS];
