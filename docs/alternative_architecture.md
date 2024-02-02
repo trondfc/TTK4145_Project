@@ -28,20 +28,20 @@ There is probably a lot of things that needs to be added to this, but I think it
   - compare order to existing orders
   - add if new order
   - update peers about new order
-  - set order light
+  - Order lights set by controller receiving order from peer, enshuring that multiple controllers know about the order before setting the light
   
 - M2
   - Wait x time for M1 to handle order
   - compare order to existing orders (if added by M1 it will be the same)
   - add if new order
   - update peers about new order
-  - set order light
+  - Order lights set by controller receiving order from peer, enshuring that multiple controllers know about the order before setting the light
 - M3
   - Wait 2x time for M1 or m2 to handle order
   - compare order to existing orders (if added by M1 or M2 it will be the same)
   - add if new order
   - update peers about new order
-  - set order light
+  - Order lights set by controller receiving order from peer, enshuring that multiple controllers know about the order before setting the light
 ### Floor light
 - All controllers can set floor light in parallel (shuld be no problem with current elevator system)
 ### Serving requests
