@@ -1,4 +1,10 @@
+/*
+Rewrite of the original elevator hardware module from the TTK4145 Real Time Programming course at NTNU
+    Rewritten for posibility of multiple elevators
+    Uses a struct to store the socket file descriptor and mutex
+    Uses a config file to read the ip and port of the elevator
 
+*/
 #include <unistd.h>
 #include "elevator_hardware.h"
 
