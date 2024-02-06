@@ -1,4 +1,8 @@
 elevator_hardware.con
 
---com_ip                localhost
---com_port              15657
+--elv1_ip                localhost
+--elv1_port              15657
+--elv2_ip                localhost
+--elv2_port              15658
+--elv3_ip                localhost
+--elv3_port              15659
