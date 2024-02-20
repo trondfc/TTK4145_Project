@@ -17,16 +17,19 @@
 
 keep_alive_config_t keep_alive_config;
 
-int update_node_timestamp(keep_alive_node_t* node){
+uint64_t get_timestamp(){
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
-    node->last_seen_timestamp = SEC_TO_US((uint64_t)ts.tv_sec) + NS_TO_US((uint64_t)ts.tv_nsec);
+    return SEC_TO_US((uint64_t)ts.tv_sec) + NS_TO_US((uint64_t)ts.tv_nsec);
+}
+
+int update_node_timestamp(keep_alive_node_t* node){
+    node->last_seen_timestamp = get_timestamp();
     return 0;
 }
 
 
-int node_list_add(keep_alive_node_list_t* list,const char* ip, int i)
-{
+int node_list_add(keep_alive_node_list_t* list,const char* ip, int i){
     list->nodes[i].state = ACTIVE;
     strcpy(list->nodes[i].ip, ip);
     update_node_timestamp(&list->nodes[i]);
@@ -35,8 +38,7 @@ int node_list_add(keep_alive_node_list_t* list,const char* ip, int i)
 }
 
 
-int update_node_list(keep_alive_node_list_t* list, const char* ip)
-{
+int update_node_list(keep_alive_node_list_t* list, const char* ip){
     for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++)
     {
         if(strcmp(list->nodes[i].ip, ip) == 0)
@@ -65,12 +67,13 @@ void udpmessageReceived(const char * ip, char * data, int datalength){
         return;
     } else
     {
+        pthread_mutex_lock(&keep_alive_config.nodes->mutex);  
         update_node_list(keep_alive_config.nodes, ip);
+        pthread_mutex_unlock(&keep_alive_config.nodes->mutex);  
     }
 }
 
-void* keep_alive_recv(void* arg)
-{
+void* keep_alive_recv(void* arg){
     keep_alive_config_t* config = (keep_alive_config_t*)arg;
     udp_startReceiving(config->port, udpmessageReceived);
     while(1)
@@ -80,31 +83,51 @@ void* keep_alive_recv(void* arg)
     return NULL;
 }
 
-void* keep_alive_timeout(){
+void* keep_alive_timeout(void* arg){
+    keep_alive_config_t* config = (keep_alive_config_t*)arg;
     while(1){
-        sleep(1);
+        usleep(100);
+        for (int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++)
+        {
+            if (config->nodes->nodes[i].state == ACTIVE)
+            {
+                uint64_t current_time = get_timestamp();
+                if (current_time - config->nodes->nodes[i].last_seen_timestamp > config->timeout_us)
+                {
+                    config->nodes->nodes[i].state = INACTIVE;
+                    printf("Node %s set to inactive\n", config->nodes->nodes[i].ip);
+                }
+            }
+        }
     }
     return NULL;
 } 
 
-void* keep_alive_send(void* arg)
-{
+void* keep_alive_send(void* arg){
     keep_alive_config_t* config = (keep_alive_config_t*)arg;
     keep_alive_msg_t msg;
-    msg.type = MASTER;
+    msg.type = config->node_type;
     msg.data = (char*)malloc(sizeof(char)*10);
-    strcpy(msg.data, "MASTER");
+
+    if (config->node_type == SLAVE)
+    {
+        strcpy(msg.data, "SLAVE");
+    }
+    else
+    {
+        strcpy(msg.data, "MASTER");
+    }
+
     while(1)
     {
         udp_broadcast(config->port, msg.data, sizeof(msg.data));
-        printf("Sent keep alive message\n");
+        //printf("Sent keep alive message\n");
         sleep(1);
     }
     return NULL;
 }
 
-int print_alive_nodes(keep_alive_node_list_t* list)
-{
+int print_alive_nodes(keep_alive_node_list_t* list){
     for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++)
     {
         if(list->nodes[i].state == ACTIVE)
@@ -115,10 +138,11 @@ int print_alive_nodes(keep_alive_node_list_t* list)
     return 0;
 }
 
-int keep_alive_init(int port)
-{
+int keep_alive_init(int port, keep_alive_type_t type, int timeout_us){
     pthread_t send, recv, timeout_thread;
     keep_alive_config.port = port;
+    keep_alive_config.timeout_us = timeout_us;
+    keep_alive_config.node_type = type;
     keep_alive_config.nodes = (keep_alive_node_list_t*)malloc(sizeof(keep_alive_node_list_t));
     keep_alive_config.self_ip_address = getMyIpAddress("wlp2s0");
     printf("Host IP is: %s\n", keep_alive_config.self_ip_address);
@@ -141,9 +165,12 @@ int keep_alive_init(int port)
     return 0;     
 }
 
-int keep_alive_free()
+keep_alive_node_list_t* get_alive_node_list()
 {
-    return 0;
+    return keep_alive_config.nodes;
 }
 
-pthread_t send, recv;
+int keep_alive_free(){
+    free(keep_alive_config.nodes);
+    return 0;
+}

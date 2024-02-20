@@ -2,6 +2,7 @@
 
 #include<sys/time.h> 
 #include<stdint.h>   
+#include<pthread.h>
 #define KEEP_ALIVE_NODE_AMOUNT 10
 
 typedef enum{
@@ -34,21 +35,19 @@ typedef struct{
 
 typedef struct{
     keep_alive_node_t nodes[KEEP_ALIVE_NODE_AMOUNT];
+    pthread_mutex_t mutex;
 } keep_alive_node_list_t;
 
 typedef struct{
     int port;
     int timeout_us;
     char* self_ip_address;
+    keep_alive_type_t node_type;
     keep_alive_node_list_t* nodes;
 } keep_alive_config_t;
 
 
 
-
-
-
-
 void* keep_alive_recv(void* arg);
 void* keep_alive_send(void* arg);
-int keep_alive_init(int port);
+int keep_alive_init(int port, keep_alive_type_t type, int timeout_us);
