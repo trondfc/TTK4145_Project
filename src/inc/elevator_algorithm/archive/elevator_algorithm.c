@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <stdint.h>
 
 #include "elevator_algorithm.h"
 
@@ -35,6 +36,7 @@ bool is_floor_buttons_request_empty(elevator_system_t* elevator_system)
 bool is_request_at_floor(){
 
 }
+
 
 
 
