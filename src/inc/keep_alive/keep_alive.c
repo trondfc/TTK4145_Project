@@ -17,6 +17,28 @@
 
 keep_alive_config_t keep_alive_config;
 
+
+char* get_host_ip(){
+    
+    FILE *fp;
+    int size = 100*sizeof(char);
+    char* ip_address = (char*)malloc(size);
+    //char ip_address[100];
+    fp = popen("hostname -I | grep -E -o \"([0-9]{1,3}\\.){3}[0-9]{1,3}\"", "r");
+    fgets(ip_address, size, fp);
+    //printf("System IP Address is: %s\n", ip_address);
+    pclose(fp);
+    for (int i = 0; i < size; i++)
+    {
+        if (ip_address[i] == '\n')
+        {
+            ip_address[i] = '\0';
+            break;
+        }
+    }
+    return ip_address;
+}
+
 uint64_t get_timestamp(){
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
@@ -87,6 +109,7 @@ void* keep_alive_timeout(void* arg){
     keep_alive_config_t* config = (keep_alive_config_t*)arg;
     while(1){
         usleep(100);
+        pthread_mutex_lock(&config->nodes->mutex);
         for (int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++)
         {
             if (config->nodes->nodes[i].state == ACTIVE)
@@ -99,6 +122,7 @@ void* keep_alive_timeout(void* arg){
                 }
             }
         }
+        pthread_mutex_unlock(&config->nodes->mutex);
     }
     return NULL;
 } 
@@ -144,10 +168,8 @@ int keep_alive_init(int port, keep_alive_type_t type, int timeout_us){
     keep_alive_config.timeout_us = timeout_us;
     keep_alive_config.node_type = type;
     keep_alive_config.nodes = (keep_alive_node_list_t*)malloc(sizeof(keep_alive_node_list_t));
-    keep_alive_config.self_ip_address = getMyIpAddress("wlp2s0");
+    keep_alive_config.self_ip_address = get_host_ip();
     printf("Host IP is: %s\n", keep_alive_config.self_ip_address);
-
-        
 
     pthread_create(&send, NULL, &keep_alive_send, &keep_alive_config);
     pthread_create(&recv, NULL, &keep_alive_recv, &keep_alive_config);
@@ -155,7 +177,7 @@ int keep_alive_init(int port, keep_alive_type_t type, int timeout_us){
 
     while(1)
     {
-        print_alive_nodes(keep_alive_config.nodes);
+        //print_alive_nodes(keep_alive_config.nodes);
         sleep(1);
     }
 
@@ -165,12 +187,15 @@ int keep_alive_init(int port, keep_alive_type_t type, int timeout_us){
     return 0;     
 }
 
-keep_alive_node_list_t* get_alive_node_list()
-{
-    return keep_alive_config.nodes;
-}
-
 int keep_alive_free(){
     free(keep_alive_config.nodes);
+    free(keep_alive_config.self_ip_address);
     return 0;
+}
+
+keep_alive_node_list_t* get_alive_node_list()
+{
+    pthread_mutex_lock(&keep_alive_config.nodes->mutex);
+    return keep_alive_config.nodes;
+    pthread_mutex_unlock(&keep_alive_config.nodes->mutex);
 }

@@ -51,3 +51,5 @@ typedef struct{
 void* keep_alive_recv(void* arg);
 void* keep_alive_send(void* arg);
 int keep_alive_init(int port, keep_alive_type_t type, int timeout_us);
+keep_alive_node_list_t* get_alive_node_list();
+int print_alive_nodes(keep_alive_node_list_t* list);
