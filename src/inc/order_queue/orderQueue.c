@@ -9,7 +9,7 @@ order_queue_t * create_order_queue(int capacity){
 }
 
 int ConcatenateNumbers(int a, int b, int c){
-    char str[20];
+    char str[30];
     sprintf(str, "%d%d%d", a, b, c);
     return atoi(str);
 }

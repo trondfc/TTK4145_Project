@@ -1,10 +1,11 @@
 #ifndef ORDERQUEUE_H
 #define ORDERQUEUE_H
 
-
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <time.h>
 
 
 typedef enum order_types_t {
@@ -15,8 +16,9 @@ typedef enum order_types_t {
 
 typedef enum order_status_t{
     RECIVED = 0,
-    ACTIVE = 1,
-    COMPLETED = 2
+    SYNCED = 1,
+    ACTIVE = 2,
+    COMPLETED = 3
 }order_status_t;
 
 typedef struct order_event_t {
@@ -25,7 +27,7 @@ typedef struct order_event_t {
     uint8_t floor;
     order_types_t order_type;
     order_status_t order_status;
-    uint64_t timestamp;
+    time_t timestamp;
     uint8_t controller_id;
 }order_event_t;
 
