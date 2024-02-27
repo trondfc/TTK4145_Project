@@ -12,9 +12,10 @@ int ConcatenateNumbers(char * a, int b, int c){
     char aClean[16];
     char str[30];
 
+    int j=0;
     for (int i = 0; a[i] != '\0'; i++) {
         if (isdigit(a[i])) {
-            aClean[i++] = a[i];
+            aClean[j++] = a[i];
         }
     }
 
