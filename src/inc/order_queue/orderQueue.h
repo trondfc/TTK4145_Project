@@ -23,7 +23,7 @@ typedef enum order_status_t{
 
 typedef struct order_event_t {
     int order_id;
-    uint8_t elevator_id;
+    char elevator_id[16];
     uint8_t floor;
     order_types_t order_type;
     order_status_t order_status;
