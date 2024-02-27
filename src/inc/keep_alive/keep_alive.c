@@ -206,10 +206,11 @@ keep_alive_config_t* keep_alive_init(int port, keep_alive_type_t type, int keep_
     keep_alive_config.timeout_us = keep_alive_timeout_us;
     keep_alive_config.interval_us = keep_alive_ping_interval_us;
     keep_alive_config.msg.type = type;
-    set_keep_alive_config_state(&keep_alive_config, type);
+    
 
     keep_alive_config.nodes = (keep_alive_node_list_t*)malloc(sizeof(keep_alive_node_list_t));
     keep_alive_config.self_ip_address = get_host_ip();
+    set_keep_alive_config_state(&keep_alive_config, type);
     printf("Host IP is: %s\n", keep_alive_config.self_ip_address);
 
     pthread_create(&keep_alive_config.send_thread, NULL, &keep_alive_send, &keep_alive_config);
@@ -240,7 +241,7 @@ keep_alive_node_list_t* get_alive_node_list(keep_alive_config_t* conf)
 }
 
 int set_keep_alive_config_state(keep_alive_config_t* config, keep_alive_type_t type){
-    pthrread_mutex_lock(&config->nodes->mutex);
+    pthread_mutex_lock(&config->nodes->mutex);
     config->msg.type = type;
     pthread_mutex_unlock(&config->nodes->mutex);
 
@@ -267,7 +268,7 @@ int count_alive_nodes(keep_alive_config_t* conf, keep_alive_node_count_t* node_c
     node_count->alive_slave_count = 0;
     node_count->alive_node_count = 0;
     
-    phthread_mutex_lock(&conf->nodes->mutex);
+    pthread_mutex_lock(&conf->nodes->mutex);
     for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++)
     {
         if(conf->nodes->nodes[i].state == ACTIVE)
