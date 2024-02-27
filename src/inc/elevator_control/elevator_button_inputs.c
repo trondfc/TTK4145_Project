@@ -10,7 +10,9 @@ void poll_new_orders(elevator_hardware_info_t *elevator, order_queue_t *queue){
                 order->floor = i;
                 order->order_type = j;
                 order->order_status = RECIVED;
-                time(order->timestamp);
+                time_t systime;
+                $time(systime);
+                order->timestamp = systime;
                 order->order_id = GenerateOrderID(order);
                 enqueue_order(queue, order);
                 free(order);
