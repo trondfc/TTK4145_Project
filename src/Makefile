@@ -2,7 +2,7 @@ CC = gcc
 
 CFLAGS = -Wall -g -std=gnu99 
 LDFLAGS = -lpthread -g
-SRC = main.c sverresnetwork.c
+SRC = Tests/orderQueueTest.c orderQueue.c
 
 TARGET = result.exe
 

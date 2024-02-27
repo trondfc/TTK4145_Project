@@ -1,30 +1,28 @@
 #include "orderQueue.h"
 
-bool compare_orders(order_event_t *order, order_event_t *order2){
-    if(order->order_id == order2->order_id){
-        return 1;
-    }
-    else{
-        return 0;
-    }
+order_queue_t * create_order_queue(int capacity){
+    order_queue_t *queue = (order_queue_t *)malloc(sizeof(order_queue_t));
+    queue->capacity = capacity;
+    queue->size = 0;
+    queue->orders = (order_event_t *)malloc(queue->capacity * sizeof(order_event_t));
+    return queue;
 }
+
 
 void enqueue_order(order_queue_t *queue, order_event_t *order){
     if(queue->size == queue->capacity){
         printf("Queue is full\n");
         return;
     }
-    for(int i = 0; i < queue->size; i++){
-        if(compare_orders(&queue->orders[i], order)){
+    for (int i = 0; i < queue->size; i++){
+        if(queue->orders[i].order_id == order->order_id){
             printf("Order already in queue\n");
             return;
         }
-        else{
-            queue->orders[queue->size] = *order;
-            queue->size++;
-        }
     }
-}
+    queue->orders[queue->size] = *order;
+    queue->size++;
+}   
 
 void dequeue_order(order_queue_t *queue, order_event_t *order){
     if(queue->size == 0){
@@ -32,7 +30,7 @@ void dequeue_order(order_queue_t *queue, order_event_t *order){
         return;
     }
     for(int i = 0; i < queue->size; i++){
-        if(compare_orders(&queue->orders[i], order)){
+        if(queue->orders[i].order_id == order->order_id){
             for(int j = i; j < queue->size - 1; j++){
                 queue->orders[j] = queue->orders[j + 1];
             }
@@ -40,5 +38,5 @@ void dequeue_order(order_queue_t *queue, order_event_t *order){
             return;
         }
     }
-    printf("Order not in queue\n");
 }
+
