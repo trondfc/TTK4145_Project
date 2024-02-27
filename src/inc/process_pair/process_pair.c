@@ -55,6 +55,8 @@ void sysQueInit(int timeOutTimeS){
     pthread_create(&writeThread, NULL, sysQueWrite, (void*)data);
     pthread_create(&readThread, NULL, sysQueRead, (void*)data);
     pthread_create(&timeoutThread, NULL, sysQueTimeout, (void*)data);
+
+    pthread_join(timeoutThread, NULL);
 }
 
 /**
