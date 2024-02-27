@@ -23,25 +23,15 @@ int main()
     
 
 
+
+
+
     int count = 0;
     while (count < 10)
     {
         //usleep(3000000);
-        sleep(3);
-        if(keep_alive_config_ptr->msg.type == MASTER)
-        {
-            type = SLAVE;
-        }
-        else if(keep_alive_config_ptr->msg.type == SLAVE)
-        {
-            type = MASTER;
-        }
-        else
-        {
-            printf("Invalid node type\n");
-        }
-        set_keep_alive_config_state(keep_alive_config_ptr, type);
         count++;
+        sleep(3);
 
         printf("Printing alive nodes:\n");  
         count_alive_nodes(keep_alive_config_ptr, node_count);
@@ -50,6 +40,7 @@ int main()
 
 
         printf("Priority:%d \n", is_host_highest_priority(keep_alive_config_ptr));
+        printf("--------------------------------\n");
 
     }
     count_alive_kill(node_count);

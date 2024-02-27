@@ -240,7 +240,10 @@ keep_alive_node_list_t* get_alive_node_list(keep_alive_config_t* conf)
 }
 
 int set_keep_alive_config_state(keep_alive_config_t* config, keep_alive_type_t type){
+    pthrread_mutex_lock(&config->nodes->mutex);
     config->msg.type = type;
+    pthread_mutex_unlock(&config->nodes->mutex);
+
     if (type == SLAVE)
     {
         strcpy(config->msg.data, "SLAVE");
@@ -263,6 +266,8 @@ int count_alive_nodes(keep_alive_config_t* conf, keep_alive_node_count_t* node_c
     node_count->alive_master_count = 0;
     node_count->alive_slave_count = 0;
     node_count->alive_node_count = 0;
+    
+    phthread_mutex_lock(&conf->nodes->mutex);
     for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++)
     {
         if(conf->nodes->nodes[i].state == ACTIVE)
@@ -278,6 +283,7 @@ int count_alive_nodes(keep_alive_config_t* conf, keep_alive_node_count_t* node_c
             }
         }
     }
+    pthread_mutex_unlock(&conf->nodes->mutex);
     return 0;   
 }
 
@@ -303,7 +309,7 @@ int count_alive_kill(keep_alive_node_count_t* node_count)
     return 0;
 }
 
-int is_no_mmaster(keep_alive_node_count_t node_count)
+int is_no_master(keep_alive_node_count_t node_count)
 {
     if (node_count.alive_master_count == 0)
     {
