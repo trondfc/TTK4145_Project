@@ -6,6 +6,7 @@
         "sverresnetwork.h": "c",
         "pthread.h": "c",
         "stdio.h": "c",
-        "master_select_logic.h": "c"
+        "master_select_logic.h": "c",
+        "process_pair.h": "c"
     }
 }

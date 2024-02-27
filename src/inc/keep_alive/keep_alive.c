@@ -68,6 +68,20 @@ int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, i
         {
             update_node_timestamp(&list->nodes[i]);
             list->nodes[i].state = ACTIVE;
+            if (strcmp(list->nodes[i].data, "MASTER") != 0)
+            {
+                list->nodes[i].type = MASTER;
+            }
+            else if (strcmp(list->nodes[i].data, "SLAVE") != 0)
+            {
+                list->nodes[i].type = SLAVE;
+            }
+            else
+            {
+                list->nodes[i].type = UNDEFINED;
+            }
+
+
             strcpy(list->nodes[i].data, data);
             return 0;
         }
@@ -85,7 +99,12 @@ int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, i
 void udpmessageReceived(const char * ip, char * data, int datalength){
   // Assuming an ascii string here - a binary blob (including '0's) will
   // be ugly/truncated.
-    //printf("Received UDP message from %s: '%s'\n",ip,data); 
+    printf("Received UDP message from %s: '%s'\n",ip,data); 
+    pthread_mutex_lock(&keep_alive_config.nodes->mutex);  
+    update_node_list(keep_alive_config.nodes, ip, data, datalength);
+    pthread_mutex_unlock(&keep_alive_config.nodes->mutex);  
+
+    /*
     if (strcmp(ip, keep_alive_config.self_ip_address) == 0)
     {
         return;
@@ -95,6 +114,7 @@ void udpmessageReceived(const char * ip, char * data, int datalength){
         update_node_list(keep_alive_config.nodes, ip, data, datalength);
         pthread_mutex_unlock(&keep_alive_config.nodes->mutex);  
     }
+    */
 }
 
 void* keep_alive_recv(void* arg){
@@ -212,11 +232,9 @@ int keep_alive_kill(keep_alive_config_t* config){
     return 0;
 }
 
-keep_alive_node_list_t* get_alive_node_list()
+keep_alive_node_list_t* get_alive_node_list(keep_alive_config_t* conf)
 {
-    pthread_mutex_lock(&keep_alive_config.nodes->mutex);
-    return keep_alive_config.nodes;
-    pthread_mutex_unlock(&keep_alive_config.nodes->mutex);
+    return conf->nodes;
 }
 
 int set_keep_alive_config_state(keep_alive_config_t* config, keep_alive_type_t type){
@@ -237,4 +255,73 @@ int set_keep_alive_config_state(keep_alive_config_t* config, keep_alive_type_t t
         return -1;
     }
     return 0;
+}
+
+int count_alive_nodes(keep_alive_config_t* conf, keep_alive_node_count_t* node_count){
+    node_count->alive_master_count = 0;
+    node_count->alive_slave_count = 0;
+    node_count->alive_node_count = 0;
+    for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++)
+    {
+        if(conf->nodes->nodes[i].state == ACTIVE)
+        {
+            node_count->alive_node_count++;
+            if(conf->nodes->nodes[i].type == SLAVE)
+            {
+                node_count->alive_slave_count++;
+            }
+            else if(conf->nodes->nodes[i].type == MASTER)
+            {
+                node_count->alive_master_count++;
+            }
+        }
+    }
+    return 0;   
+}
+
+int print_node_count(keep_alive_node_count_t* node_count)
+{
+    printf("Total active nodes: %d\n", node_count->alive_node_count);
+    printf("Total active slaves: %d\n", node_count->alive_slave_count);
+    printf("Total active masters: %d\n", node_count->alive_master_count);
+    return 0;
+}
+
+
+keep_alive_node_count_t* count_alive_init(keep_alive_config_t* conf)
+{
+    keep_alive_node_count_t* node_count = (keep_alive_node_count_t*)malloc(sizeof(keep_alive_node_count_t));
+    return node_count;
+}
+
+
+int count_alive_kill(keep_alive_node_count_t* node_count)
+{
+    free(node_count);
+    return 0;
+}
+
+int is_no_mmaster(keep_alive_node_count_t node_count)
+{
+    if (node_count.alive_master_count == 0)
+    {
+        return 1;
+    }
+    return 0;
+}
+
+int is_host_highest_priority(keep_alive_config_t* conf)
+{
+    int highest_priority = 1;
+    for (int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++)
+    {
+        if (conf->nodes->nodes[i].state == ACTIVE)
+        {
+            if (strcmp(conf->nodes->nodes[i].ip, conf->self_ip_address) <= 0)
+            {
+                highest_priority = 0;
+            }
+        }
+    }
+    return highest_priority;
 }

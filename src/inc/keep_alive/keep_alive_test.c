@@ -12,12 +12,16 @@ int main()
 
     keep_alive_config_ptr = keep_alive_init(port, type, timeout_us, interval_us);
 
-    
-
     printf("Printing alive nodes:\n");
-    keep_alive_node_list_t* list = get_alive_node_list();
+    keep_alive_node_list_t* list = get_alive_node_list(keep_alive_config_ptr);
     print_alive_nodes(list);
     
+    keep_alive_node_count_t* node_count = count_alive_init(keep_alive_config_ptr);
+    count_alive_nodes(keep_alive_config_ptr, node_count);
+    print_node_count(node_count); 
+
+    
+
 
     int count = 0;
     while (count < 10)
@@ -27,12 +31,10 @@ int main()
         if(keep_alive_config_ptr->msg.type == MASTER)
         {
             type = SLAVE;
-            printf("Master\n");
         }
         else if(keep_alive_config_ptr->msg.type == SLAVE)
         {
             type = MASTER;
-            printf("Slave\n");
         }
         else
         {
@@ -41,13 +43,16 @@ int main()
         set_keep_alive_config_state(keep_alive_config_ptr, type);
         count++;
 
-        //printf (err != 0 ? "Error in sleep\n" : "");
-        //printf("alive nodes:");
-        //print_alive_nodes(list);
-    }
-    keep_alive_kill(keep_alive_config_ptr);
+        printf("Printing alive nodes:\n");  
+        count_alive_nodes(keep_alive_config_ptr, node_count);
+        print_node_count(node_count); 
+        printf("--------------------------------\n");
 
-    
-    
+
+        printf("Priority:%d \n", is_host_highest_priority(keep_alive_config_ptr));
+
+    }
+    count_alive_kill(node_count);
+    keep_alive_kill(keep_alive_config_ptr);
     return 0;
 }

@@ -7,8 +7,9 @@
 #define MESSAGE_SIZE 10*sizeof(char)
 
 typedef enum{
-    SLAVE = 0,
-    MASTER = 1
+    UNDEFINED = 0,
+    SLAVE = 1,
+    MASTER = 2
 } keep_alive_type_t;
 
 typedef struct{
@@ -52,6 +53,11 @@ typedef struct{
     keep_alive_msg_t msg;
 } keep_alive_config_t;
 
+typedef struct{
+    int alive_node_count;
+    int alive_slave_count;
+    int alive_master_count;
+} keep_alive_node_count_t;
 
 
 void* keep_alive_recv(void* arg);
@@ -61,3 +67,10 @@ keep_alive_node_list_t* get_alive_node_list();
 int print_alive_nodes(keep_alive_node_list_t* list);
 int set_keep_alive_config_state(keep_alive_config_t* config, keep_alive_type_t type);
 int keep_alive_kill(keep_alive_config_t* config);
+
+
+keep_alive_node_count_t* count_alive_init(keep_alive_config_t* conf);
+int count_alive_nodes(keep_alive_config_t* conf, keep_alive_node_count_t* node_count);
+int print_node_count(keep_alive_node_count_t* node_count);
+int count_alive_kill(keep_alive_node_count_t* node_count);
+int is_host_highest_priority(keep_alive_config_t* conf);

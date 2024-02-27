@@ -10,12 +10,20 @@ typedef struct {
     int alive_node_count;
     int alive_slave_count;
     int alive_master_count;
-}keep_alive_node_count_t;
+}node_count_t;
 
 
-int keep_alive_update()
+keep_alive_node_count_t* count_alive_init(int port, int timeout_us, int interval_us)
 {
+    keep_alive_config_t* ka = keep_alive_init(port, MASTER, timeout_us, interval_us);
     keep_alive_node_count_t* node_count = (keep_alive_node_count_t*)malloc(sizeof(keep_alive_node_count_t));
+    return node_count;
+}
+
+
+
+int count_alive_update(keep_alive_node_count_t* node_count)
+{
     count_alive_nodes(node_count);
     print_node_count(node_count);
     free(node_count);
