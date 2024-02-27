@@ -13,6 +13,7 @@ void poll_new_orders(elevator_hardware_info_t *elevator, order_queue_t *queue){
                 time(order->timestamp);
                 order->order_id = GenerateOrderID(order);
                 enqueue_order(queue, order);
+                free(order);
             }
         }
     }
