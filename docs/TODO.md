@@ -1,0 +1,21 @@
+# TODO
+- [ ] heis kontroll
+  - [ ] select order
+  - [ ] update backups
+  - [ ] serve order
+- [ ] input kontroll
+  - [ ] les input
+  - [x] generate order que
+    - løst i orderQueue
+- [x] program reboot
+    - hvis hoved prog. stoppet/død, restart programm
+    - løst i process_pair
+- [ ] master select
+  - [x] im alive messages
+  - [ ] rebot if not conected
+  - [ ] make master if master dead
+- [ ] data sync
+  - [ ] tcp komunikkasjon
+  - [ ] send data
+- [x] multiple elevators
+  - rewrote elevator hardware
