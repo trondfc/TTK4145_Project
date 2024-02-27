@@ -89,6 +89,8 @@ int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, i
         else if(list->nodes[i].is_occupied == EMPTY)
         {
             node_list_add(list, ip, i, data, datalength);
+            list->nodes[i].is_occupied = OCCUPIED;
+            
             return 0;
         }
     }
