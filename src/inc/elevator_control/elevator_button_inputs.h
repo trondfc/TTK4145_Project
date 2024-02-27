@@ -3,6 +3,7 @@
 
 /* Includes */
 #include <time.h>
+#include <string.h>
 
 #include "../elevator_hardware/elevator_hardware.h"
 #include "../order_queue/orderQueue.h"

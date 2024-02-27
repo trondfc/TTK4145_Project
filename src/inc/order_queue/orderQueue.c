@@ -8,13 +8,14 @@ order_queue_t * create_order_queue(int capacity){
     return queue;
 }
 
-int ConcatenateNumbers(int a, int b, int c){
+int ConcatenateNumbers(char * a, int b, int c){
     char str[30];
-    sprintf(str, "%d%d%d", a, b, c);
+    sprintf(str, "%s%d%d", a, b, c);
     return atoi(str);
 }
 
 int GenerateOrderID(order_event_t *order){
+
     return ConcatenateNumbers(order->elevator_id, order->floor, order->order_type);
 }
 
