@@ -22,6 +22,7 @@ typedef enum order_status_t{
 typedef struct order_event_t {
     int order_id;
     uint8_t elevator_id;
+    uint8_t floor;
     order_types_t order_type;
     order_status_t order_status;
     uint64_t timestamp;
@@ -35,6 +36,7 @@ typedef struct order_queue_t {
 }order_queue_t;
 
 /* Prototypes */
+int GenerateOrderID(order_event_t *order);
 void enqueue_order(order_queue_t *queue, order_event_t *order);
 void dequeue_order(order_queue_t *queue, order_event_t *order);
 order_queue_t * create_order_queue(int capacity);
