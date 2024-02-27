@@ -1,4 +1,4 @@
-#include "../orderQueue.h"
+#include "../inc/order_queue/orderQueue.h"
 #include <assert.h>
 
 void test_enqueue_order(order_queue_t * queue){
