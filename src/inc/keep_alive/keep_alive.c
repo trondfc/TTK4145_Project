@@ -51,28 +51,30 @@ int update_node_timestamp(keep_alive_node_t* node){
 }
 
 
-int node_list_add(keep_alive_node_list_t* list,const char* ip, int i){
+int node_list_add(keep_alive_node_list_t* list,const char* ip, int i, char* data, int datalength){
     list->nodes[i].state = ACTIVE;
     strcpy(list->nodes[i].ip, ip);
+    strcpy(list->nodes[i].data, data);
     update_node_timestamp(&list->nodes[i]);
     printf("Added node %s to list\n", list->nodes[i].ip);
     return 0;
 }
 
 
-int update_node_list(keep_alive_node_list_t* list, const char* ip){
+int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, int datalength){
     for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++)
     {
         if(strcmp(list->nodes[i].ip, ip) == 0)
         {
             update_node_timestamp(&list->nodes[i]);
             list->nodes[i].state = ACTIVE;
+            strcpy(list->nodes[i].data, data);
             return 0;
         }
 
         else if(list->nodes[i].is_occupied == EMPTY)
         {
-            node_list_add(list, ip, i);
+            node_list_add(list, ip, i, data, datalength);
             return 0;
         }
     }
@@ -90,7 +92,7 @@ void udpmessageReceived(const char * ip, char * data, int datalength){
     } else
     {
         pthread_mutex_lock(&keep_alive_config.nodes->mutex);  
-        update_node_list(keep_alive_config.nodes, ip);
+        update_node_list(keep_alive_config.nodes, ip, data, datalength);
         pthread_mutex_unlock(&keep_alive_config.nodes->mutex);  
     }
 }
@@ -108,7 +110,9 @@ void* keep_alive_recv(void* arg){
 void* keep_alive_timeout(void* arg){
     keep_alive_config_t* config = (keep_alive_config_t*)arg;
     while(1){
-        usleep(100);
+        int err = usleep(1000);
+        printf( err != 0 ? "Error in usleep\n" : "");
+
         pthread_mutex_lock(&config->nodes->mutex);
         for (int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++)
         {
@@ -129,67 +133,82 @@ void* keep_alive_timeout(void* arg){
 
 void* keep_alive_send(void* arg){
     keep_alive_config_t* config = (keep_alive_config_t*)arg;
-    keep_alive_msg_t msg;
-    msg.type = config->node_type;
-    msg.data = (char*)malloc(sizeof(char)*10);
+    /*keep_alive_msg_t msg;
+    //msg.type = config->node_type;
+    //msg.data = (char*)malloc(sizeof(char)*10);
 
     if (config->node_type == SLAVE)
     {
         strcpy(msg.data, "SLAVE");
     }
-    else
+    else if (config->node_type == MASTER)
     {
         strcpy(msg.data, "MASTER");
     }
+    else
+    {
+        printf("Invalid node type\n");
+        return NULL;
+    }
+    */
 
     while(1)
     {
-        udp_broadcast(config->port, msg.data, sizeof(msg.data));
-        //printf("Sent keep alive message\n");
-        sleep(1);
+        udp_broadcast(config->port, config->msg.data, sizeof(config->msg.data));
+        printf("Sent keep alive message\n");
+        printf("Keep alive message type: %d\n", config->msg.type);
+        printf("Keep alive message: %s\n", config->msg.data);
+        printf("--------------------------------\n");
+        usleep(config->interval_us);
     }
     return NULL;
 }
 
 int print_alive_nodes(keep_alive_node_list_t* list){
+    int active_nodes = 0;
     for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++)
     {
         if(list->nodes[i].state == ACTIVE)
         {
             printf("Node %s is active\n", list->nodes[i].ip);
+            active_nodes++;
         }
     }
+    printf("Total active nodes: %d\n", active_nodes);
     return 0;
 }
 
-int keep_alive_init(int port, keep_alive_type_t type, int timeout_us){
-    pthread_t send, recv, timeout_thread;
+keep_alive_config_t* keep_alive_init(int port, keep_alive_type_t type, int keep_alive_timeout_us, int keep_alive_ping_interval_us){
+
     keep_alive_config.port = port;
-    keep_alive_config.timeout_us = timeout_us;
-    keep_alive_config.node_type = type;
+    keep_alive_config.timeout_us = keep_alive_timeout_us;
+    keep_alive_config.interval_us = keep_alive_ping_interval_us;
+    keep_alive_config.msg.type = type;
+    set_keep_alive_config_state(&keep_alive_config, type);
+
     keep_alive_config.nodes = (keep_alive_node_list_t*)malloc(sizeof(keep_alive_node_list_t));
     keep_alive_config.self_ip_address = get_host_ip();
     printf("Host IP is: %s\n", keep_alive_config.self_ip_address);
 
-    pthread_create(&send, NULL, &keep_alive_send, &keep_alive_config);
-    pthread_create(&recv, NULL, &keep_alive_recv, &keep_alive_config);
-    pthread_create(&timeout_thread, NULL, &keep_alive_timeout, &keep_alive_config);
+    pthread_create(&keep_alive_config.send_thread, NULL, &keep_alive_send, &keep_alive_config);
+    pthread_create(&keep_alive_config.recv_thread, NULL, &keep_alive_recv, &keep_alive_config);
+    pthread_create(&keep_alive_config.timeout_thread, NULL, &keep_alive_timeout, &keep_alive_config);
 
-    while(1)
-    {
-        //print_alive_nodes(keep_alive_config.nodes);
-        sleep(1);
-    }
 
-    pthread_join(send, NULL);
-    pthread_join(recv, NULL);
-    pthread_join(timeout_thread, NULL);
-    return 0;     
+    //pthread_join(send, NULL);
+    //pthread_join(recv, NULL);
+    //pthread_join(timeout_thread, NULL);
+    return &keep_alive_config;     
 }
 
-int keep_alive_free(){
+int keep_alive_kill(keep_alive_config_t* config){
+    pthread_cancel(config->send_thread)       == 0 ? printf("Send thread killed\n")       : printf("Error killing send thread\n");
+    pthread_cancel(config->recv_thread)       == 0 ? printf("Recv thread killed\n")       : printf("Error killing recv thread\n");
+    pthread_cancel(config->timeout_thread)    == 0 ? printf("Timeout thread killed\n")    : printf("Error killing timeout thread\n");
+
     free(keep_alive_config.nodes);
     free(keep_alive_config.self_ip_address);
+
     return 0;
 }
 
@@ -198,4 +217,24 @@ keep_alive_node_list_t* get_alive_node_list()
     pthread_mutex_lock(&keep_alive_config.nodes->mutex);
     return keep_alive_config.nodes;
     pthread_mutex_unlock(&keep_alive_config.nodes->mutex);
+}
+
+int set_keep_alive_config_state(keep_alive_config_t* config, keep_alive_type_t type){
+    config->msg.type = type;
+    if (type == SLAVE)
+    {
+        strcpy(config->msg.data, "SLAVE");
+        printf("Node type set to SLAVE\n");
+    }
+    else if (type == MASTER)
+    {
+        strcpy(config->msg.data, "MASTER");
+        printf("Node type set to MASTER\n");
+    }
+    else
+    {
+        printf("Invalid node type\n");
+        return -1;
+    }
+    return 0;
 }

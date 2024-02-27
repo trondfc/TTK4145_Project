@@ -5,6 +5,7 @@
         "stdint.h": "c",
         "sverresnetwork.h": "c",
         "pthread.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "master_select_logic.h": "c"
     }
 }
