@@ -1,7 +1,7 @@
 # output files
-.out
-.exe
-.o
+*.out
+*.exe
+*.o
 build/*
 
 #secrets
