@@ -8,7 +8,7 @@ Rewrite of the original elevator hardware module from the TTK4145 Real Time Prog
 #include "elevator_hardware.h"
 
 void elevator_hardware_read_config(const char* ip_name, const char* port_name, elevator_hardware_info_t* hardware){
-    con_load("elevator_hardware.con",
+    con_load("inc/elevator_hardware/elevator_hardware.con",
         con_val(ip_name,   hardware->ip,   "%s")
         con_val(port_name, hardware->port, "%s")
     )

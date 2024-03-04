@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "elevator_button_inputs.h": "c",
+        "elevator_hardware.h": "c"
     }
 }
