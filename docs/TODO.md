@@ -17,7 +17,7 @@
   - [ ] rebot if not conected
   - [ ] make master if master dead
 - [ ] data sync
-  - [ ] tcp komunikkasjon
-  - [ ] send data
+  - [x] tcp komunikkasjon
+  - [x] send data
 - [x] multiple elevators
   - rewrote elevator hardware
