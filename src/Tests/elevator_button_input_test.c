@@ -19,7 +19,7 @@ void *PollOrders(){
     while(1){
         poll_new_orders(&elevator_1, queue);
         for(int i = 0; i < queue->size; i++){
-            printf("Order ID: %d\n", queue->orders[i].order_id);
+            printf("%d \t Order ID: %d\n", i , queue->orders[i].order_id);
         }
         usleep(UDELAY);
     }

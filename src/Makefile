@@ -20,6 +20,10 @@ $(TARGET): $(OBJ)
 	$(CC) $(CFLAGS) -c  $< -o $@ 
 
 # rule for cleaning re-compilable files.
+
+button_input_test:
+	$(CC) $(CFLAGS) -o button_input_test.o inc/elevator_control/elevator_button_inputs.c inc/elevator_hardware/elevator_hardware.c inc/order_queue/orderQueue.c Tests/elevator_button_input_test.c $(LDFLAGS)
+
 clean:
 	rm -f $(TARGET) $(OBJ)
 
