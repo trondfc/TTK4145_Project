@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <unistd.h>
+#include <string.h>
 
 void messageReceived(const char * ip, char * data, int datalength){
 
@@ -148,12 +149,17 @@ int main(){
     enqueue_order(queue, &order5);
     assert(queue->size == 4);
 
+    /* Serialising data*/
+    char * buffer = malloc(sizeof(order_queue_t) + sizeof(order_event_t) * queue->capacity);
+    memcpy(buffer, queue, sizeof(order_queue_t));
+    memcpy(buffer + sizeof(order_queue_t), queue->orders, sizeof(order_event_t) * queue->capacity);
+
     tcp_openConnection("127.0.0.1",9000);
-    for(int i = 0; i < queue->size; i++){
-        printf("Sending order with order ID: %d\n", queue->orders[i].order_id);
-        tcp_send("127.0.0.1", (char*)&queue->orders[i], sizeof(order_event_t));
-        usleep(1000);
-    }
+    printf("Sending order queue\n");
+    printf("size of order queue: %d\n", queue->size);
+    printf("char size of order queue: %ld\n", sizeof(order_queue_t) + sizeof(order_event_t) * queue->size);
+    tcp_send("127.0.0.1", buffer, sizeof(order_queue_t) + sizeof(order_event_t) * queue->size);
+    
     //tcp_send("127.0.0.1", (char*)queue, (sizeof(order_queue_t) + sizeof(order_event_t) * queue->capacity));
 
     /* Testing dequeueing */
