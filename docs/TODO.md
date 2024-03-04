@@ -3,8 +3,8 @@
   - [ ] select order
   - [ ] update backups
   - [ ] serve order
-- [ ] input kontroll
-  - [ ] les input
+- [x] input kontroll
+  - [x] les input
   - [x] generate order que
     - løst i orderQueue
 - [x] program reboot
