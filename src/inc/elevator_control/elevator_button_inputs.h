@@ -10,6 +10,6 @@
 
 
 /* Prototypes */
-void poll_new_orders(elevator_hardware_info_t *elevator, order_queue_t *queue);
+int poll_new_orders(elevator_hardware_info_t *elevator, order_queue_t *queue);
 
 #endif // ELEVATOR_BUTTON_INPUTS_H
