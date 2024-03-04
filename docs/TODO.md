@@ -3,6 +3,8 @@
   - [ ] select order
   - [ ] update backups
   - [ ] serve order
+  - [ ] spesial io
+  - [ ] 
 - [ ] input kontroll
   - [ ] les input
   - [x] generate order que
