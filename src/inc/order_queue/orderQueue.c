@@ -5,6 +5,7 @@ order_queue_t * create_order_queue(int capacity){
     queue->capacity = capacity;
     queue->size = 0;
     queue->orders = (order_event_t *)malloc(queue->capacity * sizeof(order_event_t));
+    pthread_mutex_init(queue->queue_mutex, NULL);
     return queue;
 }
 

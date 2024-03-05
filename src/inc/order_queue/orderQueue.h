@@ -36,6 +36,7 @@ typedef struct order_queue_t {
     int size;
     int capacity;
     order_event_t *orders;
+    pthread_mutex_t *queue_mutex;
 }order_queue_t;
 
 /* Prototypes */

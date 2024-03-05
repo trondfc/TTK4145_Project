@@ -21,7 +21,9 @@ int poll_new_orders(elevator_hardware_info_t *elevator, order_queue_t *queue){
                 }
 
                 order->order_id = GenerateOrderID(order);
+                pthread_mutex_lock(queue->queue_mutex);
                 enqueue_order(queue, order);
+                pthread_mutex_unlock(queue->queue_mutex);
                 free(order);
 
                 return 1;
