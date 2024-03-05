@@ -1,18 +1,27 @@
+/* Include libraries */
+#include "inc/elevator_control/elevator_button_inputs.h"
+#include "inc/elevator_hardware/elevator_hardware.h"
+#include "inc/order_queue/orderQueue.h"
+#include "inc/process_pair/process_pair.h"
 
 #include<unistd.h>
 #include<stdio.h> 
+#define QUEUE_SIZE 20
+#define ORDER_POLL_DELAY 100 * 1000 // 100 ms
 
 #include "inc/keep_alive/keep_alive.h"
 #include "inc/process_pair/process_pair.h"
+/* Define global variables */
+order_queue_t *queue;
 
 
 host_config_t host_config;
 
+  return 0;}
 int main_init(){
   printf("main_init\n");
   sysQueInit(5);
   return 0;
-}
 
 void* keep_alive_control(void* arg){
   host_config_t* host_config = (host_config_t*)arg;

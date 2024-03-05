@@ -1,12 +1,7 @@
 {
     "files.associations": {
         "stdlib.h": "c",
-        "config.h": "c",
-        "stdint.h": "c",
-        "sverresnetwork.h": "c",
-        "pthread.h": "c",
-        "stdio.h": "c",
-        "master_select_logic.h": "c",
-        "process_pair.h": "c"
+        "elevator_button_inputs.h": "c",
+        "elevator_hardware.h": "c"
     }
 }

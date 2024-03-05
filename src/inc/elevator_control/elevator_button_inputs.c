@@ -1,33 +1,34 @@
 #include "elevator_button_inputs.h"
 
-/**
- * @brief polls the hardware for button presses on a given floor
- *        using the elevator_hardware module
- * 
- * @param floor floor to poll for button presses
- * @return struct elevator_button_inputs_t 
- */
-struct elevator_button_inputs_t poll_elevator_buttons_pressed(int floor){
-    struct elevator_button_inputs_t button_inputs;
-    button_inputs.request_up = elevator_hardware_get_button_signal(BUTTON_CALL_UP, floor);
-    button_inputs.request_down = elevator_hardware_get_button_signal(BUTTON_CALL_DOWN, floor);
-    button_inputs.request_cabin = elevator_hardware_get_button_signal(BUTTON_COMMAND, floor);
-    return button_inputs;
-}
 
-/**
- * @brief pulls all the buttons on all floors and stores them in a struct
- *        N_FLOORS(macro) from headder file
- *        
- * 
- * @param floor_button_inputs pointer to struct to store button inputs in
- */
-void poll_elevator_floor_buttons_pressed(struct elevator_floor_button_inputs_t* floor_button_inputs){
-    for(int floor = 0; floor < N_FLOORS; floor++){
-        struct elevator_button_inputs_t floor_inputs = poll_elevator_buttons_pressed(floor);
-        floor_button_inputs->floor_inputs[floor].request_up |= floor_inputs.request_up;
-        floor_button_inputs->floor_inputs[floor].request_down |= floor_inputs.request_down;
-        floor_button_inputs->floor_inputs[floor].request_cabin |= floor_inputs.request_cabin;
+int poll_new_orders(elevator_hardware_info_t *elevator, order_queue_t *queue){
+    for(uint8_t i = 0; i < N_FLOORS; i++){
+        for(uint8_t j = 0; j < N_BUTTONS; j++){
+            if(elevator_hardware_get_button_signal(j, i, elevator)){
+                order_event_t * order = (order_event_t *)malloc(sizeof(order_event_t));
+                order->floor = i;
+                order->order_type = j;
+                order->order_status = RECIVED;
+                time_t systime;
+                time(&systime);
+                order->timestamp = systime;
+
+                if(order->order_type == GO_TO){
+                    strcpy(order->elevator_id, elevator->ip);
+                }
+                else{
+                    strcpy(order->elevator_id, "0.0.0.0");
+                }
+
+                order->order_id = GenerateOrderID(order);
+                pthread_mutex_lock(queue->queue_mutex);
+                enqueue_order(queue, order);
+                pthread_mutex_unlock(queue->queue_mutex);
+                free(order);
+
+                return 1;
+            }
+        }
     }
+    return 0;
 }
-

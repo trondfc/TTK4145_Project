@@ -3,8 +3,8 @@
   - [ ] select order
   - [ ] update backups
   - [ ] serve order
-- [ ] input kontroll
-  - [ ] les input
+- [x] input kontroll
+  - [x] les input
   - [x] generate order que
     - løst i orderQueue
 - [x] program reboot
@@ -15,7 +15,7 @@
   - [ ] rebot if not conected
   - [ ] make master if master dead
 - [ ] data sync
-  - [ ] tcp komunikkasjon
-  - [ ] send data
+  - [x] tcp komunikkasjon
+  - [x] send data
 - [x] multiple elevators
   - rewrote elevator hardware
