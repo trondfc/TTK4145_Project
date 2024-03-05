@@ -8,13 +8,23 @@ order_queue_t * create_order_queue(int capacity){
     return queue;
 }
 
-int ConcatenateNumbers(int a, int b, int c){
-    char str[20];
-    sprintf(str, "%d%d%d", a, b, c);
+int ConcatenateNumbers(char * a, int b, int c){
+    char aClean[16];
+    char str[30];
+
+    int j=0;
+    for (int i = 0; a[i] != '\0'; i++) {
+        if (isdigit(a[i])) {
+            aClean[j++] = a[i];
+        }
+    }
+
+    sprintf(str, "%s%d%d", aClean, b, c);
     return atoi(str);
 }
 
 int GenerateOrderID(order_event_t *order){
+
     return ConcatenateNumbers(order->elevator_id, order->floor, order->order_type);
 }
 

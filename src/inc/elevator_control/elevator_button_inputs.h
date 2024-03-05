@@ -1,24 +1,15 @@
 #ifndef ELEVATOR_BUTTON_INPUTS_H
 #define ELEVATOR_BUTTON_INPUTS_H
 
-#include <stdbool.h>
+/* Includes */
+#include <time.h>
+#include <string.h>
+
 #include "../elevator_hardware/elevator_hardware.h"
-
-#define N_FLOORS 4
-
-struct elevator_button_inputs_t
-{
-    bool request_up;
-    bool request_down;
-    bool request_cabin;
-};
-
-struct elevator_floor_button_inputs_t
-{
-    struct elevator_button_inputs_t floor_inputs[N_FLOORS];
-};
+#include "../order_queue/orderQueue.h"
 
 
-struct elevator_button_inputs_t poll_elevator_buttons_pressed(int floor);
-void poll_elevator_floor_buttons_pressed(struct elevator_floor_button_inputs_t* floor_button_inputs);
+/* Prototypes */
+int poll_new_orders(elevator_hardware_info_t *elevator, order_queue_t *queue);
+
 #endif // ELEVATOR_BUTTON_INPUTS_H
