@@ -319,9 +319,16 @@ int is_no_master(keep_alive_node_count_t node_count)
     return 0;
 }
 
+uint64_t ip_to_int(const char* ip)
+
+
 int is_host_highest_priority(keep_alive_config_t* conf)
 {
     int highest_priority = 1;
+
+
+
+
     for (int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++)
     {
         if (conf->nodes->nodes[i].state == ACTIVE)
@@ -334,3 +341,5 @@ int is_host_highest_priority(keep_alive_config_t* conf)
     }
     return highest_priority;
 }
+
+
