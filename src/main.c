@@ -1,50 +1,40 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+/* Include libraries */
+#include "inc/elevator_control/elevator_button_inputs.h"
+#include "inc/elevator_hardware/elevator_hardware.h"
+#include "inc/order_queue/orderQueue.h"
+#include "inc/process_pair/process_pair.h"
 
-#include "sverresnetwork.h"
+#define QUEUE_SIZE 20
+#define ORDER_POLL_DELAY 100 * 1000 // 100 ms
 
-#define udp_port 20014
+/* Define global variables */
+order_queue_t *queue;
 
-// LAB udp server ip: 10.100.23.129
-char * server_ip = "10.100.23.129";
 
-void udpmessageReceived(const char * ip, char * data, int datalength){
 
-  // Assuming an ascii string here - a binary blob (including '0's) will
-  // be ugly/truncated.
-  printf("Received UDP message from %s: '%s'\n",ip,data);
-  if(!strcmp(data,"ping")){
-    sleep(1);
-    udp_send(server_ip, udp_port,"pong",5);
+/* Make pthread functions */
+void *orderQueue(void *arg){
+  create_order_queue(QUEUE_SIZE);
+  /* HERE WE NEED TO CHECK IF WE'RE MASTER */
+  while(Hoststate == Master){
+    /* HERE WE NEED TO RE-WRITE TO POLL ALL ELEVATORS */
+    if (poll_new_orders(&elevator_1, queue)){
+      for(int i = 0; i < queue->size; i++){
+        printf("%d \t Order ID: %d\n", i , queue->orders[i].order_id);
+      }
+      printf("\n");
+    }
+    usleep(ORDER_POLL_DELAY);
   }
-  else if (!strcmp(data,"pong")){
-    sleep(1);
-    udp_send(server_ip,udp_port,"ping",5);
-  }
+}
+
+void *elevatorAlgorithm(void *arg){
   
 }
 
+
 int main(int argc, char * argv[]){
-  char * ip = getMyIpAddress("enp0s31f6");
-  printf("My Ip is %s\n",ip);
-  free(ip);
-  if(argc >= 2){
-    server_ip = argv[1];
-  }
   
-  if(argc >= 3){
-    if(!strcmp(argv[2], "start")){
-      printf("Starting ping-pong\n");
-      udp_send(server_ip,udp_port,"ping",5);
-    }
-  }
 
-  udp_startReceiving(udp_port,udpmessageReceived);
-  sleep(100); // wait for recieve to start
-
-
-  return 0;
 }
 
