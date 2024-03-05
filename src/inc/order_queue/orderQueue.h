@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <time.h>
 #include <ctype.h>
+#include <pthread.h>
 
 
 typedef enum order_types_t {
@@ -36,6 +37,7 @@ typedef struct order_queue_t {
     int size;
     int capacity;
     order_event_t *orders;
+    pthread_mutex_t *queue_mutex;
 }order_queue_t;
 
 /* Prototypes */
