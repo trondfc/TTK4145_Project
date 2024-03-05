@@ -1,5 +1,8 @@
 #include "../inc/order_queue/orderQueue.h"
 #include "../inc/sverresnetwork/sverresnetwork.h"
+#include "../inc/order_queue/send_order_queue.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
 #include <unistd.h>
@@ -95,7 +98,8 @@ void test_create_order_queue(){
 }
 
 int main(){
-    tcp_init(messageReceived,connectionStatus);
+    //tcp_init(messageReceived,connectionStatus);
+    send_order_queue_init(messageReceived, connectionStatus);
     test_create_order_queue();
 
     order_queue_t * queue = create_order_queue(10);
@@ -149,7 +153,8 @@ int main(){
     enqueue_order(queue, &order5);
     assert(queue->size == 4);
 
-    /* Serialising data*/
+
+    /* Serialising data
     char * buffer = malloc(sizeof(order_queue_t) + sizeof(order_event_t) * queue->capacity);
     memcpy(buffer, queue, sizeof(order_queue_t));
     memcpy(buffer + sizeof(order_queue_t), queue->orders, sizeof(order_event_t) * queue->capacity);
@@ -159,6 +164,20 @@ int main(){
     printf("size of order queue: %d\n", queue->size);
     printf("char size of order queue: %ld\n", sizeof(order_queue_t) + sizeof(order_event_t) * queue->size);
     tcp_send("127.0.0.1", buffer, sizeof(order_queue_t) + sizeof(order_event_t) * queue->size);
+
+    usleep(1000);
+    printf("Sending order queue\n");
+    printf("size of order queue: %d\n", queue->size);
+    printf("char size of order queue: %ld\n", sizeof(order_queue_t) + sizeof(order_event_t) * queue->size);
+    tcp_send("127.0.0.1", buffer, sizeof(order_queue_t) + sizeof(order_event_t) * queue->size);
+
+    free(buffer);*/
+
+    send_order_queue_connect("127.0.0.1", 9000);
+    send_order_queue_send_order("127.0.0.1", queue);
+    usleep(1000);
+    send_order_queue_send_order("127.0.0.1", queue);
+
     
     //tcp_send("127.0.0.1", (char*)queue, (sizeof(order_queue_t) + sizeof(order_event_t) * queue->capacity));
 
