@@ -24,6 +24,13 @@ $(TARGET): $(OBJ)
 button_input_test:
 	$(CC) $(CFLAGS) -o button_input_test.o inc/sverresnetwork/sverresnetwork.c inc/order_queue/send_order_queue.c inc/elevator_control/elevator_button_inputs.c inc/elevator_hardware/elevator_hardware.c inc/order_queue/orderQueue.c Tests/elevator_button_input_test.c $(LDFLAGS)
 
+orderQueueTestListen:
+	$(CC) $(CFLAGS) que_test_listen.out inc/order_queue/orderQueue.c inc/sverresnetwork/sverresnetwork.c inc/order_queue/send_order_queue.c Tests/orderQueueTestListen.c $(LDFLAGS)
+
+orderQueueTest:
+	$(CC) $(CFLAGS) que_test_listen.out inc/order_queue/orderQueue.c inc/sverresnetwork/sverresnetwork.c inc/order_queue/send_order_queue.c Tests/orderQueueTestListen.c $(LDFLAGS)
+
+
 clean:
 	rm -f $(TARGET) $(OBJ)
 
