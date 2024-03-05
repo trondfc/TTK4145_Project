@@ -52,7 +52,7 @@ int update_node_timestamp(keep_alive_node_t* node){
 
 
 int node_list_add(keep_alive_node_list_t* list,const char* ip, int i, char* data, int datalength){
-    list->nodes[i].state = ACTIVE;
+    list->nodes[i].state = KA_ACTIVE;
     strcpy(list->nodes[i].ip, ip);
     strcpy(list->nodes[i].data, data);
     update_node_timestamp(&list->nodes[i]);
@@ -67,21 +67,17 @@ int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, i
         if(strcmp(list->nodes[i].ip, ip) == 0)
         {
             update_node_timestamp(&list->nodes[i]);
-            list->nodes[i].state = ACTIVE;
+            list->nodes[i].state = KA_ACTIVE;
             if (strcmp(list->nodes[i].data, "MASTER") != 0)
             {
                 list->nodes[i].type = MASTER;
-            }
-            else if (strcmp(list->nodes[i].data, "SLAVE") != 0)
+            }else if (strcmp(list->nodes[i].data, "SLAVE") != 0)
             {
                 list->nodes[i].type = SLAVE;
             }
-            else
-            {
+            else{
                 list->nodes[i].type = UNDEFINED;
             }
-
-
             strcpy(list->nodes[i].data, data);
             return 0;
         }
@@ -102,21 +98,18 @@ void udpmessageReceived(const char * ip, char * data, int datalength){
   // Assuming an ascii string here - a binary blob (including '0's) will
   // be ugly/truncated.
     printf("Received UDP message from %s: '%s'\n",ip,data); 
-    pthread_mutex_lock(&keep_alive_config.nodes->mutex);  
-    update_node_list(keep_alive_config.nodes, ip, data, datalength);
-    pthread_mutex_unlock(&keep_alive_config.nodes->mutex);  
+    //pthread_mutex_lock(&keep_alive_config.nodes->mutex);  
+    //update_node_list(keep_alive_config.nodes, ip, data, datalength);
+    //pthread_mutex_unlock(&keep_alive_config.nodes->mutex);  
 
-    /*
-    if (strcmp(ip, keep_alive_config.self_ip_address) == 0)
-    {
-        return;
-    } else
+    
+    if (strcmp(ip, keep_alive_config.self_ip_address) != 0)
     {
         pthread_mutex_lock(&keep_alive_config.nodes->mutex);  
         update_node_list(keep_alive_config.nodes, ip, data, datalength);
         pthread_mutex_unlock(&keep_alive_config.nodes->mutex);  
     }
-    */
+    
 }
 
 void* keep_alive_recv(void* arg){
@@ -138,12 +131,12 @@ void* keep_alive_timeout(void* arg){
         pthread_mutex_lock(&config->nodes->mutex);
         for (int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++)
         {
-            if (config->nodes->nodes[i].state == ACTIVE)
+            if (config->nodes->nodes[i].state == KA_ACTIVE)
             {
                 uint64_t current_time = get_timestamp();
                 if (current_time - config->nodes->nodes[i].last_seen_timestamp > config->timeout_us)
                 {
-                    config->nodes->nodes[i].state = INACTIVE;
+                    config->nodes->nodes[i].state = KA_INACTIVE;
                     printf("Node %s set to inactive\n", config->nodes->nodes[i].ip);
                 }
             }
@@ -190,7 +183,7 @@ int print_alive_nodes(keep_alive_node_list_t* list){
     int active_nodes = 0;
     for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++)
     {
-        if(list->nodes[i].state == ACTIVE)
+        if(list->nodes[i].state == KA_ACTIVE)
         {
             printf("Node %s is active\n", list->nodes[i].ip);
             active_nodes++;
@@ -271,7 +264,7 @@ int count_alive_nodes(keep_alive_config_t* conf, keep_alive_node_count_t* node_c
     pthread_mutex_lock(&conf->nodes->mutex);
     for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++)
     {
-        if(conf->nodes->nodes[i].state == ACTIVE)
+        if(conf->nodes->nodes[i].state == KA_ACTIVE)
         {
             node_count->alive_node_count++;
             if(conf->nodes->nodes[i].type == SLAVE)
@@ -330,7 +323,7 @@ int is_host_highest_priority(keep_alive_config_t* conf)
     int highest_priority = 1;
     for (int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++)
     {
-        if (conf->nodes->nodes[i].state == ACTIVE)
+        if (conf->nodes->nodes[i].state == KA_ACTIVE)
         {
             if (strcmp(conf->nodes->nodes[i].ip, conf->self_ip_address) <= 0)
             {

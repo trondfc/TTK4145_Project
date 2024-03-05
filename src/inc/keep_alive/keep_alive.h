@@ -19,8 +19,8 @@ typedef struct{
 } keep_alive_msg_t;
 
 typedef enum{
-    INACTIVE = 0,
-    ACTIVE = 1
+    KA_INACTIVE = 0,
+    KA_ACTIVE = 1
 } keep_alive_node_state_t;
 
 typedef enum{
