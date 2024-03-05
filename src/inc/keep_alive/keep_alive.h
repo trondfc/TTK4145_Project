@@ -9,7 +9,8 @@
 typedef enum{
     UNDEFINED = 0,
     SLAVE = 1,
-    MASTER = 2
+    MASTER = 2,
+    RESET = 3
 } keep_alive_type_t;
 
 typedef struct{
@@ -60,6 +61,13 @@ typedef struct{
 } keep_alive_node_count_t;
 
 
+typedef struct{
+    keep_alive_type_t host_state;
+    keep_alive_node_list_t  *node_list;
+    pthread_mutex_t mutex;
+}host_config_t;
+
+
 void* keep_alive_recv(void* arg);
 void* keep_alive_send(void* arg);
 keep_alive_config_t* keep_alive_init(int port, keep_alive_type_t type, int keep_alive_timeout_us, int keep_alive_ping_interval_us);
@@ -74,3 +82,6 @@ int count_alive_nodes(keep_alive_config_t* conf, keep_alive_node_count_t* node_c
 int print_node_count(keep_alive_node_count_t* node_count);
 int count_alive_kill(keep_alive_node_count_t* node_count);
 int is_host_highest_priority(keep_alive_config_t* conf);
+keep_alive_config_t* keep_alive_start();
+keep_alive_type_t get_host_state(keep_alive_config_t* conf);
+

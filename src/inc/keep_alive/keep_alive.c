@@ -177,10 +177,10 @@ void* keep_alive_send(void* arg){
     while(1)
     {
         udp_broadcast(config->port, config->msg.data, sizeof(config->msg.data));
-        printf("Sent keep alive message\n");
-        printf("Keep alive message type: %d\n", config->msg.type);
-        printf("Keep alive message: %s\n", config->msg.data);
-        printf("--------------------------------\n");
+        //printf("Sent keep alive message\n");
+        //printf("Keep alive message type: %d\n", config->msg.type);
+        //printf("Keep alive message: %s\n", config->msg.data);
+        //printf("--------------------------------\n");
         usleep(config->interval_us);
     }
     return NULL;
@@ -310,9 +310,9 @@ int count_alive_kill(keep_alive_node_count_t* node_count)
     return 0;
 }
 
-int is_no_master(keep_alive_node_count_t node_count)
+int is_no_master(keep_alive_node_count_t* node_count)
 {
-    if (node_count.alive_master_count == 0)
+    if (node_count->alive_master_count == 0)
     {
         return 1;
     }
@@ -320,15 +320,14 @@ int is_no_master(keep_alive_node_count_t node_count)
 }
 
 uint64_t ip_to_int(const char* ip)
+{
+    return 0;
+}
 
 
 int is_host_highest_priority(keep_alive_config_t* conf)
 {
     int highest_priority = 1;
-
-
-
-
     for (int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++)
     {
         if (conf->nodes->nodes[i].state == ACTIVE)
@@ -342,4 +341,43 @@ int is_host_highest_priority(keep_alive_config_t* conf)
     return highest_priority;
 }
 
+ int host_state_select_logic(keep_alive_config_t* conf)
+{
+    keep_alive_config_t* config = conf;
+    keep_alive_node_count_t* node_count = count_alive_init(config);
+    keep_alive_type_t state = config->msg.type;
 
+    if (node_count->alive_node_count == 0)
+    {
+        state = RESET;
+    }
+
+    if (is_no_master(node_count))
+    {
+        if(is_host_highest_priority(conf)){
+            state = MASTER;
+        }
+        else
+        {
+            state = SLAVE;
+        }
+    }
+    count_alive_kill(node_count);
+    config->msg.type = state;
+    return 0;
+}
+
+keep_alive_type_t get_host_state(keep_alive_config_t* conf)
+{
+    return conf->msg.type;
+}
+
+keep_alive_config_t* keep_alive_start()
+{
+    int port = 4000;
+    int timeout_us = 4000000;
+    int interval_us = 1000000;
+    keep_alive_type_t type = SLAVE;
+    keep_alive_config_t* keep_alive = keep_alive_init(port, type, timeout_us, interval_us);
+    return keep_alive;
+}

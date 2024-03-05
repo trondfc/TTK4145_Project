@@ -12,10 +12,15 @@ int main()
 
     keep_alive_config_ptr = keep_alive_init(port, type, timeout_us, interval_us);
 
+
+    //Alive Node Printing
+    
     printf("Printing alive nodes:\n");
     keep_alive_node_list_t* list = get_alive_node_list(keep_alive_config_ptr);
     print_alive_nodes(list);
     
+
+    //Alive Node Counting
     keep_alive_node_count_t* node_count = count_alive_init(keep_alive_config_ptr);
     count_alive_nodes(keep_alive_config_ptr, node_count);
     print_node_count(node_count); 
