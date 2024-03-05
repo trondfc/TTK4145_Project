@@ -33,9 +33,9 @@ typedef struct order_event_t {
 }order_event_t;
 
 typedef struct order_queue_t {
-    order_event_t *orders;
     int size;
     int capacity;
+    order_event_t *orders;
 }order_queue_t;
 
 /* Prototypes */
