@@ -3,12 +3,13 @@
 #include <string.h>
 #include "../inc/order_queue/orderQueue.h"
 #include "../inc/sverresnetwork/sverresnetwork.h"
+#include "../inc/order_queue/send_order_queue.h"
 
 order_queue_t * queue;
 
 void messageReceived(const char * ip, char * data, int datalength){
 
-  printf("Received message from %s: '%s'\n",ip,data);
+  printf("Received message from %s\n",ip);
   
   memcpy(&queue->size, data, sizeof(queue->size));
   memcpy(&queue->capacity, data+sizeof(queue->size), sizeof(queue->capacity));
@@ -19,7 +20,7 @@ void messageReceived(const char * ip, char * data, int datalength){
   printf("Queue capacity: %d\n", queue->capacity);
   for(int i = 0; i < queue->size; i++){
       printf("Order %d ID: %d\n", i, queue->orders[i].order_id);
-      printf("Order %d elevator_id: %d\n", i, queue->orders[i].elevator_id);
+      printf("Order %d elevator_id: %s\n", i, queue->orders[i].elevator_id);
       printf("Order %d floor: %d\n", i, queue->orders[i].floor);
       printf("Order %d order_type: %d\n", i, queue->orders[i].order_type);
       printf("\n\n");
@@ -39,8 +40,12 @@ int main(){
 
   queue = create_order_queue(10);
 
-  tcp_init(messageReceived,connectionStatus);
-  tcp_startConnectionListening(9000);
+  //tcp_init(messageReceived,connectionStatus);
+  //tcp_startConnectionListening(9000);
+
+  send_order_queue_init(messageReceived,connectionStatus);
+  send_order_queue_listen(9000);
+
 
   sleep(100);
   return 0;
