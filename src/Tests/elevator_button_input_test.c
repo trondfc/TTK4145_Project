@@ -40,7 +40,6 @@ void *PollOrders(){
 }
 
 void* SyncOrders(){
-
     send_order_queue_init(NULL,connectionStatus);
     send_order_queue_connect("127.0.0.1",9000);
     while(1){

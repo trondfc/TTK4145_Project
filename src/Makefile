@@ -1,7 +1,7 @@
 CC = gcc
 
 CFLAGS = -Wall -g -std=gnu99 
-LDFLAGS = -lpthread -g
+LDFLAGS = -lpthread
 SRC = Tests/orderQueueTest.c inc/order_queue/orderQueue.c
 
 TARGET = result.exe

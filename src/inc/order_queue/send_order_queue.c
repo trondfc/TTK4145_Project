@@ -23,3 +23,9 @@ void send_order_queue_send_order(char * ip, order_queue_t *queue){
 
     free(buffer);
 }
+
+void send_order_queue_deserialize(char * data, order_queue_t *queue){
+    memcpy(&queue->size, data, sizeof(queue->size));
+    memcpy(&queue->capacity, data+sizeof(queue->size), sizeof(queue->capacity));
+    memcpy(queue->orders, data+sizeof(order_queue_t), sizeof(order_event_t)*queue->size);
+}

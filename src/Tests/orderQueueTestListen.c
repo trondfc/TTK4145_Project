@@ -10,11 +10,13 @@ order_queue_t * queue;
 void messageReceived(const char * ip, char * data, int datalength){
 
   printf("Received message from %s\n",ip);
-  
+  /*
   memcpy(&queue->size, data, sizeof(queue->size));
   memcpy(&queue->capacity, data+sizeof(queue->size), sizeof(queue->capacity));
   //memcpy(queue->orders, data+sizeof(queue->size)+sizeof(queue->capacity), sizeof(queue->orders)); 
   memcpy(queue->orders, data+sizeof(order_queue_t), sizeof(order_event_t)*queue->size);
+*/
+  send_order_queue_deserialize(data, queue);
 
   printf("Queue size: %d\n", queue->size);
   printf("Queue capacity: %d\n", queue->capacity);
