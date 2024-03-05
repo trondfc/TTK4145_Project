@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <time.h>
 #include <ctype.h>
+#include <pthread.h>
 
 
 typedef enum order_types_t {
