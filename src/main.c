@@ -78,15 +78,15 @@ void* main_button_input(void* arg){
   printf("button_input\n");
     elevator_hardware_info_t elevator_1;
     elevator_hardware_info_t elevator_2;
-    elevator_hardware_info_t elevator_3;
+    //elevator_hardware_info_t elevator_3;
 
     elevator_hardware_read_config("elv1_ip", "elv1_port", &elevator_1);
     elevator_hardware_read_config("elv2_ip", "elv2_port", &elevator_2);
-    elevator_hardware_read_config("elv3_ip", "elv3_port", &elevator_3);
+    //elevator_hardware_read_config("elv3_ip", "elv3_port", &elevator_3);
 
     elevator_hardware_init(&elevator_1);
     elevator_hardware_init(&elevator_2);
-    elevator_hardware_init(&elevator_3);
+    //elevator_hardware_init(&elevator_3);
     
     while(1){
         if (poll_new_orders(&elevator_1, queue)){
@@ -101,12 +101,13 @@ void* main_button_input(void* arg){
             }
             printf("\n");
         }
+        /*
         if (poll_new_orders(&elevator_3, queue)){
             for(int i = 0; i < queue->size; i++){
                 printf("%d \t Order ID: %d\n", i , queue->orders[i].order_id);
             }
             printf("\n");
-        }
+        }*/
         
         usleep(ORDER_POLL_DELAY);
     }

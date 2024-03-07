@@ -1,8 +1,8 @@
 elevator_hardware.con
 
---elv1_ip                127.0.0.1
+--elv1_ip                192.168.1.12
 --elv1_port              15657
---elv2_ip                127.0.0.1
---elv2_port              15658
+--elv2_ip                192.168.1.191
+--elv2_port              15657
 --elv3_ip                127.0.0.1
---elv3_port              15659
+--elv3_port              15657
