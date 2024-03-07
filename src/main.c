@@ -60,6 +60,7 @@ void* keep_alive_control(void* arg){
   while(1){
     pthread_mutex_lock(&host_config->mutex);
     host_config->host_state = get_host_state(keep_alive_config);
+    host_state_select_logic(keep_alive_config);
     pthread_mutex_unlock(&host_config->mutex);
     if (host_config->host_state == RESET){
       printd(LOG_LEVEL_DEBUG, "Process Reset\n");
@@ -177,7 +178,7 @@ int main()
 
       pthread_create(&button_thread, NULL, &main_button_input, (void*)&host_config);
       //pthread_create(&elevator_thread, NULL, &main_elevator_control, (void*)&host_config);
-      pthread_create(&send_thread, NULL, &main_send, (void*)&host_config);
+      //pthread_create(&send_thread, NULL, &main_send, (void*)&host_config);
     //}
     sleep(1);
   }

@@ -98,17 +98,17 @@ void udpmessageReceived(const char * ip, char * data, int datalength){
   // Assuming an ascii string here - a binary blob (including '0's) will
   // be ugly/truncated.
     printf("Received UDP message from %s: '%s'\n",ip,data); 
-    pthread_mutex_lock(&keep_alive_config.nodes->mutex);  
-    update_node_list(keep_alive_config.nodes, ip, data, datalength);
-    pthread_mutex_unlock(&keep_alive_config.nodes->mutex);  
+    //pthread_mutex_lock(&keep_alive_config.nodes->mutex);  
+    //update_node_list(keep_alive_config.nodes, ip, data, datalength);
+    //pthread_mutex_unlock(&keep_alive_config.nodes->mutex);  
 
-    /*
+    
     if (strcmp(ip, keep_alive_config.self_ip_address) != 0)
     {
         pthread_mutex_lock(&keep_alive_config.nodes->mutex);  
         update_node_list(keep_alive_config.nodes, ip, data, datalength);
         pthread_mutex_unlock(&keep_alive_config.nodes->mutex);  
-    }*/
+    }
     
 }
 
@@ -304,6 +304,7 @@ int count_alive_kill(keep_alive_node_count_t* node_count)
 
 int is_no_master(keep_alive_node_count_t* node_count)
 {
+    printf("Alive master count: %d\n", node_count->alive_master_count);
     if (node_count->alive_master_count == 0)
     {
         return 1;
@@ -346,6 +347,7 @@ int is_host_highest_priority(keep_alive_config_t* conf)
 
     if (is_no_master(node_count))
     {
+        printf("No master found\n");
         if(is_host_highest_priority(conf)){
             state = MASTER;
         }
