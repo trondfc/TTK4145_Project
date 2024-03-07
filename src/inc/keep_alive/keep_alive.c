@@ -350,6 +350,8 @@ int is_host_highest_priority(keep_alive_config_t* conf)
         printf("No master found\n");
         if(is_host_highest_priority(conf)){
             state = MASTER;
+            printf("Host is highest priority\n");
+            printf("Host state set to MASTER\n");
         }
         else
         {
@@ -357,7 +359,8 @@ int is_host_highest_priority(keep_alive_config_t* conf)
         }
     }
     count_alive_kill(node_count);
-    config->msg.type = state;
+    //config->msg.type = state;
+    set_keep_alive_config_state(config, state);
     return 0;
 }
 
