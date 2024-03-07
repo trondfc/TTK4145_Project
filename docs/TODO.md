@@ -12,9 +12,9 @@
     - løst i process_pair
 - [ ] master select
   - [x] im alive messages
-  - [ ] rebot if not conected
-  - [ ] make master if master dead
-- [ ] data sync
+  - [x] rebot if not conected
+  - [x] make master if master dead
+- [x] data sync
   - [x] tcp komunikkasjon
   - [x] send data
 - [x] multiple elevators
