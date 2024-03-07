@@ -3,6 +3,8 @@
 #include "inc/elevator_hardware/elevator_hardware.h"
 #include "inc/order_queue/orderQueue.h"
 #include "inc/process_pair/process_pair.h"
+#include "inc/order_queue/send_order_queue.h"
+#include "inc/keep_alive/keep_alive.h"
 #include "inc/logger.h"
 #define LOG_LEVEL LOG_LEVEL_DEBUG // Set log level to debug
 
@@ -12,8 +14,6 @@
 #define ORDER_POLL_DELAY 100 * 1000 // 100 ms
 #define ORDER_SYNC_DELAY 500 * 1000 // 500 ms
 
-#include "inc/keep_alive/keep_alive.h"
-#include "inc/process_pair/process_pair.h"
 /* Define global variables */
 order_queue_t *queue;
 
@@ -122,12 +122,17 @@ void* main_elevator_control(void* arg){
 void* main_send(void* arg){
   printf("send\n");
     send_order_queue_init(NULL, connectionStatus);
+    printf("send_order_queue_init\n");
+    sleep(1);
     while(1){
       for(uint8_t i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
-        if(host_config.node_list->nodes[i].state == KA_ACTIVE && host_config.node_list->nodes[i].type == SLAVE){
+        if(host_config.node_list->nodes[i].state == KA_ACTIVE){//} && host_config.node_list->nodes[i].type == SLAVE){
+          printf("found slave at %s\n", host_config.node_list->nodes[i].ip);
           if(host_config.node_list->nodes[i].is_connected == DISCONNECTED){
+            printf("Connecting to %s\n", host_config.node_list->nodes[i].ip);
             send_order_queue_connect(host_config.node_list->nodes[i].ip, 9000);
           }
+          printf("Sending order to %s\n", host_config.node_list->nodes[i].ip);
           pthread_mutex_lock(queue->queue_mutex);
           send_order_queue_send_order(host_config.node_list->nodes[i].ip ,queue);
           pthread_mutex_unlock(queue->queue_mutex);
@@ -157,6 +162,7 @@ int main()
   pthread_create(&keep_alive_thread, NULL, keep_alive_control, (void*)&host_config);
 
   while(1){
+    /*
     if(host_config.host_state == SLAVE){
       printf("Slave\n");
       pthread_cancel(button_thread);
@@ -164,14 +170,14 @@ int main()
       pthread_cancel(send_thread);
       pthread_create(&recv_thread, NULL, &main_recv, (void*)&host_config);
 
-    }else if(host_config.host_state == MASTER){
+    }else if(host_config.host_state == MASTER){*/
       printf("Master\n");
-      pthread_cancel(recv_thread);
+      //pthread_cancel(recv_thread);
 
       pthread_create(&button_thread, NULL, &main_button_input, (void*)&host_config);
-      pthread_create(&elevator_thread, NULL, &main_elevator_control, (void*)&host_config);
+      //pthread_create(&elevator_thread, NULL, &main_elevator_control, (void*)&host_config);
       pthread_create(&send_thread, NULL, &main_send, (void*)&host_config);
-    }
+    //}
     sleep(1);
   }
 

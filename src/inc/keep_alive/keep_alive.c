@@ -1,4 +1,4 @@
-#define _POSIX_C_SOURCE 199309L
+//#define _POSIX_C_SOURCE 199309L
 #include <time.h>      
 /// Convert seconds to microseconds
 #define SEC_TO_US(sec) ((sec)*1000000)
@@ -98,17 +98,17 @@ void udpmessageReceived(const char * ip, char * data, int datalength){
   // Assuming an ascii string here - a binary blob (including '0's) will
   // be ugly/truncated.
     printf("Received UDP message from %s: '%s'\n",ip,data); 
-    //pthread_mutex_lock(&keep_alive_config.nodes->mutex);  
-    //update_node_list(keep_alive_config.nodes, ip, data, datalength);
-    //pthread_mutex_unlock(&keep_alive_config.nodes->mutex);  
+    pthread_mutex_lock(&keep_alive_config.nodes->mutex);  
+    update_node_list(keep_alive_config.nodes, ip, data, datalength);
+    pthread_mutex_unlock(&keep_alive_config.nodes->mutex);  
 
-    
+    /*
     if (strcmp(ip, keep_alive_config.self_ip_address) != 0)
     {
         pthread_mutex_lock(&keep_alive_config.nodes->mutex);  
         update_node_list(keep_alive_config.nodes, ip, data, datalength);
         pthread_mutex_unlock(&keep_alive_config.nodes->mutex);  
-    }
+    }*/
     
 }
 
@@ -125,8 +125,7 @@ void* keep_alive_recv(void* arg){
 void* keep_alive_timeout(void* arg){
     keep_alive_config_t* config = (keep_alive_config_t*)arg;
     while(1){
-        int err = usleep(1000);
-        printf( err != 0 ? "Error in usleep\n" : "");
+        usleep(1000);
 
         pthread_mutex_lock(&config->nodes->mutex);
         for (int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++)

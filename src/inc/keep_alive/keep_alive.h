@@ -3,6 +3,11 @@
 #include<sys/time.h> 
 #include<stdint.h>   
 #include<pthread.h>
+#include<string.h>
+#include<unistd.h>
+#include<stdio.h>
+#include<stdlib.h>
+
 #define KEEP_ALIVE_NODE_AMOUNT 10
 #define MESSAGE_SIZE 10*sizeof(char)
 
