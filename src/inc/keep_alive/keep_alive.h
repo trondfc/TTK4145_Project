@@ -28,12 +28,18 @@ typedef enum{
     OCCUPIED = 1
 } node_occupied_flag_t;
 
+typedef enum{
+    DISCONNECTED = 0,
+    CONNECTED = 1
+} node_connection_flag_t;
+
 typedef struct{
     char ip[255];
     char data[MESSAGE_SIZE];
     keep_alive_type_t type;
     keep_alive_node_state_t state;
     node_occupied_flag_t is_occupied;
+    node_connection_flag_t is_connected;
     uint64_t last_seen_timestamp;
 } keep_alive_node_t;
 

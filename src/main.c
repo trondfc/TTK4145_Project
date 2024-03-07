@@ -10,6 +10,7 @@
 #include<stdio.h> 
 #define QUEUE_SIZE 20
 #define ORDER_POLL_DELAY 100 * 1000 // 100 ms
+#define ORDER_SYNC_DELAY 500 * 1000 // 500 ms
 
 #include "inc/keep_alive/keep_alive.h"
 #include "inc/process_pair/process_pair.h"
@@ -18,12 +19,30 @@ order_queue_t *queue;
 
 host_config_t host_config;
 
+/* Callback function for tcp connupdate*/
+void connectionStatus(const char * ip, int status){
 
+  printf("A connection got updated %s: %d\n",ip,status);
+  for(uint8_t i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
+    if(strcmp(host_config.node_list->nodes[i].ip, ip) == 0){
+      pthread_mutex_lock(&host_config.node_list->mutex);
+      if(status == 1){
+        host_config.node_list->nodes[i].is_connected = CONNECTED;
+      }else{
+        host_config.node_list->nodes[i].is_connected = DISCONNECTED;
+      }
+      pthread_mutex_unlock(&host_config.node_list->mutex);
+    }
+  }
+}
 
 int main_init(){
   printf("main_init\n");
   sysQueInit(5);
   printf("sysQueInit\n");
+
+  queue = create_order_queue(QUEUE_SIZE);
+
   return 0;
 }
 
@@ -57,6 +76,41 @@ return NULL;
 
 void* main_button_input(void* arg){
   printf("button_input\n");
+    elevator_hardware_info_t elevator_1;
+    elevator_hardware_info_t elevator_2;
+    elevator_hardware_info_t elevator_3;
+
+    elevator_hardware_read_config("elv1_ip", "elv1_port", &elevator_1);
+    elevator_hardware_read_config("elv2_ip", "elv2_port", &elevator_2);
+    elevator_hardware_read_config("elv3_ip", "elv3_port", &elevator_3);
+
+    elevator_hardware_init(&elevator_1);
+    elevator_hardware_init(&elevator_2);
+    elevator_hardware_init(&elevator_3);
+    
+    while(1){
+        if (poll_new_orders(&elevator_1, queue)){
+            for(int i = 0; i < queue->size; i++){
+                printf("%d \t Order ID: %d\n", i , queue->orders[i].order_id);
+            }
+            printf("\n");
+        }
+        if (poll_new_orders(&elevator_2, queue)){
+            for(int i = 0; i < queue->size; i++){
+                printf("%d \t Order ID: %d\n", i , queue->orders[i].order_id);
+            }
+            printf("\n");
+        }
+        if (poll_new_orders(&elevator_3, queue)){
+            for(int i = 0; i < queue->size; i++){
+                printf("%d \t Order ID: %d\n", i , queue->orders[i].order_id);
+            }
+            printf("\n");
+        }
+        
+        usleep(ORDER_POLL_DELAY);
+    }
+
   return NULL;
 }
 
@@ -67,6 +121,20 @@ void* main_elevator_control(void* arg){
 
 void* main_send(void* arg){
   printf("send\n");
+    send_order_queue_init(NULL, connectionStatus);
+    while(1){
+      for(uint8_t i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
+        if(host_config.node_list->nodes[i].state == KA_ACTIVE && host_config.node_list->nodes[i].type == SLAVE){
+          if(host_config.node_list->nodes[i].is_connected == DISCONNECTED){
+            send_order_queue_connect(host_config.node_list->nodes[i].ip, 9000);
+          }
+          pthread_mutex_lock(queue->queue_mutex);
+          send_order_queue_send_order(host_config.node_list->nodes[i].ip ,queue);
+          pthread_mutex_unlock(queue->queue_mutex);
+          usleep(ORDER_SYNC_DELAY);
+        }
+      }
+    }
   return NULL;
 }
 
