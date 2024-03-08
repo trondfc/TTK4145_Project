@@ -103,7 +103,11 @@ void keep_alive_init(int port, node_mode_t mode){
     }
 
     pthread_t send_thread;
+    pthread_t update_thread;
+
     pthread_create(&send_thread, NULL, keep_alive_send, (void*)&keep_alive_node_list);
+    pthread_create(&update_thread, NULL, keep_alive_update, (void*)&keep_alive_node_list);
+    
     udp_startReceiving(port, udp_receive_callback);
 
 }
