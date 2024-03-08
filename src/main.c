@@ -17,21 +17,19 @@
 /* Define global variables */
 order_queue_t *queue;
 
-host_config_t host_config;
 
 /* Callback function for tcp connupdate*/
 void connectionStatus(const char * ip, int status){
 
   printf("A connection got updated %s: %d\n",ip,status);
+  keep_alive_node_list_t* node_list = get_alive_node_list();
   for(uint8_t i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
-    if(strcmp(host_config.node_list->nodes[i].ip, ip) == 0){
-      pthread_mutex_lock(&host_config.node_list->mutex);
+    if(strcmp(node_list->nodes[i].ip, ip) == 0){
       if(status == 1){
-        host_config.node_list->nodes[i].is_connected = CONNECTED;
+        node_list->nodes[i].connection = CONNECTED;
       }else{
-        host_config.node_list->nodes[i].is_connected = DISCONNECTED;
+        node_list->nodes[i].connection = DISCONNECTED;
       }
-      pthread_mutex_unlock(&host_config.node_list->mutex);
     }
   }
 }
@@ -45,7 +43,7 @@ int main_init(){
 
   return 0;
 }
-
+/*
 void* keep_alive_control(void* arg){
   host_config_t* host_config = (host_config_t*)arg;
   printf("keep_alive_init\n");
@@ -73,7 +71,7 @@ void* keep_alive_control(void* arg){
     printf("keep_alive_control\n");
   }
 return NULL;
-}
+}*/
 
 void* main_button_input(void* arg){
   printf("button_input\n");
@@ -127,16 +125,17 @@ void* main_send(void* arg){
     printf("send_order_queue_init\n");
     sleep(1);
     while(1){
+      keep_alive_node_list_t* node_list = get_node_list();
       for(uint8_t i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
-        if(host_config.node_list->nodes[i].state == KA_ACTIVE){//} && host_config.node_list->nodes[i].type == SLAVE){
-          printf("found slave at %s\n", host_config.node_list->nodes[i].ip);
-          if(host_config.node_list->nodes[i].is_connected == DISCONNECTED){
-            printf("Connecting to %s\n", host_config.node_list->nodes[i].ip);
-            send_order_queue_connect(host_config.node_list->nodes[i].ip, 9000);
+        if(node_list->nodes[i].status == ALIVE){
+          printf("found node at %s\n", node_list->nodes[i].ip);
+          if(node_list->nodes[i].connection == DISCONNECTED){
+            printf("Connecting to %s\n", node_list->nodes[i].ip);
+            send_order_queue_connect(node_list->nodes[i].ip, 9000);
           }
-          printf("Sending order to %s\n", host_config.node_list->nodes[i].ip);
+          printf("Sending order to %s\n", node_list->nodes[i].ip);
           pthread_mutex_lock(queue->queue_mutex);
-          send_order_queue_send_order(host_config.node_list->nodes[i].ip ,queue);
+          send_order_queue_send_order(node_list->nodes[i].ip ,queue);
           pthread_mutex_unlock(queue->queue_mutex);
           usleep(ORDER_SYNC_DELAY);
         }
@@ -161,8 +160,8 @@ int main()
 
   pthread_t keep_alive_thread, recv_thread, send_thread, button_thread, elevator_thread;
 
-  pthread_create(&keep_alive_thread, NULL, keep_alive_control, (void*)&host_config);
-
+  //pthread_create(&keep_alive_thread, NULL, keep_alive_control, (void*)&host_config);
+  keep_alive_init(5000, SLAVE);
   while(1){
     /*
     if(host_config.host_state == SLAVE){
@@ -176,9 +175,9 @@ int main()
       printf("Master\n");
       //pthread_cancel(recv_thread);
 
-      pthread_create(&button_thread, NULL, &main_button_input, (void*)&host_config);
+      //pthread_create(&button_thread, NULL, &main_button_input, (void*)&host_config);
       //pthread_create(&elevator_thread, NULL, &main_elevator_control, (void*)&host_config);
-      //pthread_create(&send_thread, NULL, &main_send, (void*)&host_config);
+      pthread_create(&send_thread, NULL, &main_send, NULL);
     //}
     sleep(1);
   }

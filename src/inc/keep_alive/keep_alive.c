@@ -127,7 +127,7 @@ void keep_alive_kill(){
     free(keep_alive_node_list.mutex);
 }
 
-keep_alive_node_list_t* get_alive_node_list(){
+keep_alive_node_list_t* get_node_list(){
     return &keep_alive_node_list;
 }
 

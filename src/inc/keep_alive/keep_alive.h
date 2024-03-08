@@ -11,13 +11,15 @@
 
 /// Convert seconds to microseconds
 #define SEC_TO_US(sec) ((sec)*1000000)
+/// Convert milliseconds to microseconds
+#define MS_TO_US(ms)    ((ms)*1000)
 /// Convert nanoseconds to microseconds
 #define NS_TO_US(ns)    ((ns)/1000)
 
 #define KEEP_ALIVE_NODE_AMOUNT 10
-#define KEEP_ALIVE_TIMEOUT_US SEC_TO_US(5)
+#define KEEP_ALIVE_TIMEOUT_US SEC_TO_US(2)
 #define MESSAGE_SIZE 10 * sizeof(char)
-#define BRODCAST_INTERVAL_US SEC_TO_US(1)
+#define BRODCAST_INTERVAL_US MS_TO_US(500)
 
 
 typedef enum{
@@ -62,7 +64,7 @@ int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, i
 void udp_receive_callback(const char* ip, char* data, int data_size);
 void keep_alive_init(int port, node_mode_t mode);
 void keep_alive_kill();
-keep_alive_node_list_t* get_alive_node_list();
+keep_alive_node_list_t* get_node_list();
 void print_alive_nodes(keep_alive_node_list_t* list);
 int is_host_highest_priority(keep_alive_node_list_t* list);
 void update_node_count(keep_alive_node_list_t* list);
