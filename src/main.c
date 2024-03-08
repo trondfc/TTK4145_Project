@@ -33,14 +33,9 @@ void messageReceived(const char * ip, char * data, int datalength){
       printf("Order %d order_type: %d\n", i, queue->orders[i].order_type);
       printf("\n\n");
   }
-
     
 }
 
-void connectionStatus(const char * ip, int status){
-
-  printf("A connection got updated %s: %d\n",ip,status);
-}
 
 /* Callback function for tcp connupdate*/
 void connectionStatus(const char * ip, int status){
