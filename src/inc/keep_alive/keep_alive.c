@@ -157,4 +157,20 @@ void update_node_count(keep_alive_node_list_t* list){
     list->node_count_master = master_count;
 }
 
-void*
+void* keep_alive_update(void* arg){
+    keep_alive_node_list_t* list = (keep_alive_node_list_t*)arg;
+    while(1){
+        pthread_mutex_lock(list->mutex);
+        update_node_count(list);
+        if(list->node_count_master == 0){
+            if(list->self->node_mode == SLAVE){
+                if(is_host_highest_priority(list)){
+                    list->self->node_mode = MASTER;
+                    strcpy(list->self->data, "MASTER");
+                    udp_broadcast(list->self->port, list->self->data, sizeof(list->self->data));
+                }
+            }
+        }
+        pthread_mutex_unlock(list->mutex);
+    }
+}
