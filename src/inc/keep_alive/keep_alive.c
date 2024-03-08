@@ -107,3 +107,54 @@ void keep_alive_init(int port, node_mode_t mode){
     udp_startReceiving(port, udp_receive_callback);
 
 }
+
+void keep_alive_kill(){
+    free(keep_alive_node_list.nodes);
+    free(keep_alive_node_list.self);
+    free(keep_alive_node_list.mutex);
+}
+
+keep_alive_node_list_t* get_alive_node_list(){
+    return &keep_alive_node_list;
+}
+
+void print_alive_nodes(keep_alive_node_list_t* list){
+    printf("Alive nodes:\n");
+    for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
+        if(list->nodes[i].status == ALIVE){
+            printf("IP: %s \t Mode: %s\n", list->nodes[i].ip, list->nodes[i].data);
+        }
+    }
+}
+
+int is_host_highest_priority(keep_alive_node_list_t* list){
+    for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
+        if(list->nodes[i].status == ALIVE){
+            if(strcmp(list->nodes[i].ip, list->self->ip) <= 0){
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+void update_node_count(keep_alive_node_list_t* list){
+    int count = 0;
+    int slave_count = 0;
+    int master_count = 0;
+    for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
+        if(list->nodes[i].status == ALIVE){
+            count++;
+            if(list->nodes[i].node_mode == SLAVE){
+                slave_count++;
+            } else if(list->nodes[i].node_mode == MASTER){
+                master_count++;
+            }
+        }
+    }
+    list->node_count_alive = count;
+    list->node_count_slave = slave_count;
+    list->node_count_master = master_count;
+}
+
+void*
