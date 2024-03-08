@@ -18,6 +18,30 @@
 order_queue_t *queue;
 
 
+void messageReceived(const char * ip, char * data, int datalength){
+
+  printf("Received message from %s\n",ip);
+
+  send_order_queue_deserialize(data, queue);
+
+  printf("Queue size: %d\n", queue->size);
+  printf("Queue capacity: %d\n", queue->capacity);
+  for(int i = 0; i < queue->size; i++){
+      printf("Order %d ID: %d\n", i, queue->orders[i].order_id);
+      printf("Order %d elevator_id: %s\n", i, queue->orders[i].elevator_id);
+      printf("Order %d floor: %d\n", i, queue->orders[i].floor);
+      printf("Order %d order_type: %d\n", i, queue->orders[i].order_type);
+      printf("\n\n");
+  }
+
+    
+}
+
+void connectionStatus(const char * ip, int status){
+
+  printf("A connection got updated %s: %d\n",ip,status);
+}
+
 /* Callback function for tcp connupdate*/
 void connectionStatus(const char * ip, int status){
 
@@ -37,6 +61,7 @@ void connectionStatus(const char * ip, int status){
 int main_init(){
   printf("main_init\n");
   sysQueInit(5);
+  send_order_queue_listen(9000);
   printf("sysQueInit\n");
 
   queue = create_order_queue(QUEUE_SIZE);
@@ -121,7 +146,7 @@ void* main_elevator_control(void* arg){
 
 void* main_send(void* arg){
   printf("send\n");
-    send_order_queue_init(NULL, connectionStatus);
+    send_order_queue_init(messageReceived, connectionStatus);
     printf("send_order_queue_init\n");
     sleep(1);
     while(1){
