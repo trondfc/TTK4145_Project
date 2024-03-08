@@ -175,18 +175,19 @@ void update_node_count(keep_alive_node_list_t* list){
 
 void* keep_alive_update(void* arg){
     keep_alive_node_list_t* list = (keep_alive_node_list_t*)arg;
+    sleep(1);
     while(1){
         pthread_mutex_lock(list->mutex);
         update_node_count(list);
         if(list->node_count_master == 0){
-            if(list->self->node_mode == SLAVE && list->node_count_alive > 0){
+            if(list->self->node_mode == SLAVE){
                 if(is_host_highest_priority(list)){
                     list->self->node_mode = MASTER;
                     strcpy(list->self->data, "MASTER");
                     udp_broadcast(list->self->port, list->self->data, sizeof(list->self->data));
                 }
             }
-        } else if (list->node_count_master > 1){
+        } else if (list->node_count_master >= 1 && list->self->node_mode == MASTER){
             if(list->self->node_mode == MASTER){
                 list->self->node_mode = SLAVE;
                 strcpy(list->self->data, "SLAVE");
