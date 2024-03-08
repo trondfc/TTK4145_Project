@@ -177,6 +177,14 @@ void* main_recv(void* arg){
 
 int main()
 {
+  struct running_threads_s{
+    bool keep_alive;
+    bool button_input;
+    bool elevator_control;
+    bool send;
+    bool recv;
+  } running_threads;
+
   int err = main_init();
   if(err != 0){
     printf("Error in main_init\n");
@@ -193,7 +201,10 @@ int main()
       printf("Slave\n");
       //pthread_cancel(button_thread);
       //pthread_cancel(elevator_thread);
-      pthread_cancel(send_thread);
+      if(running_threads.send == true){
+        pthread_cancel(send_thread);
+        running_threads.send = false;
+      }
       //pthread_create(&recv_thread, NULL, &main_recv, (void*)&host_config);
 
     }else if(node_list->self->node_mode == MASTER){
@@ -202,8 +213,11 @@ int main()
 
       //pthread_create(&button_thread, NULL, &main_button_input, (void*)&host_config);
       //pthread_create(&elevator_thread, NULL, &main_elevator_control, (void*)&host_config);
+      if(running_threads.send == false){
       pthread_create(&send_thread, NULL, &main_send, NULL);
-    //}
+      running_threads.send = true;
+      }
+    }
     sleep(1);
   }
 
