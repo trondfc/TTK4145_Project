@@ -7,6 +7,7 @@ int main(){
     keep_alive_init(5000, SLAVE);
     while(1){
         sleep(1);
+        print_alive_nodes(get_alive_node_list());
     }
   return 0;
 }

@@ -40,11 +40,14 @@ int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, i
         if(strcmp(list->nodes[i].ip, ip) == 0){
             list->nodes[i].last_time = get_timestamp();
             list->nodes[i].status = ALIVE;
-            if(strcmp(list->nodes[i].data, "MASTER") != 0){
+            if(strcmp(list->nodes[i].data, "MASTER") == 0){
+                printf("Setting node %s to MASTER\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = MASTER;
-            } else if(strcmp(list->nodes[i].data, "SLAVE") != 0){
+            } else if(strcmp(list->nodes[i].data, "SLAVE") == 0){
+                printf("Setting node %s to SLAVE\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = SLAVE;
             } else {
+                printf("Setting node %s to UNDEFINED\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = UNDEFINED;
             }
             strcpy(list->nodes[i].data, data);
@@ -57,11 +60,14 @@ int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, i
             list->nodes[i].last_time = get_timestamp();
             strcpy(list->nodes[i].ip, ip);
             strcpy(list->nodes[i].data, data);
-            if(strcmp(list->nodes[i].data, "MASTER") != 0){
+            if(strcmp(list->nodes[i].data, "MASTER") == 0){
+                printf("New node. Setting node %s to MASTER\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = MASTER;
-            } else if(strcmp(list->nodes[i].data, "SLAVE") != 0){
+            } else if(strcmp(list->nodes[i].data, "SLAVE") == 0){
+                printf("New node. Setting node %s to SLAVE\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = SLAVE;
             } else {
+                printf("New node. Setting node %s to UNDEFINED\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = UNDEFINED;
             }
             return 0;
@@ -100,6 +106,7 @@ void keep_alive_init(int port, node_mode_t mode){
     keep_alive_node_list.nodes = (keep_alive_node_t*)malloc(KEEP_ALIVE_NODE_AMOUNT * sizeof(keep_alive_node_t));
     for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
         keep_alive_node_list.nodes[i].status = DEAD;
+        keep_alive_node_list.nodes[i].node_mode = UNDEFINED;
     }
 
     pthread_t send_thread;
@@ -107,7 +114,7 @@ void keep_alive_init(int port, node_mode_t mode){
 
     pthread_create(&send_thread, NULL, keep_alive_send, (void*)&keep_alive_node_list);
     pthread_create(&update_thread, NULL, keep_alive_update, (void*)&keep_alive_node_list);
-    
+
     udp_startReceiving(port, udp_receive_callback);
 
 }
@@ -126,7 +133,7 @@ void print_alive_nodes(keep_alive_node_list_t* list){
     printf("Alive nodes:\n");
     for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
         if(list->nodes[i].status == ALIVE){
-            printf("IP: %s \t Mode: %s\n", list->nodes[i].ip, list->nodes[i].data);
+            printf("IP: %s \t Mode: (%d) %s\n", list->nodes[i].ip, list->nodes[i].node_mode,list->nodes[i].data);
         }
     }
 }
@@ -134,7 +141,7 @@ void print_alive_nodes(keep_alive_node_list_t* list){
 int is_host_highest_priority(keep_alive_node_list_t* list){
     for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
         if(list->nodes[i].status == ALIVE){
-            if(strcmp(list->nodes[i].ip, list->self->ip) <= 0){
+            if(strcmp(list->self->ip, list->nodes[i].ip) <= 0){
                 return 0;
             }
         }
@@ -156,6 +163,9 @@ void update_node_count(keep_alive_node_list_t* list){
             }
         }
     }
+    printf("Alive nodes: %d\n", count);
+    printf("Alive slaves: %d\n", slave_count);
+    printf("Alive masters: %d\n", master_count);
     list->node_count_alive = count;
     list->node_count_slave = slave_count;
     list->node_count_master = master_count;
@@ -167,7 +177,7 @@ void* keep_alive_update(void* arg){
         pthread_mutex_lock(list->mutex);
         update_node_count(list);
         if(list->node_count_master == 0){
-            if(list->self->node_mode == SLAVE){
+            if(list->self->node_mode == SLAVE && list->node_count_alive > 0){
                 if(is_host_highest_priority(list)){
                     list->self->node_mode = MASTER;
                     strcpy(list->self->data, "MASTER");
@@ -176,5 +186,6 @@ void* keep_alive_update(void* arg){
             }
         }
         pthread_mutex_unlock(list->mutex);
+        usleep(1000000);
     }
 }
