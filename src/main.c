@@ -46,8 +46,10 @@ void connectionStatus(const char * ip, int status){
     if(strcmp(node_list->nodes[i].ip, ip) == 0){
       if(status == 1){
         node_list->nodes[i].connection = CONNECTED;
+        printf("Connection is now %d\n", node_list->nodes[i].connection);
       }else{
         node_list->nodes[i].connection = DISCONNECTED;
+        printf("Connection is now %d\n", node_list->nodes[i].connection);
       }
     }
   }
@@ -149,9 +151,12 @@ void* main_send(void* arg){
       for(uint8_t i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
         if(node_list->nodes[i].status == ALIVE){
           printf("found node at %s\n", node_list->nodes[i].ip);
+          printf("Connection status: %d\n", node_list->nodes[i].connection);
           if(node_list->nodes[i].connection == DISCONNECTED){
             printf("Connecting to %s\n", node_list->nodes[i].ip);
+            node_list->nodes[i].connection = CONNECTED;
             send_order_queue_connect(node_list->nodes[i].ip, 9000);
+            sleep(1);
           }
           printf("Sending order to %s\n", node_list->nodes[i].ip);
           pthread_mutex_lock(queue->queue_mutex);
@@ -183,13 +188,13 @@ int main()
   //pthread_create(&keep_alive_thread, NULL, keep_alive_control, (void*)&host_config);
   keep_alive_init(5000, SLAVE);
   while(1){
-    /*
-    if(host_config.host_state == SLAVE){
+    keep_alive_node_list_t* node_list = get_node_list();
+    if(node_list->self->node_mode == SLAVE){
       printf("Slave\n");
-      pthread_cancel(button_thread);
-      pthread_cancel(elevator_thread);
+      //pthread_cancel(button_thread);
+      //pthread_cancel(elevator_thread);
       pthread_cancel(send_thread);
-      pthread_create(&recv_thread, NULL, &main_recv, (void*)&host_config);
+      //pthread_create(&recv_thread, NULL, &main_recv, (void*)&host_config);
 
     }else if(host_config.host_state == MASTER){*/
       printf("Master\n");
