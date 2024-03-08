@@ -196,7 +196,7 @@ int main()
       pthread_cancel(send_thread);
       //pthread_create(&recv_thread, NULL, &main_recv, (void*)&host_config);
 
-    }else if(host_config.host_state == MASTER){*/
+    }else if(node_list->self->node_mode == MASTER){
       printf("Master\n");
       //pthread_cancel(recv_thread);
 
