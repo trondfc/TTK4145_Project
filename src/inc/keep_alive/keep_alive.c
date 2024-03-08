@@ -340,6 +340,8 @@ int is_host_highest_priority(keep_alive_config_t* conf)
     keep_alive_node_count_t* node_count = count_alive_init(config);
     keep_alive_type_t state = config->msg.type;
 
+    count_alive_nodes(config, node_count);
+
     if (node_count->alive_node_count == 0)
     {
         state = RESET;
