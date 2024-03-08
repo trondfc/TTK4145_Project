@@ -1,98 +1,62 @@
-#pragma once 
+#pragma once
 
-#include<sys/time.h> 
-#include<stdint.h>   
-#include<pthread.h>
-#include<string.h>
-#include<unistd.h>
-#include<stdio.h>
-#include<stdlib.h>
+#include <sys/time.h>
+#include <stdint.h>
+#include <pthread.h>
+#include <string.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "../sverresnetwork/sverresnetwork.h"
+
+/// Convert seconds to microseconds
+#define SEC_TO_US(sec) ((sec)*1000000)
+/// Convert nanoseconds to microseconds
+#define NS_TO_US(ns)    ((ns)/1000)
 
 #define KEEP_ALIVE_NODE_AMOUNT 10
-#define MESSAGE_SIZE 10*sizeof(char)
+#define MESSAGE_SIZE 10 * sizeof(char)
+#define BRODCAST_INTERVAL_US 1000000
+
 
 typedef enum{
-    UNDEFINED = 0,
-    SLAVE = 1,
-    MASTER = 2,
-    RESET = 3
-} keep_alive_type_t;
-
-typedef struct{
-    keep_alive_type_t type;
-    char data[MESSAGE_SIZE];
-} keep_alive_msg_t;
+    SLAVE = 0,
+    MASTER = 1,
+    UNDEFINED = 2
+}node_mode_t;
 
 typedef enum{
-    KA_INACTIVE = 0,
-    KA_ACTIVE = 1
-} keep_alive_node_state_t;
-
-typedef enum{
-    EMPTY = 0,
-    OCCUPIED = 1
-} node_occupied_flag_t;
+    ALIVE = 0,
+    DEAD = 1
+}node_status_t;
 
 typedef enum{
     DISCONNECTED = 0,
     CONNECTED = 1
-} node_connection_flag_t;
+}node_connection_t;
 
 typedef struct{
-    char ip[255];
-    char data[MESSAGE_SIZE];
-    keep_alive_type_t type;
-    keep_alive_node_state_t state;
-    node_occupied_flag_t is_occupied;
-    node_connection_flag_t is_connected;
-    uint64_t last_seen_timestamp;
-} keep_alive_node_t;
-
-typedef struct{
-    keep_alive_node_t nodes[KEEP_ALIVE_NODE_AMOUNT];
-    pthread_mutex_t mutex;
-} keep_alive_node_list_t;
-
-typedef struct{
+    char ip[16];
     int port;
-    int timeout_us;
-    int interval_us;
-    char* self_ip_address;
-    keep_alive_node_list_t* nodes;
-    pthread_t recv_thread;
-    pthread_t send_thread;
-    pthread_t timeout_thread;
-    keep_alive_msg_t msg;
-} keep_alive_config_t;
+    char data[MESSAGE_SIZE];
+    uint64_t last_time;
+    node_mode_t node_mode;
+    node_status_t status;
+    node_connection_t connection;
+}keep_alive_node_t;
 
 typedef struct{
-    int alive_node_count;
-    int alive_slave_count;
-    int alive_master_count;
-} keep_alive_node_count_t;
+    pthread_mutex_t* mutex;
+    int node_count_alive;
+    int node_count_master;
+    int node_count_slave;
+    keep_alive_node_t* self;
+    keep_alive_node_t* nodes;
+}keep_alive_node_list_t;
 
-
-typedef struct{
-    keep_alive_type_t host_state;
-    keep_alive_node_list_t  *node_list;
-    pthread_mutex_t mutex;
-}host_config_t;
-
-
-void* keep_alive_recv(void* arg);
+char* get_host_ip();
+uint64_t get_timestamp();
 void* keep_alive_send(void* arg);
-keep_alive_config_t* keep_alive_init(int port, keep_alive_type_t type, int keep_alive_timeout_us, int keep_alive_ping_interval_us);
-keep_alive_node_list_t* get_alive_node_list();
-int print_alive_nodes(keep_alive_node_list_t* list);
-int set_keep_alive_config_state(keep_alive_config_t* config, keep_alive_type_t type);
-int keep_alive_kill(keep_alive_config_t* config);
-
-
-keep_alive_node_count_t* count_alive_init(keep_alive_config_t* conf);
-int count_alive_nodes(keep_alive_config_t* conf, keep_alive_node_count_t* node_count);
-int print_node_count(keep_alive_node_count_t* node_count);
-int count_alive_kill(keep_alive_node_count_t* node_count);
-int is_host_highest_priority(keep_alive_config_t* conf);
-keep_alive_config_t* keep_alive_start();
-keep_alive_type_t get_host_state(keep_alive_config_t* conf);
-
+int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, int data_size);
+void udp_receive_callback(const char* ip, char* data, int data_size);
+void keep_alive_init(int port, node_mode_t mode);

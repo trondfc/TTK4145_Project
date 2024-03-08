@@ -33,6 +33,8 @@ orderQueueTest:
 main:
 	$(CC) $(CFLAGS) -o main.out main.c inc/elevator_control/elevator_button_inputs.c inc/elevator_hardware/elevator_hardware.c inc/order_queue/orderQueue.c inc/process_pair/process_pair.c inc/keep_alive/keep_alive.c inc/order_queue/send_order_queue.c inc/sverresnetwork/sverresnetwork.c $(LDFLAGS)
 
+test:
+	$(CC) $(CFLAGS) -o test.out inc/keep_alive/keep_alive.c inc/sverresnetwork/sverresnetwork.c Tests/test.c $(LDFLAGS)
 
 clean:
 	rm -f $(TARGET) $(OBJ)
