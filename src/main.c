@@ -22,7 +22,7 @@ order_queue_t *queue;
 void connectionStatus(const char * ip, int status){
 
   printf("A connection got updated %s: %d\n",ip,status);
-  keep_alive_node_list_t* node_list = get_alive_node_list();
+  keep_alive_node_list_t* node_list = get_node_list();
   for(uint8_t i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
     if(strcmp(node_list->nodes[i].ip, ip) == 0){
       if(status == 1){
