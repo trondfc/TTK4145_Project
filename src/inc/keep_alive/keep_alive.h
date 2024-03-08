@@ -15,8 +15,9 @@
 #define NS_TO_US(ns)    ((ns)/1000)
 
 #define KEEP_ALIVE_NODE_AMOUNT 10
+#define KEEP_ALIVE_TIMEOUT_US SEC_TO_US(5)
 #define MESSAGE_SIZE 10 * sizeof(char)
-#define BRODCAST_INTERVAL_US 1000000
+#define BRODCAST_INTERVAL_US SEC_TO_US(1)
 
 
 typedef enum{
@@ -66,3 +67,4 @@ void print_alive_nodes(keep_alive_node_list_t* list);
 int is_host_highest_priority(keep_alive_node_list_t* list);
 void update_node_count(keep_alive_node_list_t* list);
 void* keep_alive_update(void* arg);
+void* keep_alive_timeout(void* arg);

@@ -111,9 +111,11 @@ void keep_alive_init(int port, node_mode_t mode){
 
     pthread_t send_thread;
     pthread_t update_thread;
+    pthread_t timeout_thread;
 
     pthread_create(&send_thread, NULL, keep_alive_send, (void*)&keep_alive_node_list);
     pthread_create(&update_thread, NULL, keep_alive_update, (void*)&keep_alive_node_list);
+    pthread_create(&timeout_thread, NULL, keep_alive_timeout, (void*)&keep_alive_node_list);
 
     udp_startReceiving(port, udp_receive_callback);
 
@@ -184,8 +186,32 @@ void* keep_alive_update(void* arg){
                     udp_broadcast(list->self->port, list->self->data, sizeof(list->self->data));
                 }
             }
+        } else if (list->node_count_master > 1){
+            if(list->self->node_mode == MASTER){
+                list->self->node_mode = SLAVE;
+                strcpy(list->self->data, "SLAVE");
+                udp_broadcast(list->self->port, list->self->data, sizeof(list->self->data));
+            }
         }
         pthread_mutex_unlock(list->mutex);
         usleep(1000000);
+    }
+}
+
+void* keep_alive_timeout(void* arg){
+    keep_alive_node_list_t* list = (keep_alive_node_list_t*)arg;
+    while(1){
+        pthread_mutex_lock(list->mutex);
+        for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
+            if(list->nodes[i].status == ALIVE){
+                if(get_timestamp() - list->nodes[i].last_time > KEEP_ALIVE_TIMEOUT_US){
+                    list->nodes[i].status = DEAD;
+                    list->nodes[i].node_mode = UNDEFINED;
+                    printf("Node %s is dead\n", list->nodes[i].ip);
+                }
+            }
+        }
+        pthread_mutex_unlock(list->mutex);
+        usleep(SEC_TO_US(1));
     }
 }
