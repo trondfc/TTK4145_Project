@@ -214,6 +214,11 @@ int main()
         send_order_queue_listen(9000);
         running_threads.recv = true;
       }
+      if(running_threads.button_input == true){
+        pthread_cancel(button_thread);
+        pthread_join(button_thread, NULL);
+        running_threads.button_input = false;
+      }
       //pthread_cancel(button_thread);
       //pthread_cancel(elevator_thread);
       //pthread_create(&recv_thread, NULL, &main_recv, (void*)&host_config);
@@ -234,6 +239,11 @@ int main()
       if(running_threads.send == false){
       pthread_create(&send_thread, NULL, &main_send, NULL);
       running_threads.send = true;
+      }
+
+      if(running_threads.button_input == false){
+        pthread_create(&button_thread, NULL, &main_button_input, NULL);
+        running_threads.button_input = true;
       }
     }
     sleep(1);
