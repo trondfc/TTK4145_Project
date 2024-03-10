@@ -111,9 +111,13 @@ int elevator_hardware_get_floor_sensor_signal(elevator_hardware_info_t* hardware
 
 int elevator_hardware_get_stop_signal(elevator_hardware_info_t* hardware){
     pthread_mutex_lock(&hardware->sockmtx);
-    send(hardware->sockfd, (char[4]) {8}, 4, 0);
+    if(send(hardware->sockfd, (char[4]) {8}, 4, 0) == -1){
+        return -1;
+    }
     char buf[4];
-    recv(hardware->sockfd, buf, 4, 0);
+    ie(recv(hardware->sockfd, buf, 4, 0) == -1){
+        return -1;
+    }
     pthread_mutex_unlock(&hardware->sockmtx);
     
     return buf[1];
