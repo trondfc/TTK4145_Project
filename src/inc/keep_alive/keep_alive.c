@@ -203,6 +203,7 @@ void update_node_count(keep_alive_node_list_t* list){
 void* keep_alive_update(void* arg){
     keep_alive_node_list_t* list = (keep_alive_node_list_t*)arg;
     sleep(1);
+    uint64_t last_contact_timestamp = get_timestamp();
     while(1){
         pthread_mutex_lock(list->mutex);
         update_node_count(list);
@@ -221,6 +222,17 @@ void* keep_alive_update(void* arg){
                 udp_broadcast(list->self->port, list->self->data, sizeof(list->self->data));
             }
         }
+
+        
+        if(list->node_count_alive == 0){
+            if((get_timestamp() - last_contact_timestamp) > NO_ACTIVE_NODES_TIMEOUT_US){
+                printf("NO_ACTIVE_NODES_TIMEOUT");
+                exit(1);
+            }
+        }else{
+            last_contact_timestamp = get_timestamp();
+        }
+
         pthread_mutex_unlock(list->mutex);
         usleep(1000000);
     }
