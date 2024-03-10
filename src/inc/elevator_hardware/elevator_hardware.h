@@ -39,7 +39,6 @@ typedef struct elevator_hardware_info_t
     char port[8];
     int sockfd;
     pthread_mutex_t sockmtx;
-    bool alive;
 
 } elevator_hardware_info_t;
 

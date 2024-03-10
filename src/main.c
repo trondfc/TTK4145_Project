@@ -14,11 +14,27 @@
 #define ORDER_POLL_DELAY 100 * 1000 // 100 ms
 #define ORDER_SYNC_DELAY 500 * 1000 // 500 ms
 
+//elevator_hardware_info_t elevator[KEEP_ALIVE_NODE_AMOUNT];
+typedef enum elevator_direction{
+  UP,
+  DOWN,
+  STOP
+}elevator_direction_t;
+
+typedef struct elevator_status{
+  elevator_hardware_info_t elevator;
+  bool alive;
+  int floor;
+  elevator_direction_t direction;
+  bool obstruction;
+  bool stop;
+  bool door_open;
+  bool in_use;
+}elevator_status_t;
+
 /* Define global variables */
 order_queue_t *queue;
-
-
-elevator_hardware_info_t elevator[KEEP_ALIVE_NODE_AMOUNT];
+elevator_status_t elevator[KEEP_ALIVE_NODE_AMOUNT];
 
 
 void messageReceived(const char * ip, char * data, int datalength){
@@ -62,12 +78,12 @@ void elevator_init(){
   for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
     bool found = false;
     for(int j = 0; j < KEEP_ALIVE_NODE_AMOUNT; j++){
-      if(strcmp(node_list->nodes[i].ip, elevator[j].ip) == 0){
+      if(strcmp(node_list->nodes[i].ip, elevator[j].elevator.ip) == 0){
         found = true;
         if(!elevator[j].alive){
           if(elevator_hardware_init(&elevator[j])){
             elevator[j].alive = true;
-            printf("Elevator %s is alive\n", elevator[j].ip);
+            printf("Elevator %s is alive\n", elevator[j].elevator.ip);
             break;
           }
         }
@@ -76,11 +92,11 @@ void elevator_init(){
     if(!found){
       for(int j = 0; j < KEEP_ALIVE_NODE_AMOUNT; j++){
         if(!elevator[j].alive){
-          strcpy(elevator[j].ip, node_list->nodes[i].ip);
-          strcpy(elevator[j].port, "15657");
+          strcpy(elevator[j].elevator.ip, node_list->nodes[i].ip);
+          strcpy(elevator[j].elevator.port, "15657");
           if(elevator_hardware_init(&elevator[j])){
             elevator[j].alive = true;
-            printf("Elevator %s is alive\n", elevator[j].ip);
+            printf("Elevator %s is alive\n", elevator[j].elevator.ip);
             break;
           }
         }
@@ -100,8 +116,38 @@ int main_init(){
   return 0;
 }
 
-void* poll_stopped_elevators(void* arg){
-  
+void poll_stopped_elevators(){
+  for(uint8_t i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
+    if(elevator[i].alive){
+      int temp = elevator_hardware_get_stop_signal(&elevator[i]);
+      if(temp == 1){
+        printf("Elevator %s has stopped\n", elevator[i].elevator.ip);
+      }
+      else if (temp == 0){
+        printf("Elevator %s has started\n", elevator[i].elevator.ip);
+      }
+      else{
+        printf("Elevator %s is not responding\n", elevator[i].elevator.ip);
+        elevator[i].alive = false;
+      }
+    }
+  }
+  return NULL;
+}
+
+void poll_obstructed_elevators(){
+  for(uint8_t i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
+    if(elevator[i].alive){
+      if(elevator_hardware_get_obstruction_signal(&elevator[i])){
+        printf("Elevator %s is obstructed\n", elevator[i].elevator.ip);
+
+      }
+      else{
+        printf("Elevator %s is not obstructed\n", elevator[i].elevator.ip);
+      }
+    }
+  }
+  return NULL;
 }
 
 void* main_button_input(void* arg){
