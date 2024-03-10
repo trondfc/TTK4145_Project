@@ -1,8 +1,8 @@
 #include<pthread.h>
 #include<stdlib.h>
 
-#include "elevator_algorithm.h"
-#include "../config.h"
+#include "../elevator_algorithm.h"
+#include "../../config.h"
 
 
 int main(){

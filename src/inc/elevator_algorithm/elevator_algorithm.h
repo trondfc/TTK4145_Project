@@ -3,28 +3,57 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define N_ELEVATORS 4
-#define N_FLOORS 4
+#include "../order_queue/orderQueue.h"
+#include "../elevator_hardware/elevator_hardware.h"
+
+#define N_ELEVATORS 1
+#define N_FLOORS 1
 #define N_ORDERS 100
 
-typedef enum order_types_t{
-  UP_FROM = 0,
-  DOWN_FROM = 1,
-  GO_TO = 2
-}order_types_t;
+#define DEFAULT_FLOOR 0
 
-typedef enum order_status_t{
-  RECIVED = 0,
-  ACTIVE = 1,
-  COMPLETED = 2
-}order_status_t;
-
-typedef enum elevator_direction_t
+typedef enum
 {
-    DIRN_DOWN = -1,
-    DIRN_STOP = 0,
-    DIRN_UP = 1
-}elevator_direction_t;
+  IDLE = 0,
+  ACTIVE = 1
+}elevator_state_t;
+
+typedef struct{
+  int prev_floor; // last floor visited, current floor if at floor
+  int current_floor;
+  elevator_state_t state;
+  elevator_hardware_motor_direction_t current_direction;
+  elevator_hardware_info_t* hardware_info;
+}elevator_status_t;
+
+typedef struct {
+    elevator_status_t* elevator;
+    order_queue_t* order_queue;
+    pthread_mutex_t* mutex;
+}elevator_system_t;
+
+
+
+
+/* 
+typedef struct elevator_status_t{
+  uint8_t prev_floor; // last floor visited, current floor if at floor
+  bool at_floor; // true if at floor, false if between floors
+  elevator_direction_t current_direction;
+  bool responding; // true if elevator is responding to orders, false if network is down
+  int used_by; // controller id, -1 if not used
+}elevator_status_t; */
+
+/* 
+typedef struct all_elevator_status_t{
+  elevator_status_t elevator[N_ELEVATORS];
+}all_elevator_status_t;
+
+ */
+
+/* typedef struct order_que_t{
+  order_event_t order[N_ORDERS];
+}order_que_t;
 
 
 typedef struct order_event_t{
@@ -36,24 +65,16 @@ typedef struct order_event_t{
   uint8_t controller_id; // Controller serving if active
 }order_event_t;
 
-typedef struct order_que_t{
-  order_event_t order[N_ORDERS];
-}order_que_t;
+ */
 
-typedef struct elevator_status_t{
-  uint8_t prev_floor; // last floor visited, current floor if at floor
-  bool at_floor; // true if at floor, false if between floors
-  elevator_direction_t current_direction;
-  bool responding; // true if elevator is responding to orders, false if network is down
-  int used_by; // controller id, -1 if not used
-}elevator_status_t;
+/* typedef enum order_types_t{
+  UP_FROM = 0,
+  DOWN_FROM = 1,
+  GO_TO = 2
+}order_types_t;
 
-typedef struct all_elevator_status_t{
-  elevator_status_t elevator[N_ELEVATORS];
-}all_elevator_status_t;
-
-typedef struct {
-    all_elevator_status_t* all_elevator_status;
-    order_que_t* order_que;
-    pthread_mutex_t lock;
-}elevator_system_t;
+typedef enum order_status_t{
+  RECIVED = 0,
+  ACTIVE = 1,
+  COMPLETED = 2
+}order_status_t; */
