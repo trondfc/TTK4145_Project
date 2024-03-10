@@ -50,7 +50,7 @@ int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, i
                 printf("Setting node %s to UNDEFINED\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = UNDEFINED;
             }
-            strcpy(list->nodes[i].data, data);
+            strncpy(list->nodes[i].data, data, sizeof(list->nodes[i].data) - 1);
             return 0;
         }
     }
@@ -84,7 +84,6 @@ void udp_receive_callback(const char* ip, char* data, int data_size){
         pthread_mutex_lock(keep_alive_node_list.mutex);
         update_node_list(&keep_alive_node_list, ip, data, data_size);
         pthread_mutex_unlock(keep_alive_node_list.mutex);
-
     }
 
 }
@@ -140,10 +139,38 @@ void print_alive_nodes(keep_alive_node_list_t* list){
     }
 }
 
+long ipv4_to_int(char* ip)
+{
+    char delim[2] = ".";
+    char* token;
+    char* ip_copy = (char*)malloc(MAX_IP_LEN + 1);
+    strcpy(ip_copy, ip);
+
+    char* formated_ipv4 = (char*)calloc(sizeof(char), MAX_IP_LEN);
+    token = strtok(ip_copy, delim);
+    while(token != NULL){
+        //printf("%s\n", token);
+        char segment[4] = "000";
+        strncpy(segment + strlen(segment) - strlen(token), token, strlen(token));
+        //strncat(formated_ipv4, segment, sizeof(formated_ipv4)-strlen(formated_ipv4)-1);
+        strncat(formated_ipv4, segment, MAX_IP_LEN-strlen(formated_ipv4)-1);
+        token = strtok(NULL, delim);
+    }
+
+    printf("formated ip: %s\n", formated_ipv4);
+    long ip_int = atol(formated_ipv4);
+
+    free(ip_copy);
+    free(formated_ipv4);
+
+    return ip_int;
+}
+
 int is_host_highest_priority(keep_alive_node_list_t* list){
     for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
         if(list->nodes[i].status == ALIVE){
-            if(strcmp(list->self->ip, list->nodes[i].ip) <= 0){
+            //if(strcmp(list->self->ip, list->nodes[i].ip) <= 0){
+            if(ipv4_to_int(list->self->ip) < ipv4_to_int(list->nodes[i].ip)){
                 return 0;
             }
         }

@@ -17,6 +17,8 @@
 #define NS_TO_US(ns)    ((ns)/1000)
 
 #define KEEP_ALIVE_NODE_AMOUNT 10
+#define MAX_IP_LEN 16
+
 #define KEEP_ALIVE_TIMEOUT_US SEC_TO_US(2)
 #define MESSAGE_SIZE 10 * sizeof(char)
 #define BRODCAST_INTERVAL_US MS_TO_US(500)
@@ -57,16 +59,21 @@ typedef struct{
     keep_alive_node_t* nodes;
 }keep_alive_node_list_t;
 
+//PUBLIC
+void keep_alive_init(int port, node_mode_t mode);
+void keep_alive_kill();
+keep_alive_node_list_t* get_node_list();
+
+//PRIVATE
 char* get_host_ip();
 uint64_t get_timestamp();
 void* keep_alive_send(void* arg);
 int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, int data_size);
 void udp_receive_callback(const char* ip, char* data, int data_size);
-void keep_alive_init(int port, node_mode_t mode);
-void keep_alive_kill();
-keep_alive_node_list_t* get_node_list();
+
 void print_alive_nodes(keep_alive_node_list_t* list);
 int is_host_highest_priority(keep_alive_node_list_t* list);
 void update_node_count(keep_alive_node_list_t* list);
 void* keep_alive_update(void* arg);
 void* keep_alive_timeout(void* arg);
+long ipv4_to_int(char* ip);
