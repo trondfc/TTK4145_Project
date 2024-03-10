@@ -39,7 +39,6 @@ void messageReceived(const char * ip, char * data, int datalength){
 
 /* Callback function for tcp connupdate*/
 void connectionStatus(const char * ip, int status){
-
   printf("A connection got updated %s: %d\n",ip,status);
   keep_alive_node_list_t* node_list = get_node_list();
   for(uint8_t i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
@@ -58,6 +57,7 @@ void connectionStatus(const char * ip, int status){
 int main_init(){
   printf("main_init\n");
   sysQueInit(5);
+  send_order_queue_init(messageReceived, connectionStatus);
   printf("sysQueInit\n");
 
   queue = create_order_queue(QUEUE_SIZE);
@@ -142,7 +142,6 @@ void* main_elevator_control(void* arg){
 
 void* main_send(void* arg){
   printf("send\n");
-    send_order_queue_init(messageReceived, connectionStatus);
     printf("send_order_queue_init\n");
     sleep(1);
     while(1){
@@ -199,16 +198,24 @@ int main()
     if(node_list->self->node_mode == SLAVE){
       printf("Slave\n");
 
+
+      if(running_threads.send == true){
+        pthread_cancel(send_thread);
+        pthread_join(send_thread, NULL);
+        for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
+          if(node_list->nodes[i].connection == CONNECTED){
+            send_order_queue_close_connection(node_list->nodes[i].ip);
+          }
+        }
+        running_threads.send = false;
+      }
+
       if(running_threads.recv == false){
         send_order_queue_listen(9000);
         running_threads.recv = true;
       }
       //pthread_cancel(button_thread);
       //pthread_cancel(elevator_thread);
-      if(running_threads.send == true){
-        pthread_cancel(send_thread);
-        running_threads.send = false;
-      }
       //pthread_create(&recv_thread, NULL, &main_recv, (void*)&host_config);
 
     }else if(node_list->self->node_mode == MASTER){
