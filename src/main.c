@@ -18,6 +18,9 @@
 order_queue_t *queue;
 
 
+elevator_hardware_info_t elevator[KEEP_ALIVE_NODE_AMOUNT];
+
+
 void messageReceived(const char * ip, char * data, int datalength){
 
   printf("Received message from %s\n",ip);
@@ -54,6 +57,26 @@ void connectionStatus(const char * ip, int status){
   }
 }
 
+void elevator_init(){
+  keep_alive_node_list_t* node_list = get_node_list();
+  for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
+    for(int j = 0; j < KEEP_ALIVE_NODE_AMOUNT; j++){
+      if(strcmp(node_list->nodes[i].ip, elevator[j].ip) == 0){
+        if(!elevator[j].alive){
+          if(elevator_hardware_init(&elevator[j])){
+            elevator[j].alive = true;
+            printf("Elevator %s is alive\n", elevator[j].ip);
+          }
+        }
+      }
+    }
+  }
+  for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
+  
+  }
+
+}
+
 int main_init(){
   printf("main_init\n");
   sysQueInit(5);
@@ -64,65 +87,29 @@ int main_init(){
 
   return 0;
 }
-/*
-void* keep_alive_control(void* arg){
-  host_config_t* host_config = (host_config_t*)arg;
-  printf("keep_alive_init\n");
-  
-  keep_alive_config_t* keep_alive_config = keep_alive_start();
-  pthread_mutex_lock(&host_config->mutex);
-  host_config->node_list = get_alive_node_list(keep_alive_config);
-  keep_alive_type_t last_host_state = host_config->host_state;
-  pthread_mutex_unlock(&host_config->mutex);
 
+void* poll_stopped_elevators(void* arg){
   
-  while(1){
-    pthread_mutex_lock(&host_config->mutex);
-    host_config->host_state = get_host_state(keep_alive_config);
-    host_state_select_logic(keep_alive_config);
-    pthread_mutex_unlock(&host_config->mutex);
-    if (host_config->host_state == RESET){
-      printd(LOG_LEVEL_DEBUG, "Process Reset\n");
-      //exit(-1);
-    }
-    if (last_host_state != host_config->host_state){
-      printd(LOG_LEVEL_DEBUG, "host_state changed \n");
-    }
-    sleep(1);
-    printf("keep_alive_control\n");
-  }
-return NULL;
-}*/
+}
 
 void* main_button_input(void* arg){
   printf("button_input\n");
-    elevator_hardware_info_t elevator_1;
-    elevator_hardware_info_t elevator_2;
-    //elevator_hardware_info_t elevator_3;
-
-    elevator_hardware_read_config("elv1_ip", "elv1_port", &elevator_1);
-    elevator_hardware_read_config("elv2_ip", "elv2_port", &elevator_2);
-    //elevator_hardware_read_config("elv3_ip", "elv3_port", &elevator_3);
-
-    elevator_hardware_init(&elevator_1);
-    elevator_hardware_init(&elevator_2);
-    //elevator_hardware_init(&elevator_3);
     
     while(1){
-        if (poll_new_orders(&elevator_1, queue)){
+        if (poll_new_orders(&elevator[0], queue)){
             for(int i = 0; i < queue->size; i++){
                 printf("%d \t Order ID: %ld\n", i , queue->orders[i].order_id);
             }
             printf("\n");
         }
-        if (poll_new_orders(&elevator_2, queue)){
+        if (poll_new_orders(&elevator[1], queue)){
             for(int i = 0; i < queue->size; i++){
                 printf("%d \t Order ID: %ld\n", i , queue->orders[i].order_id);
             }
             printf("\n");
         }
         /*
-        if (poll_new_orders(&elevator_3, queue)){
+        if (poll_new_orders(&elevator[2], queue)){
             for(int i = 0; i < queue->size; i++){
                 printf("%d \t Order ID: %ld\n", i , queue->orders[i].order_id);
             }

@@ -15,11 +15,14 @@ void elevator_hardware_read_config(const char* ip_name, const char* port_name, e
 }
 
 
-void elevator_hardware_init(elevator_hardware_info_t* hardware){
+int elevator_hardware_init(elevator_hardware_info_t* hardware){
     pthread_mutex_init(&hardware->sockmtx, NULL);
     
     hardware->sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    assert(hardware->sockfd != -1 && "Unable to set up socket");
+    //assert(hardware->sockfd != -1 && "Unable to set up socket");
+    if(hardware->sockfd == -1){
+        return 0;
+    }
     
     struct addrinfo hints = {
         .ai_family      = AF_INET, 
@@ -30,11 +33,15 @@ void elevator_hardware_init(elevator_hardware_info_t* hardware){
     getaddrinfo(hardware->ip, hardware->port, &hints, &res);
     
     int fail = connect(hardware->sockfd, res->ai_addr, res->ai_addrlen);
-    assert(fail == 0 && "Unable to connect to simulator server");
+    //assert(fail == 0 && "Unable to connect to simulator server");
+    if(fail != 0){
+        return 0;
+    }
     
     freeaddrinfo(res);
     
     send(hardware->sockfd, (char[4]) {0}, 4, 0);
+    return 1;
 }
 
 void elevator_hardware_set_motor_direction(elevator_hardware_motor_direction_t dirn, elevator_hardware_info_t* hardware){
