@@ -24,5 +24,7 @@ void tcp_startConnectionListening(int port);
 void tcp_openConnection(char * ip,int port);
 void tcp_send(char * ip,char * data, int datalength);
 
+void conn_remove(const char * ip);
+
 
 #endif
