@@ -60,21 +60,33 @@ void connectionStatus(const char * ip, int status){
 void elevator_init(){
   keep_alive_node_list_t* node_list = get_node_list();
   for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
+    bool found = false;
     for(int j = 0; j < KEEP_ALIVE_NODE_AMOUNT; j++){
       if(strcmp(node_list->nodes[i].ip, elevator[j].ip) == 0){
+        found = true;
         if(!elevator[j].alive){
           if(elevator_hardware_init(&elevator[j])){
             elevator[j].alive = true;
             printf("Elevator %s is alive\n", elevator[j].ip);
+            break;
+          }
+        }
+      }
+    }
+    if(!found){
+      for(int j = 0; j < KEEP_ALIVE_NODE_AMOUNT; j++){
+        if(!elevator[j].alive){
+          strcpy(elevator[j].ip, node_list->nodes[i].ip);
+          strcpy(elevator[j].port, "15657");
+          if(elevator_hardware_init(&elevator[j])){
+            elevator[j].alive = true;
+            printf("Elevator %s is alive\n", elevator[j].ip);
+            break;
           }
         }
       }
     }
   }
-  for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
-  
-  }
-
 }
 
 int main_init(){
