@@ -12,6 +12,10 @@ void send_order_queue_listen(int port){
     tcp_startConnectionListening(port);
 }
 
+void send_order_queue_close_connection(char * ip){
+    tcp_closeConnection(ip);
+}
+
 void send_order_queue_send_order(char * ip, order_queue_t *queue){
 
     /* Serialising data*/

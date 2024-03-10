@@ -58,7 +58,6 @@ void connectionStatus(const char * ip, int status){
 int main_init(){
   printf("main_init\n");
   sysQueInit(5);
-  send_order_queue_listen(9000);
   printf("sysQueInit\n");
 
   queue = create_order_queue(QUEUE_SIZE);
@@ -199,6 +198,11 @@ int main()
     keep_alive_node_list_t* node_list = get_node_list();
     if(node_list->self->node_mode == SLAVE){
       printf("Slave\n");
+
+      if(running_threads.recv == false){
+        send_order_queue_listen(9000);
+        running_threads.recv = true;
+      }
       //pthread_cancel(button_thread);
       //pthread_cancel(elevator_thread);
       if(running_threads.send == true){
@@ -209,7 +213,14 @@ int main()
 
     }else if(node_list->self->node_mode == MASTER){
       printf("Master\n");
-      //pthread_cancel(recv_thread);
+      if(running_threads.recv == true){
+        for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
+          if(node_list->nodes[i].connection == CONNECTED){
+            send_order_queue_close_connection(node_list->nodes[i].ip);
+          }
+        }
+        running_threads.recv = false;
+      }
 
       //pthread_create(&button_thread, NULL, &main_button_input, (void*)&host_config);
       //pthread_create(&elevator_thread, NULL, &main_elevator_control, (void*)&host_config);
