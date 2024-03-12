@@ -21,7 +21,7 @@ void messageReceived(const char * ip, char * data, int datalength){
   printf("Queue size: %d\n", queue->size);
   printf("Queue capacity: %d\n", queue->capacity);
   for(int i = 0; i < queue->size; i++){
-      printf("Order %d ID: %d\n", i, queue->orders[i].order_id);
+      printf("Order %d ID: %ld\n", i, queue->orders[i].order_id);
       printf("Order %d elevator_id: %s\n", i, queue->orders[i].elevator_id);
       printf("Order %d floor: %d\n", i, queue->orders[i].floor);
       printf("Order %d order_type: %d\n", i, queue->orders[i].order_type);
