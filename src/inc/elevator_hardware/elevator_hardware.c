@@ -58,6 +58,7 @@ int elevator_hardware_init(elevator_hardware_info_t* hardware){
 }
 
 void elevator_hardware_destroy(elevator_hardware_info_t* hardware){
+    shutdown(hardware->sockfd, SHUT_RDWR);
     close(hardware->sockfd);
     pthread_mutex_destroy(&hardware->sockmtx);
 }
