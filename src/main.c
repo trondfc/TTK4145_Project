@@ -143,8 +143,6 @@ void* main_elevator_control(void* arg){
 
 void* main_send(void* arg){
   printf("send\n");
-  return NULL;
-    printf("send_order_queue_init\n");
     sleep(1);
     while(1){
       keep_alive_node_list_t* node_list = get_node_list();
@@ -212,7 +210,7 @@ int main()
       }
 
       if(running_threads.recv == false){
-        //send_order_queue_listen(9000);
+        send_order_queue_listen(9000);
         running_threads.recv = true;
       }
       if(running_threads.button_input == true){

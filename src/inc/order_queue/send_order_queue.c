@@ -13,6 +13,7 @@ void send_order_queue_listen(int port){
 }
 
 void send_order_queue_close_connection(char * ip){
+    shutdown(conn_lookup(ip), SHUT_RDWR);
     close(conn_lookup(ip));
 }
 

@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
+#include <sys/socket.h>
 #include "../order_queue/orderQueue.h"
 #include "../sverresnetwork/sverresnetwork.h"
 
