@@ -24,6 +24,11 @@ int elevator_hardware_init(elevator_hardware_info_t* hardware){
         return 0;
     }
     
+    if(setsockopt(hardware->sockfd, SOL_SOCKET, SO_RCVTIMEO, &(struct timeval){.tv_sec = 0, .tv_usec = 100000}, sizeof(struct timeval)) < 0){
+        printf("Unable to set socket timeout\n");
+        return 0;
+    }
+    
     struct addrinfo hints = {
         .ai_family      = AF_INET, 
         .ai_socktype    = SOCK_STREAM, 
@@ -111,11 +116,11 @@ int elevator_hardware_get_floor_sensor_signal(elevator_hardware_info_t* hardware
 
 int elevator_hardware_get_stop_signal(elevator_hardware_info_t* hardware){
     pthread_mutex_lock(&hardware->sockmtx);
-    if(send(hardware->sockfd, (char[4]) {8}, 4, 0) == -1){
+    if(send(hardware->sockfd, (char[4]) {8}, 4, MSG_NOSIGNAL | MSG_DONTWAIT) == -1){
         return -1;
     }
     char buf[4];
-    ie(recv(hardware->sockfd, buf, 4, 0) == -1){
+    if(recv(hardware->sockfd, buf, 4, MSG_NOSIGNAL) == -1){
         return -1;
     }
     pthread_mutex_unlock(&hardware->sockmtx);

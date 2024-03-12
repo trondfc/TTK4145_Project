@@ -18,6 +18,7 @@ char* get_host_ip(){
             break;
         }
     }
+    //printf("System IP Address is: %s\n", ip_address);
     return ip_address;
 }
 
@@ -106,6 +107,7 @@ void keep_alive_init(int port, node_mode_t mode){
     for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
         keep_alive_node_list.nodes[i].status = DEAD;
         keep_alive_node_list.nodes[i].node_mode = UNDEFINED;
+        strcpy(keep_alive_node_list.nodes[i].ip, "\0");
     }
 
     pthread_t send_thread;
@@ -226,8 +228,8 @@ void* keep_alive_update(void* arg){
         
         if(list->node_count_alive == 0){
             if((get_timestamp() - last_contact_timestamp) > NO_ACTIVE_NODES_TIMEOUT_US){
-                printf("NO_ACTIVE_NODES_TIMEOUT");
-                exit(1);
+                //printf("NO_ACTIVE_NODES_TIMEOUT");
+                //exit(1);
             }
         }else{
             last_contact_timestamp = get_timestamp();
