@@ -218,6 +218,11 @@ int main()
       if(running_threads.button_input == true){
         pthread_cancel(button_thread);
         pthread_join(button_thread, NULL);
+        for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
+          if(g_elevator->alive){
+            elevator_hardware_destroy(&g_elevator->elevator);
+          }
+        }
         running_threads.button_input = false;
       }
 
