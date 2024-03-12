@@ -23,7 +23,7 @@
 #define KEEP_ALIVE_TIMEOUT_US SEC_TO_US(2) 
 #define NO_ACTIVE_NODES_TIMEOUT_US  SEC_TO_US(5) //sec
 #define MESSAGE_SIZE 10 * sizeof(char)
-#define BRODCAST_INTERVAL_US MS_TO_US(500)
+#define BRODCAST_INTERVAL_US MS_TO_US(250)
 
 
 typedef enum{
