@@ -6,6 +6,7 @@
 #include "inc/order_queue/send_order_queue.h"
 #include "inc/keep_alive/keep_alive.h"
 #include "inc/logger.h"
+#include "inc/elevator_algorithm/elevator_algorithm.h"
 #define LOG_LEVEL LOG_LEVEL_DEBUG // Set log level to debug
 
 #include<unistd.h>

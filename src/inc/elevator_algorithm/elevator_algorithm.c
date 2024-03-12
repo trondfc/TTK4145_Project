@@ -1,68 +1,54 @@
 #include<stdlib.h>
 #include<pthread.h>
+#include<stdbool.h>
 
 #include "elevator_algorithm.h"
+#include "../order_queue/orderQueue.h"
+#include "../elevator_hardware/elevator_hardware.h"
+#include "../../main.c"
 
-elevator_system_t elevator_system;
-
-elevator_system_t* elevator_init(order_queue_t* queue)
+elevator_status_t* elevator_status_init()
 {
-    elevator_system.elevator = (elevator_status_t*)malloc(sizeof(elevator_status_t)*N_ELEVATORS);
-    elevator_system.order_queue = queue;
-    elevator_system.mutex = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t));
-    pthread_mutex_init(elevator_system.mutex, NULL);
-
+    elevator_status_t* elevator_status = (elevator_status_t*)malloc(N_ELEVATORS * sizeof(elevator_status_t));
     for(int i = 0; i < N_ELEVATORS; i++){
-        elevator_system.elevator[i].current_floor = DEFAULT_FLOOR;
-        elevator_system.elevator[i].prev_floor = DEFAULT_FLOOR;
-        elevator_system.elevator[i].state = IDLE;
-        elevator_system.elevator[i].current_direction = DIRN_STOP;
+        elevator_status[i].alive = false;
+        elevator_status[i].floor = DEFAULT_FLOOR;
+        elevator_status[i].elevator_state = ELEVATOR_IDLE;
+        elevator_status[i].obstruction = false;
+        elevator_status[i].stop_at_floor = false;
+        elevator_status[i].door_open = false;
+        elevator_status[i].emergency_stop = false;
     }
-    return &elevator_system;
+    return elevator_status;
 }
 
-int elevator_kill()
-{
-    pthread_mutex_destroy(elevator_system.mutex);
-    free(elevator_system.mutex);
-    free(elevator_system.elevator);
-}
 
-int is_any_elevators_idle(elevator_system_t* elevator_system)
+int is_any_elevator_moving_towards_hall_request(elevator_status_t* elevator_status, int floor)
+//is any elevator moving towards requested floor and has same request dir
 {
     for(int i = 0; i < N_ELEVATORS; i++){
-        if(elevator_system->elevator[i].state == IDLE){
+        if(elevator_status[i].elevator_state == MOVING_UP && elevator_status[i].floor < floor){
+            return 1;
+        }
+        else if(elevator_status[i].elevator_state == MOVING_DOWN && elevator_status[i].floor > floor){
             return 1;
         }
     }
     return 0;
 }
-
-int is_elevators_moving_towards_floor(elevator_system_t* elevator_system, int floor)
+int get_idle_elevator( elevator_status_t* elevator_status)
 {
     for(int i = 0; i < N_ELEVATORS; i++){
-
-        if(elevator_system->elevator[i].current_floor == floor){
-            return 1;
-        }else if(elevator_system->elevator[i].current_direction == DIRN_DOWN && elevator_system->elevator[i].prev_floor < floor){
-            return 1;
-        }else if(elevator_system->elevator[i].current_direction == DIRN_UP && elevator_system->elevator[i].prev_floor > floor){
-            return 1;
+        if(elevator_status[i].elevator_state == ELEVATOR_IDLE){
+            return i;
         }
     }
-    return 0;
-}
-
-int is_valid_elevator_request_in_current_dir()
-{
-    return 0;
+    return -1;
 }
 
 
 
-
-
-int elevator_algorithm(elevator_system_t* elevator_system){
+int elevator_algorithm(elevator_status_t* elevator_status, order_queue_t* order_queue){
 
     while(1){
 

@@ -12,19 +12,30 @@
 
 #define DEFAULT_FLOOR 0
 
+typedef enum{
+  MOVING_UP,
+  MOVING_DOWN,
+  ELEVATOR_IDLE
+}elevator_state_t;
+
+typedef struct{
+  elevator_hardware_info_t elevator;
+  bool alive;
+  int floor;
+  elevator_state_t elevator_state;
+  bool obstruction;
+  bool stop_at_floor;
+  bool emergency_stop;
+  bool door_open;
+}elevator_status_t;
+
+/*
 typedef enum
 {
   IDLE = 0,
   ACTIVE = 1
 }elevator_state_t;
 
-typedef struct{
-  int prev_floor; // last floor visited, current floor if at floor
-  int current_floor;
-  elevator_state_t state;
-  elevator_hardware_motor_direction_t current_direction;
-  elevator_hardware_info_t* hardware_info;
-}elevator_status_t;
 
 typedef struct {
     elevator_status_t* elevator;
@@ -32,7 +43,7 @@ typedef struct {
     pthread_mutex_t* mutex;
 }elevator_system_t;
 
-
+*/
 
 
 /* 
@@ -78,3 +89,16 @@ typedef enum order_status_t{
   ACTIVE = 1,
   COMPLETED = 2
 }order_status_t; */
+
+
+
+/* 
+typedef struct{
+  int prev_floor; // last floor visited, current floor if at floor
+  int current_floor;
+  elevator_state_t state;
+  elevator_hardware_motor_direction_t current_direction;
+  elevator_hardware_info_t* hardware_info;
+}elevator_status_t;
+
+ */
