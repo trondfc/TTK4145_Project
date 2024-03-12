@@ -1,3 +1,5 @@
+#define MAX_ELEVATORS_AND_CONTROLLERS 10
+
 /* Include libraries */
 #include "inc/elevator_control/elevator_button_inputs.h"
 #include "inc/elevator_hardware/elevator_hardware.h"
@@ -6,6 +8,7 @@
 #include "inc/order_queue/send_order_queue.h"
 #include "inc/keep_alive/keep_alive.h"
 #include "inc/logger.h"
+#include "inc/elevator_control/elevator_autofind.h"
 #define LOG_LEVEL LOG_LEVEL_DEBUG // Set log level to debug
 
 #include<unistd.h>
@@ -14,24 +17,6 @@
 #define ORDER_POLL_DELAY 100 * 1000 // 100 ms
 #define ORDER_SYNC_DELAY 500 * 1000 // 500 ms
 
-//elevator_hardware_info_t elevator[KEEP_ALIVE_NODE_AMOUNT];
-typedef enum elevator_direction{
-  UP,
-  DOWN,
-  STOP
-}elevator_direction_t;
-
-typedef struct elevator_status{
-  elevator_hardware_info_t elevator;
-  bool alive;
-  int floor;
-  elevator_direction_t direction;
-  bool obstruction;
-  bool stop;
-  bool door_open;
-  bool in_use;
-  pthread_mutex_t mutex;
-}elevator_status_t;
 
 /* Define global variables */
 order_queue_t *queue;
@@ -74,69 +59,11 @@ void connectionStatus(const char * ip, int status){
   }
 }
 
-void elevator_struct_init(){
-  elevator = (elevator_status_t*)malloc(KEEP_ALIVE_NODE_AMOUNT * sizeof(elevator_status_t));
-  for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
-    strcpy(elevator[i].elevator.ip, "\0");
-    elevator[i].alive = false;
-    elevator[i].floor = 0;
-    elevator[i].direction = STOP;
-    elevator[i].obstruction = false;
-    elevator[i].stop = false;
-    elevator[i].door_open = false;
-    elevator[i].in_use = false;
-    pthread_mutex_init(&elevator[i].mutex, NULL);
-  }
-}
-
-int compare_ips(char* a, char* b){
-  if(strcmp(a, b) == 0 && strcmp(a, "\0") != 0){
-    return 1;
-  } 
-  return 0;
-}
-
-void elevator_init_ip(char* ip){
-  bool node_alive = false;
-  for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
-    if(compare_ips(ip, elevator[i].elevator.ip)){
-      if(elevator[i].alive){
-        node_alive = true;
-        break;
-      }
-    }
-  }
-  if(!node_alive){
-    for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
-      if(!elevator[i].alive){
-        strcpy(elevator[i].elevator.ip, ip);
-        strcpy(elevator[i].elevator.port, "15657");
-        if(elevator_hardware_init(&elevator[i].elevator)){
-          elevator[i].alive = true;
-          printf("Elevator %s is alive\n", elevator[i].elevator.ip);
-        }
-        break;
-      }
-    }
-  }
-}
-
-void elevator_init(){
-keep_alive_node_list_t* node_list = get_node_list();
-  elevator_init_ip(node_list->self->ip);
-  for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
-    if(strcmp(node_list->nodes[i].ip, "\0") == 0){
-      continue;
-    }
-    elevator_init_ip(node_list->nodes[i].ip);
-  }
-}
-
 int main_init(){
   printf("main_init\n");
   sysQueInit(5);
   send_order_queue_init(messageReceived, connectionStatus);
-  elevator_struct_init();
+  elevator_struct_init(elevator);
   printf("sysQueInit\n");
 
   queue = create_order_queue(QUEUE_SIZE);
@@ -210,7 +137,7 @@ void* main_button_input(void* arg){
 void* main_elevator_control(void* arg){
   printf("elevator_control\n");
   while(1){
-    elevator_init();
+    elevator_init(elevator);
     poll_stopped_elevators();
     //poll_obstructed_elevators();
     usleep(10*ORDER_POLL_DELAY);
