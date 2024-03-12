@@ -220,7 +220,7 @@ int main()
         pthread_join(button_thread, NULL);
         for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
           if(g_elevator[i].alive){
-            printf("===========================================================");
+            printf("========================================================================");
             printf("Destroying elevator %s\n", g_elevator[i].elevator.ip);
             elevator_hardware_destroy(&g_elevator[i].elevator);
           }
