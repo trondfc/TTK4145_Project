@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../sverresnetwork/sverresnetwork.h"
+#include "../config.h"
 
 /// Convert seconds to microseconds
 #define SEC_TO_US(sec) ((sec)*1000000)
@@ -16,7 +17,7 @@
 /// Convert nanoseconds to microseconds
 #define NS_TO_US(ns)    ((ns)/1000)
 
-#define KEEP_ALIVE_NODE_AMOUNT 10
+#define KEEP_ALIVE_NODE_AMOUNT MAX_IP_NODES
 #define MAX_IP_LEN 16
 
 #define KEEP_ALIVE_TIMEOUT_US SEC_TO_US(2) 
