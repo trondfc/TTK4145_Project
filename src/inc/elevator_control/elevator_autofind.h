@@ -14,7 +14,8 @@
 #define MAX_ELEVATORS 10
 
 /* PROTOTYPES */
-void elevator_struct_init(elevator_status_t* elevator);
+
+elevator_status_t* elevator_struct_init();
 int compare_ips(char* a, char* b);
 void elevator_init_ip(elevator_status_t* elevator, char* ip);
 void elevator_init(elevator_status_t* elevator);

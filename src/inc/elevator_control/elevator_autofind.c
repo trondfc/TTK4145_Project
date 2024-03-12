@@ -1,7 +1,7 @@
 #include "elevator_autofind.h"
 
-void elevator_struct_init(elevator_status_t* elevator){
-  elevator = (elevator_status_t*)malloc(MAX_ELEVATORS * sizeof(elevator_status_t));
+elevator_status_t* elevator_struct_init(){
+  elevator_status_t* elevator = (elevator_status_t*)malloc(MAX_ELEVATORS * sizeof(elevator_status_t));
   for(int i = 0; i < MAX_ELEVATORS; i++){
     strcpy(elevator[i].elevator.ip, "\0");
     elevator[i].alive = false;
@@ -13,9 +13,11 @@ void elevator_struct_init(elevator_status_t* elevator){
     elevator[i].in_use = false;
     pthread_mutex_init(&elevator[i].mutex, NULL);
   }
+  return elevator;
 }
 
 int compare_ips(char* a, char* b){
+  //printf("Comparing %s and %s\n", a, b);
   if(strcmp(a, b) == 0 && strcmp(a, "\0") != 0){
     return 1;
   } 
@@ -23,6 +25,7 @@ int compare_ips(char* a, char* b){
 }
 
 void elevator_init_ip(elevator_status_t* elevator, char* ip){
+  //printf("initing elevator %s\n", ip);
   bool node_alive = false;
   for(int i = 0; i < MAX_ELEVATORS; i++){
     if(compare_ips(ip, elevator[i].elevator.ip)){
@@ -33,6 +36,7 @@ void elevator_init_ip(elevator_status_t* elevator, char* ip){
     }
   }
   if(!node_alive){
+    //printf("Elevator %s not alive\n", ip);
     for(int i = 0; i < MAX_ELEVATORS; i++){
       if(!elevator[i].alive){
         strcpy(elevator[i].elevator.ip, ip);

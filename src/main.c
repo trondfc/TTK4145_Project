@@ -63,7 +63,7 @@ int main_init(){
   printf("main_init\n");
   sysQueInit(5);
   send_order_queue_init(messageReceived, connectionStatus);
-  elevator_struct_init(elevator);
+  elevator = elevator_struct_init();
   printf("sysQueInit\n");
 
   queue = create_order_queue(QUEUE_SIZE);
@@ -107,6 +107,19 @@ void poll_obstructed_elevators(){
 
 void* main_button_input(void* arg){
   printf("button_input\n");
+
+  while(1){
+    for(int i = 0; i < MAX_ELEVATORS_AND_CONTROLLERS; i++){
+      if(elevator[i].alive){
+        if(poll_new_orders(&elevator[i].elevator, queue)){
+          for(int i = 0; i < queue->size; i++){
+            printf("%d \t Order ID: %ld\n", i , queue->orders[i].order_id);
+          }
+          printf("\n");
+        }
+      }
+    }
+  }
     
     /*while(1){
         if (poll_new_orders(&elevator[0], queue)){
@@ -146,6 +159,7 @@ void* main_elevator_control(void* arg){
 }
 
 void* main_send(void* arg){
+  return NULL;
   printf("send\n");
     printf("send_order_queue_init\n");
     sleep(1);
@@ -252,8 +266,8 @@ int main()
         running_threads.elevator_control = true;
       }
       if(running_threads.send == false){
-      pthread_create(&send_thread, NULL, &main_send, NULL);
-      running_threads.send = true;
+        pthread_create(&send_thread, NULL, &main_send, NULL);
+        running_threads.send = true;
       }
 
       if(running_threads.button_input == false){
