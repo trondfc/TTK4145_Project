@@ -37,6 +37,8 @@ void messageReceived(const char * ip, char * data, int datalength){
       printf("Order %d elevator_id: %s\n", i, queue->orders[i].elevator_id);
       printf("Order %d floor: %d\n", i, queue->orders[i].floor);
       printf("Order %d order_type: %d\n", i, queue->orders[i].order_type);
+      printf("Order %d order_status: %d\n", i, queue->orders[i].order_status);
+      printf("Order %d timestamp: %ld\n", i, queue->orders[i].timestamp);
       printf("\n\n");
   }
     
@@ -158,7 +160,14 @@ void* main_send(void* arg){
           }
           printf("Sending order to %s\n", node_list->nodes[i].ip);
           pthread_mutex_lock(queue->queue_mutex);
-          send_order_queue_send_order(node_list->nodes[i].ip ,queue);
+          if(send_order_queue_send_order(node_list->nodes[i].ip ,queue)){
+            printf("Order sent to %s\n", node_list->nodes[i].ip);
+            for(int i = 0; i < queue->size; i++){
+              if(queue->orders[i].order_status == RECIVED){
+                queue->orders[i].order_status = SYNCED;
+              }
+            }
+          }
           pthread_mutex_unlock(queue->queue_mutex);
           usleep(ORDER_SYNC_DELAY);
         }

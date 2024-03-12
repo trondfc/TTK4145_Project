@@ -22,7 +22,7 @@ void udp_broadcast(int port,char * data, int dataLength);
 void tcp_init(TMessageCallback messageCallback, TTcpConnectionCallback connectionCallback);
 void tcp_startConnectionListening(int port);
 void tcp_openConnection(char * ip,int port);
-void tcp_send(char * ip,char * data, int datalength);
+int tcp_send(char * ip,char * data, int datalength);
 
 void conn_remove(const char * ip);
 int conn_lookup(char * ip);
