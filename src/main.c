@@ -14,13 +14,13 @@
 #include<unistd.h>
 #include<stdio.h> 
 #define QUEUE_SIZE 20
-#define ORDER_POLL_DELAY 100 * 1000 // 100 ms
+#define ORDER_POLL_DELAY 10 * 1000 // 100 ms
 #define ORDER_SYNC_DELAY 500 * 1000 // 500 ms
 
 
 /* Define global variables */
 order_queue_t *queue;
-elevator_status_t *elevator;
+elevator_status_t *g_elevator;
 
 
 void messageReceived(const char * ip, char * data, int datalength){
@@ -59,11 +59,72 @@ void connectionStatus(const char * ip, int status){
   }
 }
 
+elevator_status_t* elevator_struct_init(){
+  elevator_status_t* elevator = (elevator_status_t*)malloc(KEEP_ALIVE_NODE_AMOUNT * sizeof(elevator_status_t));
+  for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
+    strcpy(elevator[i].elevator.ip, "\0");
+    elevator[i].alive = false;
+    elevator[i].floor = 0;
+    elevator[i].direction = STOP;
+    elevator[i].obstruction = false;
+    elevator[i].stop = false;
+    elevator[i].door_open = false;
+    elevator[i].in_use = false;
+    pthread_mutex_init(&elevator[i].mutex, NULL);
+  }
+  return elevator;
+}
+
+int compare_ips(char* a, char* b){
+  if(strcmp(a, b) == 0 && strcmp(a, "\0") != 0){
+    return 1;
+  } 
+  return 0;
+}
+
+void elevator_init_ip(elevator_status_t* elevator, char* ip){
+  bool node_alive = false;
+  for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
+    if(compare_ips(ip, elevator[i].elevator.ip)){
+      if(elevator[i].alive){
+        node_alive = true;
+        break;
+      }
+    }
+  }
+  if(!node_alive){
+    for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
+      if(!elevator[i].alive){
+        pthread_mutex_lock(&elevator[i].mutex);
+        strcpy(elevator[i].elevator.ip, ip);
+        strcpy(elevator[i].elevator.port, "15657");
+        if(elevator_hardware_init(&elevator[i].elevator)){
+          elevator[i].alive = true;
+          printf("Elevator %s is alive\n", elevator[i].elevator.ip);
+        }
+        pthread_mutex_unlock(&elevator[i].mutex);
+        break;
+      }
+    }
+  }
+}
+
+void elevator_init(elevator_status_t* elevator){
+keep_alive_node_list_t* node_list = get_node_list();
+  elevator_init_ip(elevator, node_list->self->ip);
+  for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
+    if(strcmp(node_list->nodes[i].ip, "\0") == 0){
+      continue;
+    }
+    elevator_init_ip(elevator, node_list->nodes[i].ip);
+  }
+}
+
 int main_init(){
   printf("main_init\n");
   sysQueInit(5);
   send_order_queue_init(messageReceived, connectionStatus);
-  elevator = elevator_struct_init();
+  g_elevator =  elevator_struct_init();
   printf("sysQueInit\n");
 
   queue = create_order_queue(QUEUE_SIZE);
@@ -71,26 +132,29 @@ int main_init(){
   return 0;
 }
 
-void poll_stopped_elevators(){
+void poll_stopped_elevators(elevator_status_t* elevator){
   for(uint8_t i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
-    printf("elevator %d %s is alive: %d\n",i, elevator[i].elevator.ip, elevator[i].alive);
     if(elevator[i].alive){
       int temp = elevator_hardware_get_stop_signal(&elevator[i].elevator);
+      //printf("elevator %d %s is alive: %d\n",i, elevator[i].elevator.ip, elevator[i].alive);
       if(temp == 1){
-        printf("Elevator %s has stopped\n", elevator[i].elevator.ip);
+        //printf("Elevator %s has stopped\n", elevator[i].elevator.ip);
       }
       else if (temp == 0){
-        printf("Elevator %s has started\n", elevator[i].elevator.ip);
+        //printf("Elevator %s has started\n", elevator[i].elevator.ip);
       }
       else{ // Retunrs -1 if the elevator is not responding
         printf("Elevator %s is not responding\n", elevator[i].elevator.ip);
+        pthread_mutex_lock(&elevator[i].mutex);
         elevator[i].alive = false;
+        pthread_mutex_unlock(&elevator[i].mutex);
       }
     }
+    usleep(ORDER_POLL_DELAY);
   }
 }
 
-void poll_obstructed_elevators(){
+void poll_obstructed_elevators(elevator_status_t* elevator){
   for(uint8_t i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
     if(elevator[i].alive){
       /*
@@ -109,49 +173,28 @@ void* main_button_input(void* arg){
   printf("button_input\n");
 
   while(1){
-    for(int i = 0; i < MAX_ELEVATORS_AND_CONTROLLERS; i++){
-      if(elevator[i].alive){
-        if(poll_new_orders(&elevator[i].elevator, queue)){
-          for(int i = 0; i < queue->size; i++){
-            printf("%d \t Order ID: %ld\n", i , queue->orders[i].order_id);
+    for(int i = 0; i <KEEP_ALIVE_NODE_AMOUNT; i++){
+      if(g_elevator[i].alive){
+        //printf("Polling elevator %s\n", elevator[i].elevator.ip);
+        if(poll_new_orders(&g_elevator[i].elevator, queue)){
+          for(int j = 0; j < queue->size; j++){
+            printf("%d \t Order ID: %ld\n", j , queue->orders[j].order_id);
           }
-          printf("\n");
+        } else{
+          //printf("Elevator %s has no new orders\n", elevator[i].elevator.ip);
         }
       }
+      usleep(ORDER_POLL_DELAY);
     }
   }
-    
-    /*while(1){
-        if (poll_new_orders(&elevator[0], queue)){
-            for(int i = 0; i < queue->size; i++){
-                printf("%d \t Order ID: %ld\n", i , queue->orders[i].order_id);
-            }
-            printf("\n");
-        }
-        if (poll_new_orders(&elevator[1], queue)){
-            for(int i = 0; i < queue->size; i++){
-                printf("%d \t Order ID: %ld\n", i , queue->orders[i].order_id);
-            }
-            printf("\n");
-        }
-        if (poll_new_orders(&elevator[2], queue)){
-            for(int i = 0; i < queue->size; i++){
-                printf("%d \t Order ID: %ld\n", i , queue->orders[i].order_id);
-            }
-            printf("\n");
-        }
-        
-        usleep(ORDER_POLL_DELAY);
-    }*/
-
   return NULL;
 }
 
 void* main_elevator_control(void* arg){
   printf("elevator_control\n");
   while(1){
-    elevator_init(elevator);
-    poll_stopped_elevators();
+    elevator_init(g_elevator);
+    poll_stopped_elevators(g_elevator);
     //poll_obstructed_elevators();
     usleep(10*ORDER_POLL_DELAY);
   }
@@ -210,12 +253,11 @@ int main()
 
   pthread_t keep_alive_thread, recv_thread, send_thread, button_thread, elevator_thread;
 
-  //pthread_create(&keep_alive_thread, NULL, keep_alive_control, (void*)&host_config);
   keep_alive_init(5000, SLAVE);
   while(1){
     keep_alive_node_list_t* node_list = get_node_list();
     if(node_list->self->node_mode == SLAVE){
-      printf("Slave\n");
+      //printf("Slave\n");
 
 
       if(running_threads.send == true){
@@ -238,12 +280,15 @@ int main()
         pthread_join(button_thread, NULL);
         running_threads.button_input = false;
       }
-      //pthread_cancel(button_thread);
-      //pthread_cancel(elevator_thread);
-      //pthread_create(&recv_thread, NULL, &main_recv, (void*)&host_config);
+
+      if(running_threads.elevator_control == true){
+        pthread_cancel(elevator_thread);
+        pthread_join(elevator_thread, NULL);
+        running_threads.elevator_control = false;
+      }
 
     }else if(node_list->self->node_mode == MASTER){
-      printf("Master\n");
+      //printf("Master\n");
       if(running_threads.recv == true){
         for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
           if(node_list->nodes[i].connection == CONNECTED){
@@ -252,14 +297,6 @@ int main()
         }
         running_threads.recv = false;
       }
-      if(running_threads.elevator_control == true){
-        pthread_cancel(elevator_thread);
-        pthread_join(elevator_thread, NULL);
-        running_threads.elevator_control = false;
-      }
-
-      //pthread_create(&button_thread, NULL, &main_button_input, (void*)&host_config);
-      //pthread_create(&elevator_thread, NULL, &main_elevator_control, (void*)&host_config);
 
       if(running_threads.elevator_control == false){
         pthread_create(&elevator_thread, NULL, &main_elevator_control, NULL);

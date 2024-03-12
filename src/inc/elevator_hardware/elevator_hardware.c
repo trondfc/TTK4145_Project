@@ -24,7 +24,7 @@ int elevator_hardware_init(elevator_hardware_info_t* hardware){
         return 0;
     }
     
-    if(setsockopt(hardware->sockfd, SOL_SOCKET, SO_RCVTIMEO, &(struct timeval){.tv_sec = 0, .tv_usec = 100000}, sizeof(struct timeval)) < 0){
+    if(setsockopt(hardware->sockfd, SOL_SOCKET, SO_RCVTIMEO, &(struct timeval){.tv_sec = 0, .tv_usec = 1000}, sizeof(struct timeval)) < 0){
         printf("Unable to set socket timeout\n");
         return 0;
     }
@@ -51,7 +51,7 @@ int elevator_hardware_init(elevator_hardware_info_t* hardware){
 
 void elevator_hardware_set_motor_direction(elevator_hardware_motor_direction_t dirn, elevator_hardware_info_t* hardware){
     pthread_mutex_lock(&hardware->sockmtx);
-    send(hardware->sockfd, (char[4]) {1, dirn}, 4, 0);
+    send(hardware->sockfd, (char[4]) {1, dirn}, 4, MSG_NOSIGNAL);
     pthread_mutex_unlock(&hardware->sockmtx);
 }
 
@@ -62,7 +62,7 @@ void elevator_hardware_set_button_lamp(elevator_hardware_button_type_t button, i
     assert(button < N_BUTTONS);
 
     pthread_mutex_lock(&hardware->sockmtx);
-    send(hardware->sockfd, (char[4]) {2, button, floor, value}, 4, 0);
+    send(hardware->sockfd, (char[4]) {2, button, floor, value}, 4, MSG_NOSIGNAL);
     pthread_mutex_unlock(&hardware->sockmtx);
 }
 
@@ -71,19 +71,19 @@ void elevator_hardware_set_floor_indicator(int floor, elevator_hardware_info_t* 
     assert(floor < N_FLOORS);
 
     pthread_mutex_lock(&hardware->sockmtx);
-    send(hardware->sockfd, (char[4]) {3, floor}, 4, 0);
+    send(hardware->sockfd, (char[4]) {3, floor}, 4, MSG_NOSIGNAL);
     pthread_mutex_unlock(&hardware->sockmtx);
 }
 
 void elevator_hardware_set_door_open_lamp(int value, elevator_hardware_info_t* hardware){
     pthread_mutex_lock(&hardware->sockmtx);
-    send(hardware->sockfd, (char[4]) {4, value}, 4, 0);
+    send(hardware->sockfd, (char[4]) {4, value}, 4, MSG_NOSIGNAL);
     pthread_mutex_unlock(&hardware->sockmtx);
 }
 
 void elevator_hardware_set_stop_lamp(int value, elevator_hardware_info_t* hardware){
     pthread_mutex_lock(&hardware->sockmtx);
-    send(hardware->sockfd, (char[4]) {5, value}, 4, 0);
+    send(hardware->sockfd, (char[4]) {5, value}, 4, MSG_NOSIGNAL);
     pthread_mutex_unlock(&hardware->sockmtx);
 }
 
@@ -96,7 +96,7 @@ int elevator_hardware_get_button_signal(elevator_hardware_button_type_t button, 
     assert(button < N_BUTTONS);
 
     pthread_mutex_lock(&hardware->sockmtx);
-    send(hardware->sockfd, (char[4]) {6, button, floor}, 4, 0);
+    send(hardware->sockfd, (char[4]) {6, button, floor}, 4, MSG_NOSIGNAL);
     char buf[4];
     recv(hardware->sockfd, buf, 4, 0);
     pthread_mutex_unlock(&hardware->sockmtx);
@@ -106,9 +106,9 @@ int elevator_hardware_get_button_signal(elevator_hardware_button_type_t button, 
 
 int elevator_hardware_get_floor_sensor_signal(elevator_hardware_info_t* hardware){
     pthread_mutex_lock(&hardware->sockmtx);
-    send(hardware->sockfd, (char[4]) {7}, 4, 0);
+    send(hardware->sockfd, (char[4]) {7}, 4, MSG_NOSIGNAL);
     char buf[4];
-    recv(hardware->sockfd, buf, 4, 0);
+    recv(hardware->sockfd, buf, 4, MSG_NOSIGNAL);
     pthread_mutex_unlock(&hardware->sockmtx);
     
     return buf[1] ? buf[2] : -1;
@@ -116,7 +116,7 @@ int elevator_hardware_get_floor_sensor_signal(elevator_hardware_info_t* hardware
 
 int elevator_hardware_get_stop_signal(elevator_hardware_info_t* hardware){
     pthread_mutex_lock(&hardware->sockmtx);
-    if(send(hardware->sockfd, (char[4]) {8}, 4, MSG_NOSIGNAL | MSG_DONTWAIT) == -1){
+    if(send(hardware->sockfd, (char[4]) {8}, 4, MSG_NOSIGNAL) == -1){
         return -1;
     }
     char buf[4];
@@ -130,9 +130,9 @@ int elevator_hardware_get_stop_signal(elevator_hardware_info_t* hardware){
 
 int elevator_hardware_get_obstruction_signal(elevator_hardware_info_t* hardware){
     pthread_mutex_lock(&hardware->sockmtx);
-    send(hardware->sockfd, (char[4]) {9}, 4, 0);
+    send(hardware->sockfd, (char[4]) {9}, 4, MSG_NOSIGNAL);
     char buf[4];
-    recv(hardware->sockfd, buf, 4, 0);
+    recv(hardware->sockfd, buf, 4, MSG_NOSIGNAL);
     pthread_mutex_unlock(&hardware->sockmtx);
     
     return buf[1];
