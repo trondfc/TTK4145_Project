@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <unistd.h>
 
 #include "../order_queue/orderQueue.h"
 #include "../elevator_hardware/elevator_hardware.h"
@@ -12,10 +13,23 @@
 
 #define DEFAULT_FLOOR 0
 
+#define ELEVATOR_DOOR_OPEN_TIME 3000 //ms
+
+
+/// Convert seconds to microseconds
+#define SEC_TO_US(sec) ((sec)*1000000)
+/// Convert milliseconds to microseconds
+#define MS_TO_US(ms)    ((ms)*1000)
+/// Convert nanoseconds to microseconds
+#define NS_TO_US(ns)    ((ns)/1000)
+
 typedef enum{
-  MOVING_UP,
-  MOVING_DOWN,
-  ELEVATOR_IDLE
+  ELEVATOR_IDLE,
+  ELEVATOR_DIR_UP_AND_MOVING,
+  ELEVATOR_DIR_UP_AND_STOPPED,
+  ELEVATOR_DIR_DOWN_AND_MOVING, 
+  ELEVATOR_DIR_DOWN_AND_STOPPED,
+  ELEVATOR_EMERGENCY_STOP
 }elevator_state_t;
 
 typedef struct{
@@ -24,10 +38,20 @@ typedef struct{
   int floor;
   elevator_state_t elevator_state;
   bool obstruction;
-  bool stop_at_floor;
   bool emergency_stop;
   bool door_open;
 }elevator_status_t;
+
+//Public functions
+int elevator_status_init(order_queue_t* order_queue);
+int elevator_status_kill();
+elevator_status_t* get_elevator_status();
+
+
+
+//Private functions
+
+
 
 /*
 typedef enum
