@@ -46,6 +46,6 @@ void* sysQueTimeout(void* arg); //timeout for system queue
 
 void* crashSystem(void* arg); //crash the system, used for testing
 
-void makeMaster(); //make this process the sysQue master
+void makeMaster(queMsgData_t* data); //make this process the sysQue master
 
 
