@@ -149,7 +149,7 @@ void* main_elevator_control(void* arg){
   while(1){
     elevator_init(g_elevator);
     poll_stopped_elevators(g_elevator);
-    poll_obstructed_elevators();
+    poll_obstructed_elevators(g_elevator);
     usleep(10*ORDER_POLL_DELAY);
   }
   return NULL;
