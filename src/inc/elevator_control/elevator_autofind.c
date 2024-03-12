@@ -17,7 +17,6 @@ elevator_status_t* elevator_struct_init(){
 }
 
 int compare_ips(char* a, char* b){
-  //printf("Comparing %s and %s\n", a, b);
   if(strcmp(a, b) == 0 && strcmp(a, "\0") != 0){
     return 1;
   } 
@@ -25,7 +24,6 @@ int compare_ips(char* a, char* b){
 }
 
 void elevator_init_ip(elevator_status_t* elevator, char* ip){
-  //printf("initing elevator %s\n", ip);
   bool node_alive = false;
   for(int i = 0; i < MAX_ELEVATORS; i++){
     if(compare_ips(ip, elevator[i].elevator.ip)){
@@ -36,15 +34,16 @@ void elevator_init_ip(elevator_status_t* elevator, char* ip){
     }
   }
   if(!node_alive){
-    //printf("Elevator %s not alive\n", ip);
     for(int i = 0; i < MAX_ELEVATORS; i++){
       if(!elevator[i].alive){
+        pthread_mutex_lock(&elevator[i].mutex);
         strcpy(elevator[i].elevator.ip, ip);
         strcpy(elevator[i].elevator.port, "15657");
         if(elevator_hardware_init(&elevator[i].elevator)){
           elevator[i].alive = true;
           printf("Elevator %s is alive\n", elevator[i].elevator.ip);
         }
+        pthread_mutex_unlock(&elevator[i].mutex);
         break;
       }
     }
