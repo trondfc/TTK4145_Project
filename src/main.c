@@ -142,8 +142,8 @@ void* main_elevator_control(void* arg){
 }
 
 void* main_send(void* arg){
-  return NULL;
   printf("send\n");
+  return NULL;
     printf("send_order_queue_init\n");
     sleep(1);
     while(1){
@@ -197,7 +197,7 @@ int main()
   while(1){
     keep_alive_node_list_t* node_list = get_node_list();
     if(node_list->self->node_mode == SLAVE){
-      //printf("Slave\n");
+      printf("Slave\n");
 
 
       if(running_threads.send == true){
@@ -212,7 +212,7 @@ int main()
       }
 
       if(running_threads.recv == false){
-        send_order_queue_listen(9000);
+        //send_order_queue_listen(9000);
         running_threads.recv = true;
       }
       if(running_threads.button_input == true){
@@ -228,7 +228,7 @@ int main()
       }
 
     }else if(node_list->self->node_mode == MASTER){
-      //printf("Master\n");
+      printf("Master\n");
       if(running_threads.recv == true){
         for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
           if(node_list->nodes[i].connection == CONNECTED){

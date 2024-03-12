@@ -13,7 +13,7 @@ void send_order_queue_listen(int port){
 }
 
 void send_order_queue_close_connection(char * ip){
-    conn_remove(ip);
+    close(conn_lookup(ip));
 }
 
 void send_order_queue_send_order(char * ip, order_queue_t *queue){

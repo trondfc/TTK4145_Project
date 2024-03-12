@@ -16,6 +16,9 @@ Rewrite of the original elevator hardware module from the TTK4145 Real Time Prog
 #include <assert.h>
 #include <stdbool.h>
 #include <time.h>
+#include <unistd.h>
+#include <string.h>
+
 
 #include "con_load.h"
 

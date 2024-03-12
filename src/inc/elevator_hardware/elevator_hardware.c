@@ -24,8 +24,16 @@ int elevator_hardware_init(elevator_hardware_info_t* hardware){
         return 0;
     }
     
-    if(setsockopt(hardware->sockfd, SOL_SOCKET, SO_RCVTIMEO, &(struct timeval){.tv_sec = 0, .tv_usec = 1000}, sizeof(struct timeval)) < 0){
+    if(setsockopt(hardware->sockfd, SOL_SOCKET, SO_RCVTIMEO, &(struct timeval){.tv_sec = 1, .tv_usec = 0}, sizeof(struct timeval)) < 0){
         printf("Unable to set socket timeout\n");
+        return 0;
+    }
+    if(setsockopt(hardware->sockfd, SOL_SOCKET, SO_SNDTIMEO, &(struct timeval){.tv_sec = 1, .tv_usec = 0}, sizeof(struct timeval)) < 0){
+        printf("Unable to set socket timeout\n");
+        return 0;
+    }
+    if(setsockopt(hardware->sockfd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) < 0){
+        printf("Unable to set socket reuse\n");
         return 0;
     }
     
@@ -47,6 +55,11 @@ int elevator_hardware_init(elevator_hardware_info_t* hardware){
     
     send(hardware->sockfd, (char[4]) {0}, 4, 0);
     return 1;
+}
+
+void elevator_hardware_destroy(elevator_hardware_info_t* hardware){
+    close(hardware->sockfd);
+    pthread_mutex_destroy(&hardware->sockmtx);
 }
 
 void elevator_hardware_set_motor_direction(elevator_hardware_motor_direction_t dirn, elevator_hardware_info_t* hardware){

@@ -42,13 +42,13 @@ int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, i
             list->nodes[i].last_time = get_timestamp();
             list->nodes[i].status = ALIVE;
             if(strcmp(list->nodes[i].data, "MASTER") == 0){
-                printf("Setting node %s to MASTER\n", list->nodes[i].ip);
+                //printf("Setting node %s to MASTER\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = MASTER;
             } else if(strcmp(list->nodes[i].data, "SLAVE") == 0){
-                printf("Setting node %s to SLAVE\n", list->nodes[i].ip);
+                //printf("Setting node %s to SLAVE\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = SLAVE;
             } else {
-                printf("Setting node %s to UNDEFINED\n", list->nodes[i].ip);
+                //printf("Setting node %s to UNDEFINED\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = UNDEFINED;
             }
             strncpy(list->nodes[i].data, data, sizeof(list->nodes[i].data) - 1);
@@ -62,13 +62,13 @@ int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, i
             strcpy(list->nodes[i].ip, ip);
             strcpy(list->nodes[i].data, data);
             if(strcmp(list->nodes[i].data, "MASTER") == 0){
-                printf("New node. Setting node %s to MASTER\n", list->nodes[i].ip);
+                //printf("New node. Setting node %s to MASTER\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = MASTER;
             } else if(strcmp(list->nodes[i].data, "SLAVE") == 0){
-                printf("New node. Setting node %s to SLAVE\n", list->nodes[i].ip);
+                //printf("New node. Setting node %s to SLAVE\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = SLAVE;
             } else {
-                printf("New node. Setting node %s to UNDEFINED\n", list->nodes[i].ip);
+                //printf("New node. Setting node %s to UNDEFINED\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = UNDEFINED;
             }
             return 0;
@@ -79,7 +79,7 @@ int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, i
 }
 
 void udp_receive_callback(const char* ip, char* data, int data_size){
-    //printf("Received data from %s \t %s\n", ip,data);
+    printf("Received data from %s \t %s\n", ip,data);
 
     if(strcmp(ip, keep_alive_node_list.self->ip) != 0){
         pthread_mutex_lock(keep_alive_node_list.mutex);
@@ -194,9 +194,9 @@ void update_node_count(keep_alive_node_list_t* list){
             }
         }
     }
-    //printf("Alive nodes: %d\n", count);
-    //printf("Alive slaves: %d\n", slave_count);
-    //printf("Alive masters: %d\n", master_count);
+    printf("Alive nodes: %d\n", count);
+    printf("Alive slaves: %d\n", slave_count);
+    printf("Alive masters: %d\n", master_count);
     list->node_count_alive = count;
     list->node_count_slave = slave_count;
     list->node_count_master = master_count;
