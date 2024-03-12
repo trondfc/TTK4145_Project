@@ -81,9 +81,15 @@ void poll_stopped_elevators(elevator_status_t* elevator){
       //printf("elevator %d %s is alive: %d\n",i, elevator[i].elevator.ip, elevator[i].alive);
       if(temp == 1){
         //printf("Elevator %s has stopped\n", elevator[i].elevator.ip);
+        pthread_mutex_lock(&elevator[i].mutex);
+        elevator[i].stop = true;
+        pthread_mutex_unlock(&elevator[i].mutex);
       }
       else if (temp == 0){
         //printf("Elevator %s has started\n", elevator[i].elevator.ip);
+        pthread_mutex_lock(&elevator[i].mutex);
+        elevator[i].stop = false;
+        pthread_mutex_unlock(&elevator[i].mutex);
       }
       else{ // Retunrs -1 if the elevator is not responding
         printf("Elevator %s is not responding\n", elevator[i].elevator.ip);
@@ -99,14 +105,20 @@ void poll_stopped_elevators(elevator_status_t* elevator){
 void poll_obstructed_elevators(elevator_status_t* elevator){
   for(uint8_t i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
     if(elevator[i].alive){
-      /*
+      
       if(elevator_hardware_get_obstruction_signal(&elevator[i].elevator)){
         //printf("Elevator %s is obstructed\n", elevator[i].elevator.ip);
+        pthread_mutex_lock(&elevator[i].mutex);
+        elevator[i].obstruction = true;
+        pthread_mutex_unlock(&elevator[i].mutex);
 
       }
       else{
         //printf("Elevator %s is not obstructed\n", elevator[i].elevator.ip);
-      }*/
+        pthread_mutex_lock(&elevator[i].mutex);
+        elevator[i].obstruction = false;
+        pthread_mutex_unlock(&elevator[i].mutex);
+      }
     }
   }
 }
@@ -137,7 +149,7 @@ void* main_elevator_control(void* arg){
   while(1){
     elevator_init(g_elevator);
     poll_stopped_elevators(g_elevator);
-    //poll_obstructed_elevators();
+    poll_obstructed_elevators();
     usleep(10*ORDER_POLL_DELAY);
   }
   return NULL;
