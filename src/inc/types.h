@@ -15,6 +15,7 @@ typedef struct elevator_status{
   elevator_direction_t direction;
   bool obstruction;
   bool stop;
+  int number_of_stop_readings;
   bool door_open;
   bool in_use;
   pthread_mutex_t mutex;

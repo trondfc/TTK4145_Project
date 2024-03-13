@@ -18,6 +18,8 @@
 #define QUEUE_SIZE MAX_QUEUE_SIZE
 #define ORDER_POLL_DELAY 10 * 1000 // 10 ms
 #define ORDER_SYNC_DELAY 500 * 1000 // 500 ms
+#define SEC_TO_US(x) x * 1000000
+#define NUMBER_OF_STOP_READINGS 5
 
 /* Define global variables */
 order_queue_t *queue;
@@ -79,23 +81,35 @@ void poll_stopped_elevators(elevator_status_t* elevator){
       int temp = elevator_hardware_get_stop_signal(&elevator[i].elevator);
       //printf("elevator %d %s is alive: %d\n",i, elevator[i].elevator.ip, elevator[i].alive);
       if(temp == 1){
-        //printf("Elevator %s has stopped\n", elevator[i].elevator.ip);
+        if(elevator[i].stop == false && elevator[i].number_of_stop_readings == 0){
+          printf("Elevator %s has stopped\n", elevator[i].elevator.ip);
+          pthread_mutex_lock(&elevator[i].mutex);
+          elevator[i].stop = true;
+          pthread_mutex_unlock(&elevator[i].mutex);
+        }
+         else if(elevator[i].number_of_stop_readings >= NUMBER_OF_STOP_READINGS && elevator[i].stop == true){
+          printf("Restarting elevator %s\n", elevator[i].elevator.ip);
+          pthread_mutex_lock(&elevator[i].mutex);
+          elevator[i].stop = false;
+          pthread_mutex_unlock(&elevator[i].mutex);
+        }
         pthread_mutex_lock(&elevator[i].mutex);
-        elevator[i].stop = true;
+        elevator[i].number_of_stop_readings++;
+        pthread_mutex_unlock(&elevator[i].mutex);
+      } 
+      else if(temp == 0){
+        pthread_mutex_lock(&elevator[i].mutex);
+        if(elevator[i].number_of_stop_readings > 0){
+          elevator[i].number_of_stop_readings--;
+        }
         pthread_mutex_unlock(&elevator[i].mutex);
       }
-      else if (temp == 0){
-        //printf("Elevator %s has started\n", elevator[i].elevator.ip);
-        pthread_mutex_lock(&elevator[i].mutex);
-        elevator[i].stop = false;
-        pthread_mutex_unlock(&elevator[i].mutex);
-      }
-      else{ // Retunrs -1 if the elevator is not responding
+      else if(temp == -1){ // Retunrs -1 if the elevator is not responding
         printf("Elevator %s is not responding\n", elevator[i].elevator.ip);
         pthread_mutex_lock(&elevator[i].mutex);
         elevator[i].alive = false;
         pthread_mutex_unlock(&elevator[i].mutex);
-      }
+      } 
     }
     usleep(ORDER_POLL_DELAY);
   }

@@ -9,6 +9,7 @@ elevator_status_t* elevator_struct_init(){
     elevator[i].direction = STOP;
     elevator[i].obstruction = false;
     elevator[i].stop = false;
+    elevator[i].number_of_stop_readings = 0;
     elevator[i].door_open = false;
     elevator[i].in_use = false;
     pthread_mutex_init(&elevator[i].mutex, NULL);
