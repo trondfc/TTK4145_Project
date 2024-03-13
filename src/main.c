@@ -16,7 +16,7 @@
 
 
 #define QUEUE_SIZE MAX_QUEUE_SIZE
-#define ORDER_POLL_DELAY 10 * 1000 // 100 ms
+#define ORDER_POLL_DELAY 10 * 1000 // 10 ms
 #define ORDER_SYNC_DELAY 500 * 1000 // 500 ms
 
 /* Define global variables */
@@ -26,14 +26,19 @@ elevator_status_t *g_elevator;
 
 void messageReceived(const char * ip, char * data, int datalength){
 
-  printf("Received message from %s\n",ip);
+  //printf("Received message from %s\n",ip);
 
   send_order_queue_deserialize(data, queue);
 
   printf("Queue size: %d\n", queue->size);
-  printf("Queue capacity: %d\n", queue->capacity);
+  //printf("Queue capacity: %d\n", queue->capacity);
   for(int i = 0; i < queue->size; i++){
-    printf("Order %d: %ld from flor %d going %d. Status: %s", i, queue->orders[i].order_id, queue->orders[i].floor, queue->orders[i].order_type, queue->orders[i].order_status == RECIVED ? "RECIVED" : "SYNCED");
+    printf("\tOrder %d: %ld from flor %d going %d. Status: %s \n", 
+          i, 
+          queue->orders[i].order_id, 
+          queue->orders[i].floor, 
+          queue->orders[i].order_type, 
+          queue->orders[i].order_status == RECIVED ? "RECIVED" : "SYNCED");
   }
     
 }
@@ -149,6 +154,26 @@ void* main_elevator_control(void* arg){
   return NULL;
 }
 
+void* print_elevator_status(void* arg){
+  printf("print_elevator_status\n");
+  while(1){
+    printf("Elevator status\n");
+    for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
+      if(g_elevator[i].alive){
+        printf("\tElevator %d: %s is %s, %s and %s at floor %d with door %s\n",i, g_elevator[i].elevator.ip,
+                  g_elevator[i].in_use ? "not_used" : "in_use", 
+                  g_elevator[i].stop ? "stopped" : "running", 
+                  g_elevator[i].obstruction ? "obstructed" : "not obstructed",
+                  g_elevator[i].floor,
+                  g_elevator[i].door_open ? "open" : "closed"
+                  );
+      }
+    }
+    usleep(SEC_TO_US(1));
+  }
+  return NULL;
+}
+
 void* main_send(void* arg){
   printf("send\n");
     sleep(1);
@@ -196,7 +221,15 @@ int main()
     bool elevator_control;
     bool send;
     bool recv;
+    bool print_elevator_status;
   } running_threads;
+  running_threads.keep_alive = false;
+  running_threads.button_input = false;
+  running_threads.elevator_control = false;
+  running_threads.send = false;
+  running_threads.recv = false;
+  running_threads.print_elevator_status = false;
+
 
   int err = main_init();
   if(err != 0){
@@ -204,7 +237,7 @@ int main()
     exit(-1);
   }
 
-  pthread_t keep_alive_thread, recv_thread, send_thread, button_thread, elevator_thread;
+  pthread_t keep_alive_thread, recv_thread, send_thread, button_thread, elevator_thread , print_elevator_status_thread;
 
   keep_alive_init(5000, SLAVE);
   while(1){
@@ -212,6 +245,11 @@ int main()
     if(node_list->self->node_mode == SLAVE){
       printf("Slave\n");
 
+      if(running_threads.print_elevator_status == true){
+        pthread_cancel(print_elevator_status_thread);
+        pthread_join(print_elevator_status_thread, NULL);
+        running_threads.print_elevator_status = false;
+      }
 
       if(running_threads.send == true){
         pthread_cancel(send_thread);
@@ -256,6 +294,11 @@ int main()
           }
         }
         running_threads.recv = false;
+      }
+
+      if(running_threads.print_elevator_status == false){
+        pthread_create(&print_elevator_status_thread, NULL, &print_elevator_status, NULL);
+        running_threads.print_elevator_status = true;
       }
 
       if(running_threads.elevator_control == false){
