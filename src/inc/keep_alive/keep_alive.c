@@ -79,7 +79,7 @@ int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, i
 }
 
 void udp_receive_callback(const char* ip, char* data, int data_size){
-    printf("Received data from %s \t %s\n", ip,data);
+    //printf("Received data from %s \t %s\n", ip,data);
 
     if(strcmp(ip, keep_alive_node_list.self->ip) != 0){
         pthread_mutex_lock(keep_alive_node_list.mutex);
@@ -194,9 +194,9 @@ void update_node_count(keep_alive_node_list_t* list){
             }
         }
     }
-    printf("Alive nodes: %d\n", count);
-    printf("Alive slaves: %d\n", slave_count);
-    printf("Alive masters: %d\n", master_count);
+    //printf("Alive nodes: %d\n", count);
+    //printf("Alive slaves: %d\n", slave_count);
+    //printf("Alive masters: %d\n", master_count);
     list->node_count_alive = count;
     list->node_count_slave = slave_count;
     list->node_count_master = master_count;

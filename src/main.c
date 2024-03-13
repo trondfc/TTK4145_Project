@@ -33,13 +33,7 @@ void messageReceived(const char * ip, char * data, int datalength){
   printf("Queue size: %d\n", queue->size);
   printf("Queue capacity: %d\n", queue->capacity);
   for(int i = 0; i < queue->size; i++){
-      printf("Order %d ID: %ld\n", i, queue->orders[i].order_id);
-      printf("Order %d elevator_id: %s\n", i, queue->orders[i].elevator_id);
-      printf("Order %d floor: %d\n", i, queue->orders[i].floor);
-      printf("Order %d order_type: %d\n", i, queue->orders[i].order_type);
-      printf("Order %d order_status: %d\n", i, queue->orders[i].order_status);
-      printf("Order %d timestamp: %ld\n", i, queue->orders[i].timestamp);
-      printf("\n\n");
+    printf("Order %d: %ld from flor %d going %d. Status: %s", i, queue->orders[i].order_id, queue->orders[i].floor, queue->orders[i].order_type, queue->orders[i].order_status == RECIVED ? "RECIVED" : "SYNCED");
   }
     
 }
@@ -162,18 +156,18 @@ void* main_send(void* arg){
       keep_alive_node_list_t* node_list = get_node_list();
       for(uint8_t i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
         if(node_list->nodes[i].status == ALIVE){
-          printf("found node at %s\n", node_list->nodes[i].ip);
-          printf("Connection status: %d\n", node_list->nodes[i].connection);
+          //printf("found node at %s\n", node_list->nodes[i].ip);
+          //printf("Connection status: %d\n", node_list->nodes[i].connection);
           if(node_list->nodes[i].connection == DISCONNECTED){
             printf("Connecting to %s\n", node_list->nodes[i].ip);
             node_list->nodes[i].connection = CONNECTED;
             send_order_queue_connect(node_list->nodes[i].ip, 9000);
             sleep(1);
           }
-          printf("Sending order to %s\n", node_list->nodes[i].ip);
+          //printf("Sending order to %s\n", node_list->nodes[i].ip);
           pthread_mutex_lock(queue->queue_mutex);
           if(send_order_queue_send_order(node_list->nodes[i].ip ,queue)){
-            printf("Order sent to %s\n", node_list->nodes[i].ip);
+            //printf("Order sent to %s\n", node_list->nodes[i].ip);
             for(int i = 0; i < queue->size; i++){
               if(queue->orders[i].order_status == RECIVED){
                 queue->orders[i].order_status = SYNCED;
