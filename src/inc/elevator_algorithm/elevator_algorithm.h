@@ -43,7 +43,7 @@ int elevator_algorithm_kill();
 
 
 //Private functions
-uint64_t get_timestamp();
+uint64_t get_timestamp_us();
 
 /*
 typedef enum order_types_t {

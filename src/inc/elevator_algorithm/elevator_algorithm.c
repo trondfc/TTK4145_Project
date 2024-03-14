@@ -16,7 +16,7 @@ pthread_t elevator_thread[N_ELEVATORS], request_handler_thread;
 elevator_arg_t elevator_arg[N_ELEVATORS];
 
 //TODO: Double check mutexes in elevator_status and queue
-uint64_t get_timestamp(){
+uint64_t get_timestamp_us(){
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
     return SEC_TO_US((uint64_t)ts.tv_sec) + NS_TO_US((uint64_t)ts.tv_nsec);
@@ -40,9 +40,10 @@ int is_elevator_dir_down(elevator_status_t* selected_elevator)
 int set_elevator_state(elevator_status_t* elevator_status, int elevator_no, elevator_state_t state)
 {
     #if LOG_LEVEL <= LOG_LEVEL_INFO
-        printf("INFO: \tElevator %d \t Set to  %d\n", state);
+        printf("INFO: \tElevator %d \t Set to  %d\n", elevator_no, state);
     #endif
     elevator_status[elevator_no].elevator_state = state;
+    return 0;
 }
 
 int start_elevator(elevator_status_t* elevator_status, int elevator_no)
@@ -82,20 +83,19 @@ int stop_elevator(elevator_status_t* elevator_status, int elevator_no)
 int open_elevator_door(elevator_status_t* elevator_status, int elevator_no)
 {
     elevator_status_t* selected_elevator = &elevator_status[elevator_no];
-    elevator_state_t prev_elevator_state = selected_elevator->elevator_state;
     
     selected_elevator->door_open = true;
     #if LOG_LEVEL <= LOG_LEVEL_INFO
         printf("INFO: \tElevator %d \t Door Opening\n", elevator_no);
     #endif
-    uint64_t door_open_timestamp_us = get_timestamp();
-    while(door_open_timestamp_us + ELEVATOR_DOOR_OPEN_TIME > get_timestamp()){
+    uint64_t door_open_timestamp_us = get_timestamp_us();
+    while(door_open_timestamp_us + ELEVATOR_DOOR_OPEN_TIME > get_timestamp_us()){
         usleep(10000);
         if(selected_elevator->obstruction){
             #if LOG_LEVEL == DEBUG
                 printf("Obstruction Detected");
             #endif
-            door_open_timestamp_us = get_timestamp();
+            door_open_timestamp_us = get_timestamp_us();
         }
     }
     selected_elevator->door_open = false;
