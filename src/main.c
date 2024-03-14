@@ -245,7 +245,7 @@ void add_elevator_button_lights(){
     }
   }
 
-  for(int i = 0; i < MAX_QUEUE_SIZE; i++){
+  for(int i = 0; i < queue->size; i++){
     if(queue->orders[i].order_status == SYNCED){
       printf("Adding order %ld to button lights\n", queue->orders[i].order_id);
       if(queue->orders[i].order_type == 0){
