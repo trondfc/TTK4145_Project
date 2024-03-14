@@ -1,5 +1,20 @@
+/**
+ * @file orderQueue.c
+ * @brief Functions for creating, and maintaining an order queue.
+ * @version 0.1
+ * @date 2024-03-14
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #include "orderQueue.h"
 
+/**
+ * @brief Create a order queue object
+ * 
+ * @param capacity 
+ * @return order_queue_t* 
+ */
 order_queue_t * create_order_queue(int capacity){
     order_queue_t *queue = (order_queue_t *)malloc(sizeof(order_queue_t));
     queue->capacity = capacity;
@@ -10,6 +25,14 @@ order_queue_t * create_order_queue(int capacity){
     return queue;
 }
 
+/**
+ * @brief Concatenate the numbers from the order event to create a unique order id
+ * 
+ * @param a - IP-String
+ * @param b 
+ * @param c 
+ * @return long 
+ */
 long ConcatenateNumbers(char * a, int b, int c){
     char aClean[16] = "";
     char str[30];
@@ -26,11 +49,23 @@ long ConcatenateNumbers(char * a, int b, int c){
     return atol(str);
 }
 
+/**
+ * @brief Generate a unique order id
+ * 
+ * @param order 
+ * @return long 
+ */
 long GenerateOrderID(order_event_t *order){
 
     return ConcatenateNumbers(order->elevator_id, order->floor, order->order_type);
 }
 
+/**
+ * @brief Add an order to the queue
+ * 
+ * @param queue 
+ * @param order 
+ */
 void enqueue_order(order_queue_t *queue, order_event_t *order){
     if(queue->size == queue->capacity){
         printf("Queue is full\n");
@@ -46,6 +81,12 @@ void enqueue_order(order_queue_t *queue, order_event_t *order){
     queue->size++;
 }   
 
+/**
+ * @brief Remove an order from the queue
+ * 
+ * @param queue 
+ * @param order 
+ */
 void dequeue_order(order_queue_t *queue, order_event_t *order){
     if(queue->size == 0){
         printf("Queue is empty\n");

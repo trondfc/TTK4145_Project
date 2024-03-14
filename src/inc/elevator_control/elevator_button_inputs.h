@@ -1,3 +1,12 @@
+/**
+ * @file elevator_button_inputs.h
+ * @brief Functions to poll an elevator for new orders.
+ * @version 0.1
+ * @date 2024-03-14
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #ifndef ELEVATOR_BUTTON_INPUTS_H
 #define ELEVATOR_BUTTON_INPUTS_H
 

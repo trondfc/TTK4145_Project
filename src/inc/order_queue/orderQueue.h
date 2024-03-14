@@ -1,3 +1,12 @@
+/**
+ * @file orderQueue.h
+ * @brief Functions for creating, and maintaining an order queue.
+ * @version 0.1
+ * @date 2024-03-14
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #ifndef ORDERQUEUE_H
 #define ORDERQUEUE_H
 
