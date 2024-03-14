@@ -159,3 +159,63 @@ void add_elevator_button_lights(button_lights_history_t* button_lights, order_qu
     }
   }
 }
+
+void set_changed_button_lights(button_lights_history_t* button_lights, elevator_status_t* elevator){
+    for(int i = 0; i < NO_FLOORS; i++){
+      //printf("floor up %d: new: %d old: %d\n", i, button_lights->new->up->floors[i], button_lights->old->up->floors[i]);
+      if(button_lights->new->up->floors[i] != button_lights->old->up->floors[i]){
+        //printf("Button light up %d has changed\n", i);
+        for(int j = 0; j < MAX_IP_NODES; j++){
+          if(elevator[j].alive){
+            elevator_hardware_set_button_lamp(0, i, button_lights->new->up->floors[i], &elevator[j].elevator);
+          }
+        }
+      }
+      if(button_lights->new->down->floors[i] != button_lights->old->down->floors[i]){
+        //printf("Button light down %d has changed\n", i);
+        for(int j = 0; j < MAX_IP_NODES; j++){
+          if(elevator[j].alive){
+            elevator_hardware_set_button_lamp(1, i, button_lights->new->down->floors[i], &elevator[j].elevator);
+          }
+        }
+      }
+      for(int j = 0; j < MAX_IP_NODES; j++){
+        if(button_lights->new->cab[j]->floors[i] != button_lights->old->cab[j]->floors[i]){
+          //printf("Button light cab %d %d has changed\n", j, i);
+          if(elevator[j].alive){
+            elevator_hardware_set_button_lamp(2, i, button_lights->new->cab[j]->floors[i], &elevator[j].elevator);
+          }
+        }
+      }
+    }
+    memcpy(button_lights->old->up, button_lights->new->up, sizeof(floor_buttons_t));
+    memcpy(button_lights->old->down, button_lights->new->down, sizeof(floor_buttons_t));
+    for(int i = 0; i < MAX_IP_NODES; i++){
+      memcpy(button_lights->old->cab[i], button_lights->new->cab[i], sizeof(floor_buttons_t));
+    }
+}
+
+void sett_all_button_lights(button_lights_history_t* button_lights, elevator_status_t* elevator){
+    for(int i = 0; i < NO_FLOORS; i++){
+        for(int j = 0; j < MAX_IP_NODES; j++){
+          if(elevator[j].alive){
+            elevator_hardware_set_button_lamp(0, i, button_lights->new->up->floors[i], &elevator[j].elevator);
+          }
+        }
+        for(int j = 0; j < MAX_IP_NODES; j++){
+          if(elevator[j].alive){
+            elevator_hardware_set_button_lamp(1, i, button_lights->new->down->floors[i], &elevator[j].elevator);
+          }
+        }
+      for(int j = 0; j < MAX_IP_NODES; j++){
+          if(elevator[j].alive){
+            elevator_hardware_set_button_lamp(2, i, button_lights->new->cab[j]->floors[i], &elevator[j].elevator);
+          }
+      }
+    }
+    memcpy(button_lights->old->up, button_lights->new->up, sizeof(floor_buttons_t));
+    memcpy(button_lights->old->down, button_lights->new->down, sizeof(floor_buttons_t));
+    for(int i = 0; i < MAX_IP_NODES; i++){
+      memcpy(button_lights->old->cab[i], button_lights->new->cab[i], sizeof(floor_buttons_t));
+    }
+}
