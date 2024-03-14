@@ -139,12 +139,14 @@ int at_valid_floor_request(elevator_status_t* elevator_status, int elevator_no, 
 int get_elevator_no_from_order(elevator_status_t* elevator_status, order_event_t* order)
 {
     //TODO: Implement
+    // elevator ip == elevator _id if the order is a cab request. Else, the elevator id is 0 and can be ignored.
+    if (order->order_type != GO_TO) return 0;
+
     for(int i = 0; i < N_ELEVATORS; i++){
         if(strcmp(elevator_status[i].elevator.ip, order->elevator_id) == 0){
             return i;
         }
     }
-    printf("Elevator not found\n"); 
     return 0;
 }
 
@@ -234,6 +236,14 @@ int set_elevator_dir_towards_floor(elevator_status_t* elevator_status, int eleva
     return 0;
 }
 
+int complete_cab_request(elevator_status, elevator_no, order_queue)
+{
+
+}
+int complete_hall_request(elevator_status, elevator_no, order_queue)
+{
+
+}
 
 
 
@@ -241,15 +251,15 @@ int complete_floor_request(int floor, int elevator_no, elevator_status_t* elevat
 {
     pthread_mutex_lock(order_queue->queue_mutex);
     for(int i = 0; i < order_queue->size;i++){
-        if(order_queue->orders[i].order_status == RECIVED) continue;
+        if(order_queue->orders[i].order_status == ACTIVE) continue;
         if(order_queue->orders[i].order_type==GO_TO){
             if(elevator_no != get_elevator_no_from_order(elevator_status, &order_queue->orders[i])) continue;
         }
-
+        //TODO: assume that person only enters elevator moving in correct direction
         if(order_queue->orders[i].floor == floor){
             //TODO: Should only synched orders be removed?
             dequeue_order(order_queue, &order_queue->orders[i]);
-            i = -1; //Reset Iterator
+            break;
         }
     }
     pthread_mutex_unlock(order_queue->queue_mutex);
@@ -269,7 +279,7 @@ void* elevator_control(void* arg){
     
     elevator_status_t* selected_elevator = &elevator_status[elevator_no];
     while(1){
-        usleep(1000);
+        usleep(100000);
         /* 
         if(selected_elevator->floor >= N_FLOORS && is_elevator_dir_up(selected_elevator)){
             selected_elevator->elevator_state = ELEVATOR_IDLE;
@@ -301,6 +311,9 @@ void* elevator_control(void* arg){
             if(at_valid_floor_request(elevator_status, elevator_no, order_queue)){
                 stop_elevator(elevator_status, elevator_no);
                 open_elevator_door(elevator_status, elevator_no);
+                //TODO: Complete Cab request and Hall request in separate function;
+                //complete_cab_request(elevator_status, elevator_no, order_queue);
+                //complete_hall_request(elevator_status, elevator_no, order_queue);
                 complete_floor_request(elevator_status->floor, elevator_no, elevator_status, order_queue);
                 if(is_any_valid_request_in_current_elevator_direction(elevator_status, elevator_no, order_queue)){
                     start_elevator(elevator_status, elevator_no);
@@ -308,7 +321,6 @@ void* elevator_control(void* arg){
                     set_elevator_state(elevator_status, elevator_no, ELEVATOR_IDLE);
                 }
             }
-
             break;
         default:
             break;
@@ -384,8 +396,8 @@ void* request_handler(void* arg){
                 default:
                     printf("Invalid order status\n");
                     break;
-                }
-            }       
+            }
+        }       
     }
     return NULL;
 }
@@ -415,7 +427,5 @@ int elevator_algorithm_kill()
         //pthread_cancel(elevator_thread[i]);
     }
     return 0;
-}  
-
-
+}
 //TODO: Separate at_floor logic and floor where relevant

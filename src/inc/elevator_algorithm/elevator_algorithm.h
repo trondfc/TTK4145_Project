@@ -29,7 +29,7 @@
 
 #define US_TO_SEC(us)   ((us)/1000000)
 
-#define ELEVATOR_DOOR_OPEN_TIME SEC_TO_US(3)
+#define ELEVATOR_DOOR_OPEN_TIME SEC_TO_US(0)
 
 typedef struct{
   int elevator_no;

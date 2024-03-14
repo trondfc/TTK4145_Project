@@ -25,7 +25,6 @@ int main(){
 elevator_status = (elevator_status_t*)malloc(N_ELEVATORS * sizeof(elevator_status_t));
 queue = create_order_queue(10);
 elevator_algorithm_init(elevator_status, queue);
-
 char elevator_id[N_ELEVATORS][16];
 for(int i = 0; i < N_ELEVATORS; i++){
         sprintf(elevator_id[i], "192.168.0.%d", i+1);
@@ -40,21 +39,24 @@ for(int i = 0; i < N_ELEVATORS; i++){
 
 
     //--------------------------Queue ------------------------------
+    sleep(1);
     order_event_t order;
     order.order_id = 1;
     order.order_type = GO_TO;
     order.floor = 2;
-    order.order_status = SYNCED;
+    order.order_status = RECIVED;
     strcpy(order.elevator_id, elevator_id[0]);
-/*     enqueue_order(queue, &order);
-    sleep(1);
-    assert(elevator_status[0].elevator_state == ELEVATOR_IDLE);
-    dequeue_order(queue, &order); */
-
-    printf("%d\n", queue->size);
     enqueue_order(queue, &order);
-    printf("%d\n", queue->size);
-    sleep(1);
+    usleep(100000);
+    
+    assert(elevator_status[0].elevator_state == ELEVATOR_IDLE);
+
+    queue->orders[0].order_status = SYNCED;
+    usleep(100000);
+    assert(queue->orders[0].order_status == ACTIVE);
+    assert(elevator_status[0].elevator_state == ELEVATOR_DIR_UP_AND_MOVING);
+
+
 
 
     printf("------------------\n");
@@ -64,7 +66,7 @@ for(int i = 0; i < N_ELEVATORS; i++){
 
 
     //print_order_data(queue->orders[0]);
-    assert(elevator_status[0].elevator_state == ELEVATOR_DIR_UP_AND_MOVING);
+    
 
     elevator_status[0].floor = 2;
     sleep(6);
@@ -73,6 +75,8 @@ for(int i = 0; i < N_ELEVATORS; i++){
     printf("done\n");
     elevator_algorithm_kill();
 }
+
+
 
 
 void print_order_data(order_event_t *order){
