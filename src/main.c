@@ -45,7 +45,6 @@ void messageReceived(const char * ip, char * data, int datalength){
     
 }
 
-
 /* Callback function for tcp connupdate*/
 void connectionStatus(const char * ip, int status){
   printf("A connection got updated %s: %d\n",ip,status);
@@ -63,36 +62,34 @@ void connectionStatus(const char * ip, int status){
   }
 }
 
+button_lights_history_t* button_light_struct_init(){
+  button_lights_history_t* _button_lights = (button_lights_history_t*)malloc(sizeof(button_lights_history_t));
+  _button_lights->old = (button_lights_t*)malloc(sizeof(button_lights_t));
+  _button_lights->old->up = (floor_buttons_t*)malloc(NO_FLOORS * sizeof(bool));
+  _button_lights->old->down = (floor_buttons_t*)malloc(NO_FLOORS * sizeof(bool));
+  for(int i = 0; i < MAX_IP_NODES; i++){
+    _button_lights->old->cab[i] = (floor_buttons_t*)malloc(NO_FLOORS * sizeof(bool));
+  }
+  _button_lights->old->mutex = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t));
+
+  _button_lights->new = (button_lights_t*)malloc(sizeof(button_lights_t));
+  _button_lights->new->up = (floor_buttons_t*)malloc(NO_FLOORS * sizeof(bool));
+  _button_lights->new->down = (floor_buttons_t*)malloc(NO_FLOORS * sizeof(bool));
+  for(int i = 0; i < MAX_IP_NODES; i++){
+    _button_lights->new->cab[i] = (floor_buttons_t*)malloc(NO_FLOORS * sizeof(bool));
+  }
+  _button_lights->new->mutex = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t));
+
+  return _button_lights;
+}
+
 int main_init(){
   printf("main_init\n");
   sysQueInit(5);
   send_order_queue_init(messageReceived, connectionStatus);
   g_elevator =  elevator_struct_init();
-/*
-  button_lights = (button_lights_t*)malloc(sizeof(button_lights_t));
-  button_lights->up = (bool*)malloc(NO_FLOORS * sizeof(bool));
-  button_lights->down = (bool*)malloc(NO_FLOORS * sizeof(bool));
-  for(int i = 0; i < MAX_IP_NODES; i++){
-    button_lights->cab[i] = (bool*)malloc(NO_FLOORS * sizeof(bool));
-  }
-*/
-  button_lights = (button_lights_history_t*)malloc(sizeof(button_lights_history_t));
-  button_lights->old = (button_lights_t*)malloc(sizeof(button_lights_t));
-  button_lights->old->up = (floor_buttons_t*)malloc(NO_FLOORS * sizeof(bool));
-  button_lights->old->down = (floor_buttons_t*)malloc(NO_FLOORS * sizeof(bool));
-  for(int i = 0; i < MAX_IP_NODES; i++){
-    button_lights->old->cab[i] = (floor_buttons_t*)malloc(NO_FLOORS * sizeof(bool));
-  }
-  button_lights->old->mutex = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t));
-
-  button_lights->new = (button_lights_t*)malloc(sizeof(button_lights_t));
-  button_lights->new->up = (floor_buttons_t*)malloc(NO_FLOORS * sizeof(bool));
-  button_lights->new->down = (floor_buttons_t*)malloc(NO_FLOORS * sizeof(bool));
-  for(int i = 0; i < MAX_IP_NODES; i++){
-    button_lights->new->cab[i] = (floor_buttons_t*)malloc(NO_FLOORS * sizeof(bool));
-  }
-  button_lights->new->mutex = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t));
-
+  button_lights = button_light_struct_init();
+  
   printf("sysQueInit\n");
 
   queue = create_order_queue(QUEUE_SIZE);
