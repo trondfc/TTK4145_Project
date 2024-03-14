@@ -1,6 +1,13 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+/// Convert seconds to microseconds
+#define SEC_TO_US(sec) ((sec)*1000000)
+/// Convert milliseconds to microseconds
+#define MS_TO_US(ms)    ((ms)*1000)
+/// Convert nanoseconds to microseconds
+#define NS_TO_US(ns)    ((ns)/1000)
+
 #define NO_FLOORS 4
 #define NO_ELEVATORS 3
 #define NO_CONTROLLERS 3
