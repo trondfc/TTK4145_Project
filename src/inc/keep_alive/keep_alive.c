@@ -32,7 +32,7 @@ void* keep_alive_send(void* arg){
     keep_alive_node_list_t* list = (keep_alive_node_list_t*)arg;
     while(1){
         if(list->single_master == false){
-            printf("Sending keep alive, mode: %d\n", list->self->node_mode);
+            //printf("Sending keep alive, mode: %d\n", list->self->node_mode);
             udp_broadcast(list->self->port, list->self->data, sizeof(list->self->data));
         }
         usleep(BRODCAST_INTERVAL_US);
@@ -234,8 +234,10 @@ void* keep_alive_update(void* arg){
         
         if(list->node_count_alive == 0){
             if((get_timestamp() - last_contact_timestamp) > NO_ACTIVE_NODES_TIMEOUT_US){
-                printf("NO_ACTIVE_NODES_TIMEOUT");
-                list->single_master = true;
+                if(list->single_master == false){
+                    printf("No active nodes for %d us. Setting single master\n", NO_ACTIVE_NODES_TIMEOUT_US);
+                    list->single_master = true;
+                }
                 //exit(1);
             }
         }else{
