@@ -86,9 +86,6 @@ void* controll_elevator_button_lights(void* arg){
   return NULL;
 }
 
-
-
-
 void* main_button_input(void* arg){
   printf("button_input\n");
 
@@ -185,12 +182,6 @@ void* main_send(void* arg){
     }
   return NULL;
 }
-
-void* main_recv(void* arg){
-  printf("recv\n");
-  return NULL;
-}
-
 
 int main()
 {
