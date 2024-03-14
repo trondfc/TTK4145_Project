@@ -169,6 +169,12 @@ void poll_elevator_floor(elevator_status_t* elevator){
       if(temp != -1){
         pthread_mutex_lock(&elevator[i].mutex);
         elevator[i].floor = temp;
+        elevator[i].at_floor = true;
+        pthread_mutex_unlock(&elevator[i].mutex);
+      }
+      else{
+        pthread_mutex_lock(&elevator[i].mutex);
+        elevator[i].at_floor = false;
         pthread_mutex_unlock(&elevator[i].mutex);
       }
     }

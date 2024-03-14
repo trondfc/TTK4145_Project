@@ -13,6 +13,7 @@ typedef struct elevator_status{
   elevator_hardware_info_t elevator;
   bool alive;
   int floor;
+  bool at_floor;
   elevator_direction_t direction;
   bool obstruction;
   bool stop;
