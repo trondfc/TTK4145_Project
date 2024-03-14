@@ -24,6 +24,7 @@
 
 #define NUMBER_OF_STOP_READINGS 5 // Number of stop readings before elevator restarts
 
+/*
 typedef enum{
   ELEVATOR_IDLE,
   ELEVATOR_DIR_UP_AND_MOVING,
@@ -31,6 +32,13 @@ typedef enum{
   ELEVATOR_DIR_DOWN_AND_MOVING, 
   ELEVATOR_DIR_DOWN_AND_STOPPED,
   ELEVATOR_EMERGENCY_STOP
+}elevator_state_t;
+*/
+
+typedef enum{
+  STOP = 0,
+  UP = 1,
+  DOWN = 2
 }elevator_state_t;
 
 /**

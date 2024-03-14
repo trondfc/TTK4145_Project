@@ -40,7 +40,7 @@ typedef struct order_event_t {
     order_types_t order_type;
     order_status_t order_status;
     time_t timestamp;
-    uint8_t controller_id;
+    char controller_id[16];
 }order_event_t;
 
 typedef struct order_queue_t {
