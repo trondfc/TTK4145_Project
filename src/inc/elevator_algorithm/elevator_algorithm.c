@@ -53,6 +53,7 @@ int start_elevator(elevator_status_t* elevator_status, int elevator_no)
     #endif
         //TODO: Use Set elevator state function
     if(elevator_status[elevator_no].elevator_state == ELEVATOR_DIR_UP_AND_STOPPED){
+        
         elevator_status[elevator_no].elevator_state = ELEVATOR_DIR_UP_AND_MOVING;
         //printd(LOG_LEVEL_INFO, sprintf("INFO: Elevator %d moving UP", elevator_no));
     }
@@ -238,11 +239,11 @@ int set_elevator_dir_towards_floor(elevator_status_t* elevator_status, int eleva
 
 int complete_cab_request(elevator_status, elevator_no, order_queue)
 {
-
+    return 0;
 }
 int complete_hall_request(elevator_status, elevator_no, order_queue)
 {
-
+    return 0;
 }
 
 
