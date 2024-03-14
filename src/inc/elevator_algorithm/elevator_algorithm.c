@@ -13,6 +13,7 @@
 pthread_t elevator_thread[N_ELEVATORS], request_handler_thread;
 elevator_arg_t elevator_arg[N_ELEVATORS];
 
+//TODO: Double check mutexes in elevator_status and queue
 uint64_t get_timestamp(){
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
@@ -88,7 +89,7 @@ int at_valid_floor_request(elevator_status_t* elevator_status, int elevator_no, 
     for(int i = 0; i < order_queue->size; i++){
 
         if(order_queue->orders[i].floor != selected_elevator->floor){
-            return 0;
+            continue;
         }
 
         switch(order_queue->orders[i].order_type){
@@ -106,20 +107,124 @@ int at_valid_floor_request(elevator_status_t* elevator_status, int elevator_no, 
                 }
                 break;
             default:
+                printf("Invalid order type\n");
                 break;
         }
     }
     return 0;
 }
 
-int is_valid_requests_in_current_direction(elevator_status_t* elevator_status, int elevator_no, order_queue_t* order_queue)
-{}
+int get_elevator_no_from_order(elevator_status_t* elevator_status, order_event_t* order)
+{
+    //TODO: Implement
+    for(int i = 0; i < N_ELEVATORS; i++){
+        if(strcmp(elevator_status[i].elevator.ip, order->elevator_id) == 0){
+            return i;
+        }
+    }
+    printf("Elevator not found\n"); 
+    return 0;
+}
 
-int complete_floor_request(int floor, order_queue_t* order_queue)
+int is_any_valid_request_in_current_elevator_direction(elevator_status_t* elevator_status, int elevator_no, order_queue_t* order_queue)
+{
+    elevator_status_t* selected_elevator = &elevator_status[elevator_no];
+    for(int i = 0; i < order_queue->size; i++){
+        order_event_t* selected_order = &order_queue->orders[i];
+
+        if (selected_order->order_status == RECIVED) continue;
+
+        if (selected_order->order_type == GO_TO && elevator_no != get_elevator_no_from_order(elevator_status, selected_order)) continue;
+
+        if(order_queue->orders[i].floor != selected_elevator->floor){
+            continue;
+        }
+        switch(order_queue->orders[i].order_type){
+            case GO_TO:
+                return 1;
+                break;
+            case UP_FROM:
+                if(is_elevator_dir_up(selected_elevator)){
+                    return 1;
+                }
+                break;
+            case DOWN_FROM:
+                if(is_elevator_dir_down(selected_elevator)){
+                    return 1;
+                }
+                break;
+            default:
+                printf("Invalid order type\n");
+                break;
+        }
+    }
+    return 0;
+}
+
+int is_elevator_moving_towards_request(elevator_status_t* elevator_status, int elevator_no, int requested_flooor)
+{
+    elevator_status_t* selected_elevator = &elevator_status[elevator_no];
+    if(is_elevator_dir_up(selected_elevator) && selected_elevator->floor < requested_flooor){
+            return 1;
+        }
+    else if(is_elevator_dir_down(selected_elevator) && selected_elevator->floor > requested_flooor){
+            return 1;
+        }
+    return 0;
+}
+
+int is_any_elevator_moving_towards_request(elevator_status_t* elevator_status, int requested_flooor)
+{
+    for(int i = 0; i < N_ELEVATORS; i++){
+        if(is_elevator_moving_towards_request(elevator_status, i, requested_flooor)){
+            return 1;
+        }   
+    }
+    return 0;
+}
+
+int get_closest_idle_elevator(elevator_status_t* elevator_status, int requested_flooor){
+    int closest_elevator = -1;
+    for(int i = 0; i < N_ELEVATORS; i++){
+        if(elevator_status[i].alive == false) continue;
+        if(elevator_status[i].elevator_state == ELEVATOR_IDLE){
+            if(closest_elevator == -1){
+                closest_elevator = i;
+            }
+            else if(abs(elevator_status[i].floor - requested_flooor) < abs(elevator_status[closest_elevator].floor - requested_flooor)){
+                closest_elevator = i;
+            }
+        }
+    }
+    return closest_elevator;
+}
+
+int set_elevator_dir_towards_floor(elevator_status_t* elevator_status, int elevator_no, int floor)
+{
+    //TODO: Should compare with prev floor because floor can be set to -1 when between floors
+    if(elevator_status[elevator_no].floor < floor){
+        elevator_status[elevator_no].elevator_state = ELEVATOR_DIR_UP_AND_MOVING;
+    }
+    else if(elevator_status[elevator_no].floor > floor){
+        elevator_status[elevator_no].elevator_state = ELEVATOR_DIR_DOWN_AND_MOVING;
+    }
+    return 0;
+}
+
+
+
+
+int complete_floor_request(int floor, int elevator_no, elevator_status_t* elevator_status, order_queue_t* order_queue)
 {
     pthread_mutex_lock(order_queue->queue_mutex);
     for(int i = 0; i < order_queue->size;i++){
+        if(order_queue->orders[i].order_status != RECIVED) continue;
+        if(order_queue->orders[i].order_type==GO_TO){
+            if(elevator_no != get_elevator_no_from_order(elevator_status, &order_queue->orders[i])) continue;
+        }
+
         if(order_queue->orders[i].floor == floor){
+            //TODO: Should only synched orders be removed?
             dequeue_order(order_queue, &order_queue->orders[i]);
             i = -1; //Reset Iterator
         }
@@ -139,6 +244,14 @@ void* elevator_control(void* arg){
     elevator_status_t* selected_elevator = &elevator_status[elevator_no];
     while(1){
         usleep(1000);
+        /* 
+        if(selected_elevator->floor >= N_FLOORS && is_elevator_dir_up(selected_elevator)){
+            selected_elevator->elevator_state = ELEVATOR_IDLE;
+        }
+        if(selected_elevator->floor <= 0 && is_elevator_dir_down(selected_elevator)){
+            selected_elevator->elevator_state = ELEVATOR_IDLE;
+        } */
+
         if(selected_elevator->alive == false){
             continue;
         }
@@ -155,15 +268,17 @@ void* elevator_control(void* arg){
             break;
 
         case ELEVATOR_DIR_UP_AND_MOVING || ELEVATOR_DIR_DOWN_AND_MOVING:
-            if(selected_elevator->floor == -1){
-                continue;}
+            if(selected_elevator->floor == -1) continue;
 
+            //TODO: If any more requests in current direction, continue moving, else set to IDLE
             if(at_valid_floor_request(elevator_status, elevator_no, order_queue)){
                 stop_elevator(elevator_status, elevator_no);
                 open_elevator_door(elevator_status, elevator_no);
-                complete_floor_request(elevator_status->floor, order_queue);
+                complete_floor_request(elevator_status->floor, elevator_no, elevator_status, order_queue);
+                
                 start_elevator(elevator_status, elevator_no);
             }
+
             break;
         default:
             break;
@@ -175,17 +290,51 @@ void* elevator_control(void* arg){
 
 void* request_handler(void* arg){
     order_queue_t* order_queue = (order_queue_t*)arg;
+    elevator_status_t* elevator_status = elevator_arg->elevator_status;
     while(1){
         usleep(1000);
         if(order_queue->size == 0){
             continue;
         }
+        
         for (int i = 0; i < order_queue->size; i++){
-                
-            }
-        }
 
-
+            order_event_t slected_order = order_queue->orders[i];
+            switch(slected_order.order_status){
+                case RECIVED:
+                    continue; //Ignore unsynched orders
+                case SYNCED:
+                    if(slected_order.order_type == GO_TO){
+                        int elevator_no = get_elevator_no_from_order(elevator_status, &slected_order);
+                        if(is_elevator_moving_towards_request(elevator_status, elevator_no, slected_order.floor)){
+                            slected_order.order_status = ACTIVE;
+                        }
+                    }
+                    else{
+                        if(is_any_elevator_moving_towards_request(elevator_status, slected_order.floor)){
+                            slected_order.order_status = ACTIVE;
+                            //TODO: Set order timestamp
+                            continue;
+                        } 
+                        int closest_idle_elevator = get_closest_idle_elevator(elevator_status, slected_order.floor);
+                        if(closest_idle_elevator == -1){
+                            continue;
+                        }else{
+                            set_elevator_dir_towards_floor(elevator_status, closest_idle_elevator, slected_order.floor);
+                        }
+                    }
+                    break;
+                case ACTIVE:
+                    //TODO: Check order timestamp and set to synched if too old
+                    break;
+                case COMPLETED:
+                    break;
+                default:
+                    printf("Invalid order status\n");
+                    break;
+                }
+            }       
+    }
     return NULL;
 }
  
@@ -216,40 +365,3 @@ int elevator_status_kill()
     }
     return 0;
 }  
-
-/* 
-int is_any_elevator_moving_towards_hall_request(elevator_status_t* elevator_status, int requested_flooor)
-//is any elevator moving towards requested floor and has same request dir
-{
-    for(int i = 0; i < N_ELEVATORS; i++){
-        if(elevator_status[i].elevator_state == MOVING_UP && elevator_status[i].floor < requested_flooor){
-            return 1;
-        }
-        else if(elevator_status[i].elevator_state == MOVING_DOWN && elevator_status[i].floor > floor){
-            return 1;
-        }
-    }
-    return 0;
-}
-int get_idle_elevator( elevator_status_t* elevator_status)
-{
-    for(int i = 0; i < N_ELEVATORS; i++){
-\
-        if(elevator_status[i].elevator_state == ELEVATOR_IDLE && elevator_status[i].alive == true){
-            return i;
-        }
-    }
-    return -1;
-}
- */
-
-/* 
-int is_elevator_moving(elevator_status_t* elevator_status, int elevator_no)
-{
-    if(elevator_status[elevator_no].elevator_state == ELEVATOR_DIR_UP_AND_MOVING || elevator_status[elevator_no].elevator_state == ELEVATOR_DIR_DOWN_AND_MOVING){
-        return 1;
-    }
-    return 0;
-}
- */
-

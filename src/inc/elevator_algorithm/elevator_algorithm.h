@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 
+#include "../types.h"
 #include "../order_queue/orderQueue.h"
 #include "../elevator_hardware/elevator_hardware.h"
 
@@ -25,28 +26,6 @@
 /// Convert nanoseconds to microseconds
 #define NS_TO_US(ns)    ((ns)/1000)
 
-typedef enum{
-  ELEVATOR_IDLE,
-  ELEVATOR_DIR_UP_AND_MOVING,
-  ELEVATOR_DIR_UP_AND_STOPPED,
-  ELEVATOR_DIR_DOWN_AND_MOVING, 
-  ELEVATOR_DIR_DOWN_AND_STOPPED,
-  ELEVATOR_EMERGENCY_STOP
-}elevator_state_t;
-
-typedef struct{
-  pthread_mutex_t* mutex;                 //Controlled Externally
-  elevator_hardware_info_t elevator;      //Controlled Externally
-  bool alive;                             //Controlled Externally
-  int floor;                              //Controlled Externally
-  bool obstruction;                       //Controlled Externally   
-  bool emergency_stop;                    //Controlled Externally  
-
-  bool door_open;                         //Controlled Locally
-  elevator_state_t elevator_state;        //Controlled Locally
-
-}elevator_status_t;
-
 
 typedef struct{
   int elevator_no;
@@ -61,3 +40,27 @@ int elevator_status_kill();
 
 //Private functions
 
+
+/*
+typedef enum order_types_t {
+    UP_FROM = 0,
+    DOWN_FROM = 1,
+    GO_TO = 2
+}order_types_t;
+
+typedef enum order_status_t{
+    RECIVED = 0,
+    SYNCED = 1,
+    ACTIVE = 2,
+    COMPLETED = 3
+}order_status_t;
+
+typedef struct order_event_t {
+    long order_id;
+    char elevator_id[16];
+    uint8_t floor;
+    order_types_t order_type;
+    order_status_t order_status;
+    time_t timestamp;
+    uint8_t controller_id;
+}order_event_t;*/
