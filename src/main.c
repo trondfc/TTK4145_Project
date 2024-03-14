@@ -136,9 +136,8 @@ void* print_elevator_status(void* arg){
     printf("Elevator status\n");
     for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
       if(g_elevator[i].alive){
-        printf("\tElevator %d: %s is %s, %s and %s at floor %d with door %s\n",i, g_elevator[i].elevator.ip,
-                  g_elevator[i].in_use ? "not_used" : "in_use", 
-                  g_elevator[i].stop ? "stopped" : "running", 
+        printf("\tElevator %d: %s is %s and %s at floor %d with door %s\n",i, g_elevator[i].elevator.ip,
+                  g_elevator[i].emergency_stop ? "stopped" : "running", 
                   g_elevator[i].obstruction ? "obstructed" : "not obstructed",
                   g_elevator[i].floor,
                   g_elevator[i].door_open ? "open" : "closed"
