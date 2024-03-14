@@ -2,58 +2,62 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <unistd.h>
+
+#include "../order_queue/orderQueue.h"
+#include "../elevator_hardware/elevator_hardware.h"
+
+#define LOG_LEVEL LOG_LEVEL_INFO
 
 #define N_ELEVATORS 4
 #define N_FLOORS 4
 #define N_ORDERS 100
 
-typedef enum order_types_t{
-  UP_FROM = 0,
-  DOWN_FROM = 1,
-  GO_TO = 2
-}order_types_t;
+#define DEFAULT_FLOOR 0
 
-typedef enum order_status_t{
-  RECIVED = 0,
-  ACTIVE = 1,
-  COMPLETED = 2
-}order_status_t;
-
-typedef enum elevator_direction_t
-{
-    DIRN_DOWN = -1,
-    DIRN_STOP = 0,
-    DIRN_UP = 1
-}elevator_direction_t;
+#define ELEVATOR_DOOR_OPEN_TIME 3000 //ms
 
 
-typedef struct order_event_t{
-  int order_id; // Randomly generated number (big enough to make duplicates unlikely)
-  uint8_t elevator_id;
-  order_types_t order;
-  uint64_t timestamp; // modified timestamp?
-  order_status_t status;
-  uint8_t controller_id; // Controller serving if active
-}order_event_t;
+/// Convert seconds to microseconds
+#define SEC_TO_US(sec) ((sec)*1000000)
+/// Convert milliseconds to microseconds
+#define MS_TO_US(ms)    ((ms)*1000)
+/// Convert nanoseconds to microseconds
+#define NS_TO_US(ns)    ((ns)/1000)
 
-typedef struct order_que_t{
-  order_event_t order[N_ORDERS];
-}order_que_t;
+typedef enum{
+  ELEVATOR_IDLE,
+  ELEVATOR_DIR_UP_AND_MOVING,
+  ELEVATOR_DIR_UP_AND_STOPPED,
+  ELEVATOR_DIR_DOWN_AND_MOVING, 
+  ELEVATOR_DIR_DOWN_AND_STOPPED,
+  ELEVATOR_EMERGENCY_STOP
+}elevator_state_t;
 
-typedef struct elevator_status_t{
-  uint8_t prev_floor; // last floor visited, current floor if at floor
-  bool at_floor; // true if at floor, false if between floors
-  elevator_direction_t current_direction;
-  bool responding; // true if elevator is responding to orders, false if network is down
-  int used_by; // controller id, -1 if not used
+typedef struct{
+  pthread_mutex_t* mutex;                 //Controlled Externally
+  elevator_hardware_info_t elevator;      //Controlled Externally
+  bool alive;                             //Controlled Externally
+  int floor;                              //Controlled Externally
+  bool obstruction;                       //Controlled Externally   
+  bool emergency_stop;                    //Controlled Externally  
+
+  bool door_open;                         //Controlled Locally
+  elevator_state_t elevator_state;        //Controlled Locally
+
 }elevator_status_t;
 
-typedef struct all_elevator_status_t{
-  elevator_status_t elevator[N_ELEVATORS];
-}all_elevator_status_t;
 
-typedef struct {
-    all_elevator_status_t* all_elevator_status;
-    order_que_t* order_que;
-    pthread_mutex_t lock;
-}elevator_system_t;
+typedef struct{
+  int elevator_no;
+  elevator_status_t* elevator_status;
+  order_queue_t* order_queue;
+}elevator_arg_t;
+
+//Public functions
+int elevator_status_init(elevator_status_t* elevator_status, order_queue_t* order_queue);
+int elevator_status_kill();
+
+
+//Private functions
+

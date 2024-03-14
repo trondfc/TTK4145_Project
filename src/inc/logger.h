@@ -6,19 +6,19 @@
 #define LOG_LEVEL_WARN 2
 #define LOG_LEVEL_ERROR 3
 
-#define printd(LOG, fmt) \
+#define printd(LOG_LEVEL, fmt) \
     do{\
-        if (LOG >= LOG_LEVEL){\
-            if(LOG == LOG_LEVEL_DEBUG){\
+        if (LOG_LEVEL >= LOG_LEVEL){\
+            if(LOG_LEVEL == LOG_LEVEL_DEBUG){\
                 fprintf(stderr, "DEBUG:\t");\
             }\
-            if(LOG == LOG_LEVEL_INFO){\
+            if(LOG_LEVEL == LOG_LEVEL_INFO){\
                 fprintf(stderr, "INFO:\t");\
             }\
-            if(LOG == LOG_LEVEL_WARN){\
+            if(LOG_LEVEL == LOG_LEVEL_WARN){\
                 fprintf(stderr, "WARN:\t");\
             }\
-            if(LOG == LOG_LEVEL_ERROR){\
+            if(LOG_LEVEL == LOG_LEVEL_ERROR){\
                 fprintf(stderr, "ERROR:\t");\
             }\
             fprintf(stderr, "%s:%s:%d:%s():\n", fmt, __FILE__, __LINE__, __func__);\
