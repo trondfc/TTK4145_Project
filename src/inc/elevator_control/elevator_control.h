@@ -24,15 +24,14 @@
 
 #define NUMBER_OF_STOP_READINGS 5 // Number of stop readings before elevator restarts
 
-/**
- * @brief possible directions for the elevator
- * 
- */
-typedef enum elevator_direction{
-  UP,
-  DOWN,
-  STOP
-}elevator_direction_t;
+typedef enum{
+  ELEVATOR_IDLE,
+  ELEVATOR_DIR_UP_AND_MOVING,
+  ELEVATOR_DIR_UP_AND_STOPPED,
+  ELEVATOR_DIR_DOWN_AND_MOVING, 
+  ELEVATOR_DIR_DOWN_AND_STOPPED,
+  ELEVATOR_EMERGENCY_STOP
+}elevator_state_t;
 
 /**
  * @brief status data for a single elevator
@@ -40,16 +39,15 @@ typedef enum elevator_direction{
  */
 typedef struct elevator_status{
   elevator_hardware_info_t elevator;
+  pthread_mutex_t mutex;
   bool alive;
   int floor;
   bool at_floor;
-  elevator_direction_t direction;
+  elevator_state_t elevator_state;
   bool obstruction;
-  bool stop;
+  bool emergency_stop;
   int number_of_stop_readings;
   bool door_open;
-  bool in_use;
-  pthread_mutex_t mutex;
 }elevator_status_t;
 
 /**
