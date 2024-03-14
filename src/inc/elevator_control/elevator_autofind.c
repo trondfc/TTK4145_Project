@@ -21,12 +21,11 @@ elevator_status_t* elevator_struct_init(){
     strcpy(elevator[i].elevator.ip, "\0");
     elevator[i].alive = false;
     elevator[i].floor = 0;
-    elevator[i].direction = STOP;
+    elevator[i].elevator_state = ELEVATOR_IDLE;
     elevator[i].obstruction = false;
-    elevator[i].stop = false;
+    elevator[i].emergency_stop = false;
     elevator[i].number_of_stop_readings = 0;
     elevator[i].door_open = false;
-    elevator[i].in_use = false;
     pthread_mutex_init(&elevator[i].mutex, NULL);
   }
   return elevator;

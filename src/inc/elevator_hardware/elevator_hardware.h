@@ -21,6 +21,7 @@ Rewrite of the original elevator hardware module from the TTK4145 Real Time Prog
 
 
 #include "con_load.h"
+#include "../config.h"
 
 #define N_FLOORS 4
 #define N_BUTTONS 3

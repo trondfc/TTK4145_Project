@@ -7,11 +7,12 @@ Rewrite of the original elevator hardware module from the TTK4145 Real Time Prog
 */
 #include "elevator_hardware.h"
 
+/*
 uint64_t get_timestamp(){
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
     return SEC_TO_US((uint64_t)ts.tv_sec) + NS_TO_US((uint64_t)ts.tv_nsec);
-}
+}*/
 
 
 void elevator_hardware_read_config(const char* ip_name, const char* port_name, elevator_hardware_info_t* hardware){

@@ -50,16 +50,16 @@ void poll_stopped_elevators(elevator_status_t* elevator){
       int temp = elevator_hardware_get_stop_signal(&elevator[i].elevator);
       //printf("elevator %d %s is alive: %d\n",i, elevator[i].elevator.ip, elevator[i].alive);
       if(temp == 1){
-        if(elevator[i].stop == false && elevator[i].number_of_stop_readings == 0){
+        if(elevator[i].emergency_stop == false && elevator[i].number_of_stop_readings == 0){
           printf("Elevator %s has stopped\n", elevator[i].elevator.ip);
           pthread_mutex_lock(&elevator[i].mutex);
-          elevator[i].stop = true;
+          elevator[i].emergency_stop = true;
           pthread_mutex_unlock(&elevator[i].mutex);
         }
-         else if(elevator[i].number_of_stop_readings >= NUMBER_OF_STOP_READINGS && elevator[i].stop == true){
+         else if(elevator[i].number_of_stop_readings >= NUMBER_OF_STOP_READINGS && elevator[i].emergency_stop == true){
           printf("Restarting elevator %s\n", elevator[i].elevator.ip);
           pthread_mutex_lock(&elevator[i].mutex);
-          elevator[i].stop = false;
+          elevator[i].emergency_stop = false;
           pthread_mutex_unlock(&elevator[i].mutex);
         }
         pthread_mutex_lock(&elevator[i].mutex);
@@ -158,7 +158,7 @@ void update_elevator_floor_lights(elevator_status_t* elevator){
 void update_elevator_stop_light(elevator_status_t* elevator){
   for(uint8_t i = 0; i < MAX_IP_NODES; i++){
     if(elevator[i].alive){
-      elevator_hardware_set_stop_lamp(elevator[i].stop, &elevator[i].elevator);
+      elevator_hardware_set_stop_lamp(elevator[i].emergency_stop, &elevator[i].elevator);
     }
   }
   usleep(ORDER_POLL_DELAY);

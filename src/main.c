@@ -14,7 +14,6 @@
 #include "inc/elevator_control/elevator_autofind.h"
 #include "inc/elevator_algorithm/elevator_algorithm.h"
 #include "inc/elevator_control/elevator_control.h"
-#define LOG_LEVEL LOG_LEVEL_DEBUG // Set log level to debug
 
 
 #define QUEUE_SIZE MAX_QUEUE_SIZE
@@ -136,9 +135,8 @@ void* print_elevator_status(void* arg){
     printf("Elevator status\n");
     for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
       if(g_elevator[i].alive){
-        printf("\tElevator %d: %s is %s, %s and %s at floor %d with door %s\n",i, g_elevator[i].elevator.ip,
-                  g_elevator[i].in_use ? "not_used" : "in_use", 
-                  g_elevator[i].stop ? "stopped" : "running", 
+        printf("\tElevator %d: %s is %s and %s at floor %d with door %s\n",i, g_elevator[i].elevator.ip,
+                  g_elevator[i].emergency_stop ? "stopped" : "running", 
                   g_elevator[i].obstruction ? "obstructed" : "not obstructed",
                   g_elevator[i].floor,
                   g_elevator[i].door_open ? "open" : "closed"
@@ -208,7 +206,7 @@ int main()
     exit(-1);
   }
 
-  pthread_t keep_alive_thread, recv_thread, send_thread, button_thread, elevator_output_thread, elevator_input_thread , print_elevator_status_thread, elevator_light_thread;
+  pthread_t send_thread, button_thread, elevator_output_thread, elevator_input_thread , print_elevator_status_thread, elevator_light_thread;
 
   keep_alive_init(5000, SLAVE);
   while(1){
