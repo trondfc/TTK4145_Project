@@ -12,6 +12,7 @@
 #include "inc/types.h"
 #include "inc/config.h"
 #include "inc/elevator_control/elevator_autofind.h"
+#include "inc/elevator_algorithm/elevator_algorithm.h"
 #include "inc/elevator_control/elevator_control.h"
 #define LOG_LEVEL LOG_LEVEL_DEBUG // Set log level to debug
 
