@@ -1,7 +1,25 @@
+/**
+ * @file keep_alive.c
+ * @brief Functions to keep track of nodes in the network.
+ * @version 0.1
+ * @date 2024-03-14
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #include "keep_alive.h"
 
+/**
+ * @brief List of nodes in the network.
+ * 
+ */
 keep_alive_node_list_t keep_alive_node_list;
 
+/**
+ * @brief Get the host ip object
+ * 
+ * @return char* 
+ */
 char* get_host_ip(){
     
     FILE *fp;
@@ -22,12 +40,23 @@ char* get_host_ip(){
     return ip_address;
 }
 
+/**
+ * @brief Get the timestamp object
+ * 
+ * @return uint64_t 
+ */
 uint64_t get_timestamp(){
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
     return SEC_TO_US((uint64_t)ts.tv_sec) + NS_TO_US((uint64_t)ts.tv_nsec);
 }
 
+/**
+ * @brief Send keep alive message to all nodes in the network.
+ * 
+ * @param arg 
+ * @return void* 
+ */
 void* keep_alive_send(void* arg){
     keep_alive_node_list_t* list = (keep_alive_node_list_t*)arg;
     while(1){
@@ -39,6 +68,15 @@ void* keep_alive_send(void* arg){
     }
 }
 
+/**
+ * @brief Update the node list with new data.
+ * 
+ * @param list 
+ * @param ip 
+ * @param data 
+ * @param data_size 
+ * @return int 
+ */
 int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, int data_size){
     for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
         if(strcmp(list->nodes[i].ip, ip) == 0){
@@ -81,6 +119,13 @@ int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, i
     return -1;
 }
 
+/**
+ * @brief Callback function for receiving keep alive messages.
+ * 
+ * @param ip 
+ * @param data 
+ * @param data_size 
+ */
 void udp_receive_callback(const char* ip, char* data, int data_size){
     //printf("Received data from %s \t %s\n", ip,data);
     if(keep_alive_node_list.single_master == true){
@@ -95,6 +140,12 @@ void udp_receive_callback(const char* ip, char* data, int data_size){
 
 }
 
+/**
+ * @brief Initialize keep alive module.
+ * 
+ * @param port 
+ * @param mode 
+ */
 void keep_alive_init(int port, node_mode_t mode){
     keep_alive_node_list.mutex = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t));
     pthread_mutex_init(keep_alive_node_list.mutex, NULL);
@@ -128,16 +179,30 @@ void keep_alive_init(int port, node_mode_t mode){
 
 }
 
+/**
+ * @brief Free memory used by keep alive module.
+ * 
+ */
 void keep_alive_kill(){
     free(keep_alive_node_list.nodes);
     free(keep_alive_node_list.self);
     free(keep_alive_node_list.mutex);
 }
 
+/**
+ * @brief Wrapper to get the node list object
+ * 
+ * @return keep_alive_node_list_t* 
+ */
 keep_alive_node_list_t* get_node_list(){
     return &keep_alive_node_list;
 }
 
+/**
+ * @brief Print the alive nodes in the network.
+ * 
+ * @param list 
+ */
 void print_alive_nodes(keep_alive_node_list_t* list){
     printf("Alive nodes:\n");
     for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
@@ -147,6 +212,12 @@ void print_alive_nodes(keep_alive_node_list_t* list){
     }
 }
 
+/**
+ * @brief Return the ip as a long.
+ * 
+ * @param ip 
+ * @return long 
+ */
 long ipv4_to_int(char* ip)
 {
     char delim[2] = ".";
@@ -174,6 +245,12 @@ long ipv4_to_int(char* ip)
     return ip_int;
 }
 
+/**
+ * @brief check if the host is the highest priority node in the network.
+ * 
+ * @param list 
+ * @return int 
+ */
 int is_host_highest_priority(keep_alive_node_list_t* list){
     for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
         if(list->nodes[i].status == ALIVE){
@@ -186,6 +263,11 @@ int is_host_highest_priority(keep_alive_node_list_t* list){
     return 1;
 }
 
+/**
+ * @brief update the node count in the node list.
+ * 
+ * @param list 
+ */
 void update_node_count(keep_alive_node_list_t* list){
     int count = 0;
     int slave_count = 0;
@@ -208,6 +290,12 @@ void update_node_count(keep_alive_node_list_t* list){
     list->node_count_master = master_count;
 }
 
+/**
+ * @brief Update host mode.
+ * 
+ * @param arg 
+ * @return void* 
+ */
 void* keep_alive_update(void* arg){
     keep_alive_node_list_t* list = (keep_alive_node_list_t*)arg;
     sleep(1);
@@ -249,6 +337,12 @@ void* keep_alive_update(void* arg){
     }
 }
 
+/**
+ * @brief Keep alive timeout function.
+ * 
+ * @param arg 
+ * @return void* 
+ */
 void* keep_alive_timeout(void* arg){
     keep_alive_node_list_t* list = (keep_alive_node_list_t*)arg;
     while(1){

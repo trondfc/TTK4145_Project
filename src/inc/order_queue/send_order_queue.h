@@ -1,3 +1,12 @@
+/**
+ * @file send_order_queue.h
+ * @brief files for sending order queue to other controllers.
+ * @version 0.1
+ * @date 2024-03-14
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #pragma once
 
 #include <stdio.h>
