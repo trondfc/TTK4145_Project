@@ -412,7 +412,8 @@ int elevator_algorithm_kill()
 {
     //pthread_cancel(request_handler_thread);
     for(int i = 0; i < N_ELEVATORS ; i++){
-        //pthread_cancel(elevator_thread[i]);
+        pthread_cancel(elevator_thread[i]);
+        pthread_join(elevator_thread[i], NULL);
     }
     return 0;
 }  

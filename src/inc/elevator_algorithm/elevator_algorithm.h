@@ -8,6 +8,7 @@
 #include "../order_queue/orderQueue.h"
 #include "../elevator_hardware/elevator_hardware.h"
 #include "../elevator_control/elevator_control.h"
+#include "../config.h"
 
 #define LOG_LEVEL LOG_LEVEL_INFO
 
@@ -16,16 +17,6 @@
 #define N_ORDERS 100
 
 //#define DEFAULT_FLOOR 0
-
-
-
-
-/// Convert seconds to microseconds
-#define SEC_TO_US(sec) ((sec)*1000000)
-/// Convert milliseconds to microseconds
-#define MS_TO_US(ms)    ((ms)*1000)
-/// Convert nanoseconds to microseconds
-#define NS_TO_US(ns)    ((ns)/1000)
 
 #define US_TO_SEC(us)   ((us)/1000000)
 
