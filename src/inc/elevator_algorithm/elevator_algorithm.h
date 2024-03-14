@@ -4,9 +4,10 @@
 #include <stdbool.h>
 #include <unistd.h>
 
-#include "../types.h"
+//#include "../types.h"
 #include "../order_queue/orderQueue.h"
 #include "../elevator_hardware/elevator_hardware.h"
+#include "../elevator_control/elevator_control.h"
 
 #define LOG_LEVEL LOG_LEVEL_INFO
 
@@ -14,7 +15,7 @@
 #define N_FLOORS 4
 #define N_ORDERS 100
 
-#define DEFAULT_FLOOR 0
+//#define DEFAULT_FLOOR 0
 
 
 

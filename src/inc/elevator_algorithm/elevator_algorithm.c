@@ -50,6 +50,7 @@ int start_elevator(elevator_status_t* elevator_status, int elevator_no)
     #if LOG_LEVEL <= LOG_LEVEL_INFO
         printf("INFO: \tElevator %d \t Starting\n", elevator_no);
     #endif
+        //TODO: Use Set elevator state function
     if(elevator_status[elevator_no].elevator_state == ELEVATOR_DIR_UP_AND_STOPPED){
         elevator_status[elevator_no].elevator_state = ELEVATOR_DIR_UP_AND_MOVING;
         //printd(LOG_LEVEL_INFO, sprintf("INFO: Elevator %d moving UP", elevator_no));
@@ -66,6 +67,7 @@ int stop_elevator(elevator_status_t* elevator_status, int elevator_no)
     #if LOG_LEVEL <= LOG_LEVEL_INFO
         printf("INFO: \tElevator %d \t Stopping\n", elevator_no);
     #endif
+        //TODO: Use Set elevator state function
     if(elevator_status[elevator_no].elevator_state == ELEVATOR_DIR_UP_AND_MOVING){
         elevator_status[elevator_no].elevator_state = ELEVATOR_DIR_UP_AND_STOPPED;
         //printd(LOG_LEVEL_INFO, sprintf("INFO: Elevator %d STOPPED", elevator_no));
@@ -222,6 +224,7 @@ int get_closest_idle_elevator(elevator_status_t* elevator_status, int requested_
 int set_elevator_dir_towards_floor(elevator_status_t* elevator_status, int elevator_no, int floor)
 {
     //TODO: Should compare with prev floor because floor can be set to -1 when between floors
+    //TODO: Use Set elevator state function
     if(elevator_status[elevator_no].floor < floor){
         elevator_status[elevator_no].elevator_state = ELEVATOR_DIR_UP_AND_MOVING;
     }
@@ -304,8 +307,6 @@ void* elevator_control(void* arg){
                 }else{
                     set_elevator_state(elevator_status, elevator_no, ELEVATOR_IDLE);
                 }
-
-                
             }
 
             break;
@@ -395,7 +396,7 @@ int elevator_algorithm_init(elevator_status_t* elevator_status, order_queue_t* o
     for(int i = 0; i < N_ELEVATORS; i++){
         //Init all variables that are controlled locally
         elevator_status[i].elevator_state = ELEVATOR_IDLE;
-        elevator_status[i].door_open = false;
+        //elevator_status[i].door_open = false;
 
         elevator_arg[i].elevator_no = i;
         elevator_arg[i].elevator_status = elevator_status;
@@ -412,7 +413,9 @@ int elevator_algorithm_kill()
     //pthread_cancel(request_handler_thread);
     for(int i = 0; i < N_ELEVATORS ; i++){
         //pthread_cancel(elevator_thread[i]);
-        
     }
     return 0;
 }  
+
+
+//TODO: Separate at_floor logic and floor where relevant
