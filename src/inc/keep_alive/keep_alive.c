@@ -42,13 +42,13 @@ int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, i
             list->nodes[i].last_time = get_timestamp();
             list->nodes[i].status = ALIVE;
             if(strcmp(list->nodes[i].data, "MASTER") == 0){
-                printf("Setting node %s to MASTER\n", list->nodes[i].ip);
+                //printf("Setting node %s to MASTER\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = MASTER;
             } else if(strcmp(list->nodes[i].data, "SLAVE") == 0){
-                printf("Setting node %s to SLAVE\n", list->nodes[i].ip);
+                //printf("Setting node %s to SLAVE\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = SLAVE;
             } else {
-                printf("Setting node %s to UNDEFINED\n", list->nodes[i].ip);
+                //printf("Setting node %s to UNDEFINED\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = UNDEFINED;
             }
             strncpy(list->nodes[i].data, data, sizeof(list->nodes[i].data) - 1);
@@ -62,13 +62,13 @@ int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, i
             strcpy(list->nodes[i].ip, ip);
             strcpy(list->nodes[i].data, data);
             if(strcmp(list->nodes[i].data, "MASTER") == 0){
-                printf("New node. Setting node %s to MASTER\n", list->nodes[i].ip);
+                //printf("New node. Setting node %s to MASTER\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = MASTER;
             } else if(strcmp(list->nodes[i].data, "SLAVE") == 0){
-                printf("New node. Setting node %s to SLAVE\n", list->nodes[i].ip);
+                //printf("New node. Setting node %s to SLAVE\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = SLAVE;
             } else {
-                printf("New node. Setting node %s to UNDEFINED\n", list->nodes[i].ip);
+                //printf("New node. Setting node %s to UNDEFINED\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = UNDEFINED;
             }
             return 0;

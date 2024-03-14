@@ -13,19 +13,21 @@ void send_order_queue_listen(int port){
 }
 
 void send_order_queue_close_connection(char * ip){
-    conn_remove(ip);
+    shutdown(conn_lookup(ip), SHUT_RDWR);
+    close(conn_lookup(ip));
 }
 
-void send_order_queue_send_order(char * ip, order_queue_t *queue){
+int send_order_queue_send_order(char * ip, order_queue_t *queue){
 
     /* Serialising data*/
     char * buffer = malloc(sizeof(order_queue_t) + sizeof(order_event_t) * queue->capacity);
     memcpy(buffer, queue, sizeof(order_queue_t));
     memcpy(buffer + sizeof(order_queue_t), queue->orders, sizeof(order_event_t) * queue->capacity);
 
-    tcp_send(ip, buffer, sizeof(order_queue_t) + sizeof(order_event_t) * queue->size);
+    int res = tcp_send(ip, buffer, sizeof(order_queue_t) + sizeof(order_event_t) * queue->size);
 
     free(buffer);
+    return res;
 }
 
 void send_order_queue_deserialize(char * data, order_queue_t *queue){

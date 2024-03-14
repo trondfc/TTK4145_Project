@@ -394,8 +394,7 @@ tcp_openConnection(char * ip,int port){
 }
 
 
-void 
-tcp_send(char * ip,char * data, int datalength){
+int tcp_send(char * ip,char * data, int datalength){
   int socket = conn_lookup(ip);
 
   if(socket==0){
@@ -411,6 +410,8 @@ tcp_send(char * ip,char * data, int datalength){
     if(m_log) printf("SverresNetwork: Closed a connection to %s - socket %d\n",ip,socket);
     m_connectionCallback(ip,0);
     conn_remove(ip);
+    return 0;
   }
+  return 1;
 }
 

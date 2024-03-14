@@ -24,8 +24,16 @@ int elevator_hardware_init(elevator_hardware_info_t* hardware){
         return 0;
     }
     
-    if(setsockopt(hardware->sockfd, SOL_SOCKET, SO_RCVTIMEO, &(struct timeval){.tv_sec = 0, .tv_usec = 1000}, sizeof(struct timeval)) < 0){
+    if(setsockopt(hardware->sockfd, SOL_SOCKET, SO_RCVTIMEO, &(struct timeval){.tv_sec = 1, .tv_usec = 0}, sizeof(struct timeval)) < 0){
         printf("Unable to set socket timeout\n");
+        return 0;
+    }
+    if(setsockopt(hardware->sockfd, SOL_SOCKET, SO_SNDTIMEO, &(struct timeval){.tv_sec = 1, .tv_usec = 0}, sizeof(struct timeval)) < 0){
+        printf("Unable to set socket timeout\n");
+        return 0;
+    }
+    if(setsockopt(hardware->sockfd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) < 0){
+        printf("Unable to set socket reuse\n");
         return 0;
     }
     
@@ -49,21 +57,29 @@ int elevator_hardware_init(elevator_hardware_info_t* hardware){
     return 1;
 }
 
+void elevator_hardware_destroy(elevator_hardware_info_t* hardware){
+    shutdown(hardware->sockfd, SHUT_RDWR);
+    close(hardware->sockfd);
+    pthread_mutex_destroy(&hardware->sockmtx);
+    usleep(100000);
+}
+
 void elevator_hardware_set_motor_direction(elevator_hardware_motor_direction_t dirn, elevator_hardware_info_t* hardware){
     pthread_mutex_lock(&hardware->sockmtx);
     send(hardware->sockfd, (char[4]) {1, dirn}, 4, MSG_NOSIGNAL);
     pthread_mutex_unlock(&hardware->sockmtx);
 }
 
-void elevator_hardware_set_button_lamp(elevator_hardware_button_type_t button, int floor, int value, elevator_hardware_info_t* hardware){
+int elevator_hardware_set_button_lamp(elevator_hardware_button_type_t button, int floor, int value, elevator_hardware_info_t* hardware){
     assert(floor >= 0);
     assert(floor < N_FLOORS);
     assert(button >= 0);
     assert(button < N_BUTTONS);
 
     pthread_mutex_lock(&hardware->sockmtx);
-    send(hardware->sockfd, (char[4]) {2, button, floor, value}, 4, MSG_NOSIGNAL);
+    int temp = send(hardware->sockfd, (char[4]) {2, button, floor, value}, 4, MSG_NOSIGNAL);
     pthread_mutex_unlock(&hardware->sockmtx);
+    return (temp == 4);
 }
 
 void elevator_hardware_set_floor_indicator(int floor, elevator_hardware_info_t* hardware){
