@@ -52,7 +52,7 @@ int elevator_hardware_init(elevator_hardware_info_t* hardware);
 void elevator_hardware_destroy(elevator_hardware_info_t* hardware);
 
 void elevator_hardware_set_motor_direction(elevator_hardware_motor_direction_t dirn, elevator_hardware_info_t* hardware);
-void elevator_hardware_set_button_lamp(elevator_hardware_button_type_t button, int floor, int value, elevator_hardware_info_t* hardware);
+int elevator_hardware_set_button_lamp(elevator_hardware_button_type_t button, int floor, int value, elevator_hardware_info_t* hardware);
 void elevator_hardware_set_floor_indicator(int floor, elevator_hardware_info_t* hardware);
 void elevator_hardware_set_door_open_lamp(int value, elevator_hardware_info_t* hardware);
 void elevator_hardware_set_stop_lamp(int value, elevator_hardware_info_t* hardware);

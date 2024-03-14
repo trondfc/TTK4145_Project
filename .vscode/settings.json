@@ -2,6 +2,7 @@
     "files.associations": {
         "stdlib.h": "c",
         "elevator_button_inputs.h": "c",
-        "elevator_hardware.h": "c"
+        "elevator_hardware.h": "c",
+        "cmath": "c"
     }
 }

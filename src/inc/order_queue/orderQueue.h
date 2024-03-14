@@ -19,8 +19,9 @@ typedef enum order_types_t {
 typedef enum order_status_t{
     RECIVED = 0,
     SYNCED = 1,
-    ACTIVE = 2,
-    COMPLETED = 3
+    NOTIFIED = 2,
+    ACTIVE = 3,
+    COMPLETED = 4
 }order_status_t;
 
 typedef struct order_event_t {
