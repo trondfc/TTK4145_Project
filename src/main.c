@@ -208,33 +208,6 @@ void update_elevator_door_light(elevator_status_t* elevator){
   }
   usleep(ORDER_POLL_DELAY);
 }
-/*
-void update_elevator_button_lights(elevator_status_t* elevator, order_queue_t* queue){
-  for(uint8_t i = 0; i < MAX_IP_NODES; i++){
-    if(elevator[i].alive){
-      //printf("Updating elevator %s\n", elevator[i].elevator.ip);
-      for(int j = 0; j < queue->size; j++){
-        if(queue->orders[j].order_status == SYNCED){
-          printf("Order %ld is synced\n", queue->orders[j].order_id);
-          if(queue->orders[j].order_type == 0 || queue->orders[j].order_type == 1){
-            if(elevator_hardware_set_button_lamp(queue->orders[j].order_type, queue->orders[j].floor, 1, &elevator[i].elevator)){
-              printf("\t\t\t\tsetting button lamp %d %d\n", queue->orders[j].order_type, queue->orders[j].floor);
-              queue->orders[j].order_status = NOTIFIED;
-            }
-          }
-          else if(queue->orders[j].order_type == 2){
-            //if(queue->orders[j].elevator_id == elevator[i].elevator.ip){
-            if(strcmp(queue->orders[j].elevator_id, elevator[i].elevator.ip) == 0){
-              printf("setting button lamp %d %d on %s\n", queue->orders[j].order_type, queue->orders[j].floor, elevator[i].elevator.ip);
-              elevator_hardware_set_button_lamp(queue->orders[j].order_type, queue->orders[j].floor, 1, &elevator[i].elevator);
-            }
-          }
-        }
-        usleep(ORDER_POLL_DELAY/2);
-      }
-    }
-  }
-}*/
 
 void add_elevator_button_lights(){
   for(int j = 0; j < NO_FLOORS; j++){
@@ -247,7 +220,7 @@ void add_elevator_button_lights(){
 
   for(int i = 0; i < queue->size; i++){
     if(queue->orders[i].order_status == SYNCED){
-      printf("Adding order %ld to button lights\n", queue->orders[i].order_id);
+      //printf("Adding order %ld to button lights\n", queue->orders[i].order_id);
       if(queue->orders[i].order_type == 0){
         button_lights->new->up->floors[queue->orders[i].floor] = true;
       }
@@ -269,9 +242,9 @@ void* controll_elevator_button_lights(void* arg){
   elevator_status_t* elevator = g_elevator;
   while(1){
     for(int i = 0; i < NO_FLOORS; i++){
-      printf("floor up %d: new: %d old: %d\n", i, button_lights->new->up->floors[i], button_lights->old->up->floors[i]);
+      //printf("floor up %d: new: %d old: %d\n", i, button_lights->new->up->floors[i], button_lights->old->up->floors[i]);
       if(button_lights->new->up->floors[i] != button_lights->old->up->floors[i]){
-        printf("Button light up %d has changed\n", i);
+        //printf("Button light up %d has changed\n", i);
         for(int j = 0; j < MAX_IP_NODES; j++){
           if(elevator[j].alive){
             elevator_hardware_set_button_lamp(0, i, button_lights->new->up->floors[i], &elevator[j].elevator);
@@ -279,7 +252,7 @@ void* controll_elevator_button_lights(void* arg){
         }
       }
       if(button_lights->new->down->floors[i] != button_lights->old->down->floors[i]){
-        printf("Button light down %d has changed\n", i);
+        //printf("Button light down %d has changed\n", i);
         for(int j = 0; j < MAX_IP_NODES; j++){
           if(elevator[j].alive){
             elevator_hardware_set_button_lamp(1, i, button_lights->new->down->floors[i], &elevator[j].elevator);
@@ -288,7 +261,7 @@ void* controll_elevator_button_lights(void* arg){
       }
       for(int j = 0; j < MAX_IP_NODES; j++){
         if(button_lights->new->cab[j]->floors[i] != button_lights->old->cab[j]->floors[i]){
-          printf("Button light cab %d %d has changed\n", j, i);
+          //printf("Button light cab %d %d has changed\n", j, i);
           if(elevator[j].alive){
             elevator_hardware_set_button_lamp(2, i, button_lights->new->cab[j]->floors[i], &elevator[j].elevator);
           }
