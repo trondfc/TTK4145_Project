@@ -255,6 +255,7 @@ int main()
         pthread_join(elevator_output_thread, NULL);
         pthread_join(elevator_input_thread, NULL);
         pthread_join(elevator_light_thread, NULL);
+        elevator_algorithm_kill();
         running_threads.elevator_control = false;
       }
 
@@ -278,6 +279,7 @@ int main()
         pthread_create(&elevator_input_thread, NULL, &main_elevator_inputs, NULL);
         pthread_create(&elevator_output_thread, NULL, &main_elevator_output, NULL);
         pthread_create(&elevator_light_thread, NULL, &controll_elevator_button_lights, NULL);
+        elevator_algorithm_init(g_elevator, queue);
         running_threads.elevator_control = true;
       }
       if(running_threads.send == false){
