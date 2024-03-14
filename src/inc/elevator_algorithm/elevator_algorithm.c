@@ -237,7 +237,7 @@ int set_elevator_dir_towards_floor(elevator_status_t* elevator_status, int eleva
     return 0;
 }
 
-int complete_cab_request(elevator_status, elevator_no, order_queue)
+/* int complete_cab_request(elevator_status, elevator_no, order_queue)
 {
     return 0;
 }
@@ -245,7 +245,7 @@ int complete_hall_request(elevator_status, elevator_no, order_queue)
 {
     return 0;
 }
-
+ */
 
 
 int complete_floor_request(int floor, int elevator_no, elevator_status_t* elevator_status, order_queue_t* order_queue)
