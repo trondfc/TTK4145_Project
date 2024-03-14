@@ -1,3 +1,12 @@
+/**
+ * @file keep_alive.h
+ * @brief Functions to keep track of nodes in the network.
+ * @version 0.1
+ * @date 2024-03-14
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #pragma once
 
 #include <sys/time.h>
@@ -7,6 +16,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "../sverresnetwork/sverresnetwork.h"
 #include "../config.h"
 
@@ -57,6 +67,7 @@ typedef struct{
     int node_count_alive;
     int node_count_master;
     int node_count_slave;
+    bool single_master;
     keep_alive_node_t* self;
     keep_alive_node_t* nodes;
 }keep_alive_node_list_t;

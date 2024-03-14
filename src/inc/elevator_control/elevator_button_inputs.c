@@ -1,6 +1,21 @@
+/**
+ * @file elevator_button_inputs.c
+ * @brief Functions to poll an elevator for new orders.
+ * @version 0.1
+ * @date 2024-03-14
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #include "elevator_button_inputs.h"
 
-
+/**
+ * @brief Polls an elevator for orders, and adds it to a queue.
+ * 
+ * @param elevator 
+ * @param queue 
+ * @return int 
+ */
 int poll_new_orders(elevator_hardware_info_t *elevator, order_queue_t *queue){
     for(uint8_t i = 0; i < N_FLOORS; i++){
         for(uint8_t j = 0; j < N_BUTTONS; j++){

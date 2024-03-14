@@ -1,5 +1,19 @@
+/**
+ * @file elevator_control.c
+ * @brief functions for controlling elevator input and output
+ * @version 0.1
+ * @date 2024-03-14
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #include "elevator_control.h"
 
+/**
+ * @brief initializes a button_lights_history_t struct with malloc 
+ * 
+ * @return button_lights_history_t* 
+ */
 button_lights_history_t* button_light_struct_init(){
   button_lights_history_t* _button_lights = (button_lights_history_t*)malloc(sizeof(button_lights_history_t));
   _button_lights->old = (button_lights_t*)malloc(sizeof(button_lights_t));
@@ -21,6 +35,15 @@ button_lights_history_t* button_light_struct_init(){
   return _button_lights;
 }
 
+/**
+ * @brief poll all elevators for stop signal
+ *        if stop signal is detected, the elevator is set to stop
+ *        if elevator is stopped, and stop signal is held for a certain amount of time, the elevator is restarted
+ * 
+ *        if the elevator is not responding, the elevator is set to not alive
+ * 
+ * @param elevator the elevator_status_t struct to be polled
+ */
 void poll_stopped_elevators(elevator_status_t* elevator){
   for(uint8_t i = 0; i < MAX_IP_NODES; i++){
     if(elevator[i].alive){
@@ -61,7 +84,11 @@ void poll_stopped_elevators(elevator_status_t* elevator){
   usleep(ORDER_POLL_DELAY);
 }
 
-
+/**
+ * @brief poll all elevators for obstruction signal
+ * 
+ * @param elevator the elevator_status_t struct to be polled
+ */
 void poll_obstructed_elevators(elevator_status_t* elevator){
   for(uint8_t i = 0; i < MAX_IP_NODES; i++){
     if(elevator[i].alive){
@@ -84,6 +111,11 @@ void poll_obstructed_elevators(elevator_status_t* elevator){
   usleep(ORDER_POLL_DELAY);
 }
 
+/**
+ * @brief poll all elevators for floor sensor signal
+ * 
+ * @param elevator the elevator_status_t struct to be polled
+ */
 void poll_elevator_floor(elevator_status_t* elevator){
   for(uint8_t i = 0; i < MAX_IP_NODES; i++){
     if(elevator[i].alive){
@@ -104,6 +136,11 @@ void poll_elevator_floor(elevator_status_t* elevator){
   usleep(ORDER_POLL_DELAY);
 }
 
+/**
+ * @brief update all elevators floor lights based on the floor sensor signal
+ * 
+ * @param elevator the elevator_status_t struct to be updated
+ */
 void update_elevator_floor_lights(elevator_status_t* elevator){
   for(uint8_t i = 0; i < MAX_IP_NODES; i++){
     if(elevator[i].alive){
@@ -113,6 +150,11 @@ void update_elevator_floor_lights(elevator_status_t* elevator){
   usleep(ORDER_POLL_DELAY);
 }
 
+/**
+ * @brief update all elevators stop lights based on the stop signal
+ * 
+ * @param elevator the elevator_status_t struct to be updated
+ */
 void update_elevator_stop_light(elevator_status_t* elevator){
   for(uint8_t i = 0; i < MAX_IP_NODES; i++){
     if(elevator[i].alive){
@@ -122,6 +164,11 @@ void update_elevator_stop_light(elevator_status_t* elevator){
   usleep(ORDER_POLL_DELAY);
 }
 
+/**
+ * @brief update all elevators door lights based on the door open signal
+ * 
+ * @param elevator the elevator_status_t struct to be updated
+ */
 void update_elevator_door_light(elevator_status_t* elevator){
   for(uint8_t i = 0; i < MAX_IP_NODES; i++){
     if(elevator[i].alive){
@@ -131,6 +178,13 @@ void update_elevator_door_light(elevator_status_t* elevator){
   usleep(ORDER_POLL_DELAY);
 }
 
+/**
+ * @brief set all new button lights in button_lights_history_t struct based on the order_queue_t struct
+ * 
+ * @param button_lights struct to be updated
+ * @param queue  struct to be read
+ * @param elevator struct to be read
+ */
 void add_elevator_button_lights(button_lights_history_t* button_lights, order_queue_t* queue, elevator_status_t* elevator){
   for(int j = 0; j < NO_FLOORS; j++){
     button_lights->new->up->floors[j] = false;
@@ -140,8 +194,11 @@ void add_elevator_button_lights(button_lights_history_t* button_lights, order_qu
     }
   }
 
+  keep_alive_node_list_t* node_list = get_node_list();
+
   for(int i = 0; i < queue->size; i++){
-    if(queue->orders[i].order_status == SYNCED){
+
+    if(queue->orders[i].order_status == SYNCED || node_list->single_master){
       //printf("Adding order %ld to button lights\n", queue->orders[i].order_id);
       if(queue->orders[i].order_type == 0){
         button_lights->new->up->floors[queue->orders[i].floor] = true;
@@ -160,6 +217,12 @@ void add_elevator_button_lights(button_lights_history_t* button_lights, order_qu
   }
 }
 
+/**
+ * @brief Set the changed button lights, comparing the new and old button lights in the button_lights_history_t struct
+ * 
+ * @param button_lights struct with new and old button lights
+ * @param elevator struct of elevators to be updated
+ */
 void set_changed_button_lights(button_lights_history_t* button_lights, elevator_status_t* elevator){
     for(int i = 0; i < NO_FLOORS; i++){
       //printf("floor up %d: new: %d old: %d\n", i, button_lights->new->up->floors[i], button_lights->old->up->floors[i]);
@@ -195,6 +258,13 @@ void set_changed_button_lights(button_lights_history_t* button_lights, elevator_
     }
 }
 
+/**
+ * @brief Set all button lights, based on the new button lights in the button_lights_history_t struct
+ *        needed to set non changed button lights to resently added elevators
+ * 
+ * @param button_lights struct button light values
+ * @param elevator struct of elevators to be updated
+ */
 void sett_all_button_lights(button_lights_history_t* button_lights, elevator_status_t* elevator){
     for(int i = 0; i < NO_FLOORS; i++){
         for(int j = 0; j < MAX_IP_NODES; j++){

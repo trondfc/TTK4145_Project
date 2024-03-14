@@ -1,5 +1,20 @@
+/**
+ * @file elevator_autofind.c
+ * @brief functions for finding and initializing elevators
+ * @version 0.1
+ * @date 2024-03-14
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #include "elevator_autofind.h"
 
+/**
+ * @brief mallocs memory for elevator_status_t struct and initializes it
+ *        with default values to 0 and initializes mutexes
+ * 
+ * @return elevator_status_t* 
+ */
 elevator_status_t* elevator_struct_init(){
   elevator_status_t* elevator = (elevator_status_t*)malloc(MAX_ELEVATORS * sizeof(elevator_status_t));
   for(int i = 0; i < MAX_ELEVATORS; i++){
@@ -17,6 +32,13 @@ elevator_status_t* elevator_struct_init(){
   return elevator;
 }
 
+/**
+ * @brief compares two strings and returns 1 if they are equal and not empty
+ * 
+ * @param a ip string
+ * @param b ip string
+ * @return int 
+ */
 int compare_ips(char* a, char* b){
   if(strcmp(a, b) == 0 && strcmp(a, "\0") != 0){
     return 1;
@@ -24,6 +46,12 @@ int compare_ips(char* a, char* b){
   return 0;
 }
 
+/**
+ * @brief initializes an elevator with a given ip
+ * 
+ * @param elevator elevator_status_t struct to be initialized
+ * @param ip 
+ */
 void elevator_init_ip(elevator_status_t* elevator, char* ip){
   //printf("checking elevator %s\n", ip);
   bool node_alive = false;
@@ -54,6 +82,11 @@ void elevator_init_ip(elevator_status_t* elevator, char* ip){
   }
 }
 
+/**
+ * @brief initializes all elevators in the elevator_status_t struct
+ * 
+ * @param elevator elevator_status_t struct to be initialized
+ */
 void elevator_init(elevator_status_t* elevator){
 keep_alive_node_list_t* node_list = get_node_list();
   elevator_init_ip(elevator, node_list->self->ip);

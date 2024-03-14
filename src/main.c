@@ -292,6 +292,10 @@ int main()
         running_threads.button_input = true;
       }
     }
+    if(node_list->single_master && queue->size == 0){
+      printf("Single master and no orders, shutting down\n");
+      exit(0);
+    }
     sleep(1);
   }
 

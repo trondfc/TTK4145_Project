@@ -1,6 +1,16 @@
+/**
+ * @file elevator_control.h
+ * @brief functions for controlling elevator input and output
+ * @version 0.1
+ * @date 2024-03-14
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #pragma once
 
 #include "../elevator_hardware/elevator_hardware.h"
+#include "../keep_alive/keep_alive.h"
 #include "../order_queue/orderQueue.h"
 #include "../config.h"
 
@@ -12,14 +22,22 @@
 #include <unistd.h>
 #include <time.h>
 
-#define NUMBER_OF_STOP_READINGS 5
+#define NUMBER_OF_STOP_READINGS 5 // Number of stop readings before elevator restarts
 
+/**
+ * @brief possible directions for the elevator
+ * 
+ */
 typedef enum elevator_direction{
   UP,
   DOWN,
   STOP
 }elevator_direction_t;
 
+/**
+ * @brief status data for a single elevator
+ * 
+ */
 typedef struct elevator_status{
   elevator_hardware_info_t elevator;
   bool alive;
@@ -34,10 +52,18 @@ typedef struct elevator_status{
   pthread_mutex_t mutex;
 }elevator_status_t;
 
+/**
+ * @brief struct for floor buttons
+ * 
+ */
 typedef struct floor_buttons{
   bool floors[NO_FLOORS];
 }floor_buttons_t;
 
+/**
+ * @brief struct for button lights
+ * 
+ */
 typedef struct button_lights{
   floor_buttons_t *up;
   floor_buttons_t *down;
@@ -45,6 +71,10 @@ typedef struct button_lights{
   pthread_mutex_t *mutex;
 }button_lights_t;
 
+/**
+ * @brief struct for button lights history
+ * 
+ */
 typedef struct button_lights_history{
   button_lights_t *old;
   button_lights_t *new;
