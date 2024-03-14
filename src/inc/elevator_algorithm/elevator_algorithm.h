@@ -10,13 +10,13 @@
 
 #define LOG_LEVEL LOG_LEVEL_INFO
 
-#define N_ELEVATORS 4
+#define N_ELEVATORS 1
 #define N_FLOORS 4
 #define N_ORDERS 100
 
 #define DEFAULT_FLOOR 0
 
-#define ELEVATOR_DOOR_OPEN_TIME 3000 //ms
+
 
 
 /// Convert seconds to microseconds
@@ -26,6 +26,9 @@
 /// Convert nanoseconds to microseconds
 #define NS_TO_US(ns)    ((ns)/1000)
 
+#define US_TO_SEC(us)   ((us)/1000000)
+
+#define ELEVATOR_DOOR_OPEN_TIME SEC_TO_US(3)
 
 typedef struct{
   int elevator_no;
@@ -34,12 +37,12 @@ typedef struct{
 }elevator_arg_t;
 
 //Public functions
-int elevator_status_init(elevator_status_t* elevator_status, order_queue_t* order_queue);
-int elevator_status_kill();
+int elevator_algorithm_init(elevator_status_t* elevator_status, order_queue_t* order_queue);
+int elevator_algorithm_kill();
 
 
 //Private functions
-
+uint64_t get_timestamp();
 
 /*
 typedef enum order_types_t {
