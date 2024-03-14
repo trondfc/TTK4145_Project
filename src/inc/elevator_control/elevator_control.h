@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../elevator_hardware/elevator_hardware.h"
+#include "../keep_alive/keep_alive.h"
 #include "../order_queue/orderQueue.h"
 #include "../config.h"
 

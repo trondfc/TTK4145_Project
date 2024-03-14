@@ -140,8 +140,11 @@ void add_elevator_button_lights(button_lights_history_t* button_lights, order_qu
     }
   }
 
+  keep_alive_node_list_t* node_list = get_node_list();
+
   for(int i = 0; i < queue->size; i++){
-    if(queue->orders[i].order_status == SYNCED){
+
+    if(queue->orders[i].order_status == SYNCED || node_list->single_master){
       //printf("Adding order %ld to button lights\n", queue->orders[i].order_id);
       if(queue->orders[i].order_type == 0){
         button_lights->new->up->floors[queue->orders[i].floor] = true;
