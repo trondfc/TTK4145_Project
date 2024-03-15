@@ -14,4 +14,6 @@ bool elevator_has_reserved_orders(order_queue_t* queue, elevator_status_t* eleva
 bool reserved_order_at_position(order_queue_t* queue, elevator_status_t* elevator);
 long find_closest_order(order_queue_t* queue, elevator_status_t* elevator);
 elevator_state_t direction_to_order(order_event_t* order, elevator_status_t* elevator);
-
+void reserve_elevator(order_queue_t* queue, order_event_t* order, elevator_status_t* elevator);
+bool elevator_goto_floor(order_queue_t* queue, order_event_t* order, elevator_status_t* elevator);
+bool reserve_when_goto(order_queue_t* queue, order_event_t* go_to_order, elevator_status_t* elevator);

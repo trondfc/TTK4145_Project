@@ -154,3 +154,36 @@ bool elevator_goto_floor(order_queue_t* queue, order_event_t* order, elevator_st
     }
 }
 
+bool reserve_when_goto(order_queue_t* queue, order_event_t* go_to_order, elevator_status_t* elevator){
+    if(!elevator->alive){
+        printf("Elevator %ld is not alive\n", elevator->elevator.ip);
+        return 0;
+    }
+    else if (go_to_order->order_type != GO_TO){
+        printf("Order %ld is not a go to order\n", go_to_order->order_id);
+        return 0;
+    }
+    else if (elevator->door_open || elevator->emergency_stop || elevator->obstruction){
+        printf("Elevator %ld is not ready to receive orders. Door open: %d, Emergency stop: %d, Obstruction: %d\n", elevator->elevator.ip, elevator->door_open, elevator->emergency_stop, elevator->obstruction);
+        return 0;
+    }
+    for(int i = 0; i < queue->size; i++){
+        if(elevator->elevator_state == UP){
+            if(queue->orders[i].floor > elevator->floor && queue->orders[i].floor <= go_to_order->floor){
+                pthread_mutex_lock(queue->queue_mutex);
+                queue->orders[i].order_status = ACTIVE;
+                strcpy(queue->orders[i].controller_id, elevator->elevator.ip);
+                pthread_mutex_unlock(queue->queue_mutex);
+            }
+        }
+        if(elevator->elevator_state == DOWN){
+            if(queue->orders[i].floor < elevator->floor && queue->orders[i].floor >= go_to_order->floor){
+                pthread_mutex_lock(queue->queue_mutex);
+                queue->orders[i].order_status = ACTIVE;
+                strcpy(queue->orders[i].controller_id, elevator->elevator.ip);
+                pthread_mutex_unlock(queue->queue_mutex);
+            }
+        }
+    }
+    return 1;
+}
