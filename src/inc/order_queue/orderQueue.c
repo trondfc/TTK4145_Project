@@ -92,6 +92,8 @@ void dequeue_order(order_queue_t *queue, order_event_t *order){
         printf("Queue is empty\n");
         return;
     }
+    memset(order, 0, sizeof(order_event_t));
+
     for(int i = 0; i < queue->size; i++){
         if(queue->orders[i].order_id == order->order_id){
             for(int j = i; j < queue->size - 1; j++){
