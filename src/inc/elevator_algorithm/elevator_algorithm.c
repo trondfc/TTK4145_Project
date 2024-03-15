@@ -105,3 +105,38 @@ elevator_state_t direction_to_order(order_event_t* order, elevator_status_t* ele
     }
 }
 
+/**
+ * @brief Function that sends an elevator to a floor
+ * 
+ * @param order 
+ * @param elevator 
+ * @return true 
+ * @return false 
+ */
+bool elevator_goto_floor(order_event_t* order, elevator_status_t* elevator){
+    if(!elevator->alive){
+        printf("Elevator %ld is not alive\n", elevator->elevator.ip);
+        return 0;
+    }
+    else if (order->order_type != GO_TO){
+        printf("Order %ld is not a go to order\n", order->order_id);
+        return 0;
+    }
+    else if (elevator->door_open || elevator->emergency_stop || elevator->obstruction){
+        printf("Elevator %ld is not ready to receive orders. Door open: %d, Emergency stop: %d, Obstruction: %d\n", elevator->elevator.ip, elevator->door_open, elevator->emergency_stop, elevator->obstruction);
+        return 0;
+    }
+    else if (order->floor == elevator->floor){
+        printf("Elevator is already at floor %d\n", order->floor);
+        return 0;
+    }
+    else{
+        pthread_mutex_lock(&elevator->mutex);
+        elevator->elevator_state = direction_to_order(order, elevator);
+        elevator->end_floor = order->floor;
+        pthread_mutex_unlock(&elevator->mutex);
+        return 1;
+    }
+}
+
+void 
