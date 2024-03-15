@@ -1,5 +1,17 @@
 #include "elevator_algorithm.h"
+/**
+ * @brief Functions that are used to control the elevator algorithm
+ * 
+ */
 
+/**
+ * @brief Returns true if there is an order in the elevator path
+ * 
+ * @param order 
+ * @param elevator 
+ * @return true 
+ * @return false 
+ */
 bool order_in_elevator_path(order_event_t* order, elevator_status_t* elevator){
     //See if given order is in current path of given elevator
     if(order->order_status == SYNCED){
@@ -13,6 +25,14 @@ bool order_in_elevator_path(order_event_t* order, elevator_status_t* elevator){
     return 0;
 }
 
+/**
+ * @brief Function that returns true if the elevator has reserved orders in the queue
+ * 
+ * @param queue 
+ * @param elevator 
+ * @return true 
+ * @return false 
+ */
 bool elevator_has_reserved_orders(order_queue_t* queue, elevator_status_t* elevator){
     //See if elevator has any more reserved orders
     for(int i = 0; i < queue->size; i++){
@@ -23,6 +43,14 @@ bool elevator_has_reserved_orders(order_queue_t* queue, elevator_status_t* eleva
     return 0;
 }
 
+/**
+ * @brief Returns true if there is a reserved order at the current elevator position
+ * 
+ * @param queue 
+ * @param elevator 
+ * @return true 
+ * @return false 
+ */
 bool reserved_order_at_position(order_queue_t* queue, elevator_status_t* elevator){
     for(int i = 0; i < queue->size; i++){
         if(strcmp(queue->orders[i].controller_id, elevator->elevator.ip) == 0){
@@ -34,6 +62,13 @@ bool reserved_order_at_position(order_queue_t* queue, elevator_status_t* elevato
     return 0;
 }
 
+/**
+ * @brief Finds the closest synced order to the elevator
+ * 
+ * @param queue 
+ * @param elevator 
+ * @return long 
+ */
 long find_closest_order(order_queue_t* queue, elevator_status_t* elevator){
     // find closest order to elevator
     int closest_order_id = -1;
@@ -50,6 +85,13 @@ long find_closest_order(order_queue_t* queue, elevator_status_t* elevator){
     return closest_order_id;
 }
 
+/**
+ * @brief Finds the direction an elevator has to move to reach an order
+ * 
+ * @param order 
+ * @param elevator 
+ * @return elevator_state_t 
+ */
 elevator_state_t direction_to_order(order_event_t* order, elevator_status_t* elevator){
     // find direction to order
     if(order->floor > elevator->floor){
@@ -62,3 +104,4 @@ elevator_state_t direction_to_order(order_event_t* order, elevator_status_t* ele
         return STOP;
     }
 }
+
