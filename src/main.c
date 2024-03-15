@@ -137,11 +137,16 @@ void* main_elevator_inputs(void* arg){
 void* main_elevator_output(void* arg){
   printf("elevator_outputs");
   while(1){
+    for(int i = 0; i < 3; i++){
+      set_motor_direction(g_elevator);
+      usleep(2*ORDER_POLL_DELAY);
+    }
+
+    set_motor_direction(g_elevator);
     update_elevator_floor_lights(g_elevator);
     update_elevator_stop_light(g_elevator);
     update_elevator_door_light(g_elevator);
     add_elevator_button_lights(button_lights, queue, g_elevator);
-    set_motor_direction(g_elevator);
     usleep(2*ORDER_POLL_DELAY);
   }
 }

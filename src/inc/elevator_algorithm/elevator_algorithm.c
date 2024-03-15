@@ -215,10 +215,20 @@ void* thr_handle_orders(void* args){
                 elevator_state_t direction = direction_to_order(oldest_order, &elevator[i]);
                 pthread_mutex_lock(&elevator[i].mutex);
                 if(direction == UP){
-                    elevator[i].elevator_state = TRANSPORT_UP;
+                    if(oldest_order->order_type == GO_TO){
+                        elevator[i].elevator_state = UP;
+                    }
+                    else{
+                        elevator[i].elevator_state = TRANSPORT_UP;
+                    }
                 }
                 else if(direction == DOWN){
-                    elevator[i].elevator_state = TRANSPORT_DOWN;
+                    if(oldest_order->order_type == GO_TO){
+                        elevator[i].elevator_state = DOWN;
+                    }
+                    else{
+                        elevator[i].elevator_state = TRANSPORT_DOWN;
+                    }
                 }
                 pthread_mutex_unlock(&elevator[i].mutex);
 
@@ -228,7 +238,7 @@ void* thr_handle_orders(void* args){
                 if(!elevator_has_reserved_orders(queue, &elevator[i])){
                     pthread_mutex_lock(&elevator[i].mutex);
                     elevator[i].elevator_state = STOP;
-                    printf("Elevator %s is now stopped\n", elevator[i].elevator.ip);
+                    //printf("Elevator %s is now stopped\n", elevator[i].elevator.ip);
                     pthread_mutex_unlock(&elevator[i].mutex);
                 }
 
