@@ -16,6 +16,8 @@ pthread_t elevator_thread[N_ELEVATORS], request_handler_thread;
 elevator_arg_t elevator_arg[N_ELEVATORS];
 
 //TODO: Double check mutexes in elevator_status and queue
+//TODO: N_ELEVATORS FIX
+
 uint64_t get_timestamp_us(){
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
@@ -24,7 +26,7 @@ uint64_t get_timestamp_us(){
 
 int is_elevator_moving(elevator_status_t* selected_elevator)
 {
-    return (selected_elevator->elevator_state == ELEVATOR_DIR_UP_AND_MOVING || selected_elevator->elevator_state == ELEVATOR_DIR_DOWN_AND_MOVING) ? 1 : 0;
+    return (selected_elevator->elevator_state == ELEVATOR_DIR_UP_AND_MOVING     || selected_elevator->elevator_state == ELEVATOR_DIR_DOWN_AND_MOVING) ? 1 : 0;
 }
 
 int is_elevator_dir_up(elevator_status_t* selected_elevator)
@@ -34,15 +36,41 @@ int is_elevator_dir_up(elevator_status_t* selected_elevator)
 
 int is_elevator_dir_down(elevator_status_t* selected_elevator)
 {
-    return (selected_elevator->elevator_state == ELEVATOR_DIR_DOWN_AND_MOVING     || selected_elevator->elevator_state == ELEVATOR_DIR_DOWN_AND_STOPPED) ?  1 : 0;
+    return (selected_elevator->elevator_state == ELEVATOR_DIR_DOWN_AND_MOVING   || selected_elevator->elevator_state == ELEVATOR_DIR_DOWN_AND_STOPPED) ?  1 : 0;
 }
 
-int set_elevator_state(elevator_status_t* elevator_status, int elevator_no, elevator_state_t state)
+int set_elevator_state(elevator_status_t* elevator_status, int elevator_no, elevator_state_t next_state)
 {
     #if LOG_LEVEL <= LOG_LEVEL_INFO
-        printf("INFO: \tElevator %d \t Set to  %d\n", elevator_no, state);
+        //elevator_state_t current_state = elevator_status[elevator_no].elevator_state;
+        switch(next_state){
+            case ELEVATOR_IDLE:
+                printf("INFO: \t Elevator %d \t ELEVATOR_IDLE\n", elevator_no);
+                break;
+            case ELEVATOR_DIR_UP_AND_MOVING:
+                printf("INFO: \t Elevator %d \t ELEVATOR_DIR_UP_AND_MOVING\n", elevator_no);
+                break;
+            case ELEVATOR_DIR_DOWN_AND_MOVING:
+                printf("INFO: \t Elevator %d \t ELEVATOR_DIR_DOWN_AND_MOVING\n", elevator_no);
+                break;
+            case ELEVATOR_DIR_UP_AND_STOPPED:
+                printf("INFO: \t Elevator %d \t ELEVATOR_DIR_UP_AND_STOPPED\n", elevator_no);
+                break;
+            case ELEVATOR_DIR_DOWN_AND_STOPPED:
+                printf("INFO: \t Elevator %d \t ELEVATOR_DIR_DOWN_AND_STOPPED\n", elevator_no);
+                break;
+            case ELEVATOR_EMERGENCY_STOP:
+                printf("INFO: \t Elevator %d \t ELEVATOR_EMERGENCY_STOP\n", elevator_no);
+                break;
+            default:
+                printf("Invalid elevator state\n");
+                break;
+        }
+
+        
+        //printf("INFO: \tElevator %d \t Set to  %d\n", elevator_no, state);
     #endif
-    elevator_status[elevator_no].elevator_state = state;
+    elevator_status[elevator_no].elevator_state = next_state;
     return 0;
 }
 
@@ -51,16 +79,11 @@ int start_elevator(elevator_status_t* elevator_status, int elevator_no)
     #if LOG_LEVEL <= LOG_LEVEL_INFO
         printf("INFO: \tElevator %d \t Starting\n", elevator_no);
     #endif
-        //TODO: Use Set elevator state function
     if(elevator_status[elevator_no].elevator_state == ELEVATOR_DIR_UP_AND_STOPPED){
         set_elevator_state(elevator_status, elevator_no, ELEVATOR_DIR_UP_AND_MOVING);
-        //elevator_status[elevator_no].elevator_state = ELEVATOR_DIR_UP_AND_MOVING;
-        //printd(LOG_LEVEL_INFO, sprintf("INFO: Elevator %d moving UP", elevator_no));
     }
     else if(elevator_status[elevator_no].elevator_state == ELEVATOR_DIR_DOWN_AND_STOPPED){
         set_elevator_state(elevator_status, elevator_no, ELEVATOR_DIR_DOWN_AND_MOVING);
-        //elevator_status[elevator_no].elevator_state = ELEVATOR_DIR_DOWN_AND_MOVING;
-        //printd(LOG_LEVEL_INFO, sprintf("INFO: Elevator %d moving UP", elevator_no));
     }
     return 0;
 }
@@ -70,16 +93,11 @@ int stop_elevator(elevator_status_t* elevator_status, int elevator_no)
     #if LOG_LEVEL <= LOG_LEVEL_INFO
         printf("INFO: \tElevator %d \t Stopping\n", elevator_no);
     #endif
-        //TODO: Use Set elevator state function
     if(elevator_status[elevator_no].elevator_state == ELEVATOR_DIR_UP_AND_MOVING){
         set_elevator_state(elevator_status, elevator_no, ELEVATOR_DIR_UP_AND_STOPPED);
-        //elevator_status[elevator_no].elevator_state = ELEVATOR_DIR_UP_AND_STOPPED;
-        //printd(LOG_LEVEL_INFO, sprintf("INFO: Elevator %d STOPPED", elevator_no));
     }
     else if(elevator_status[elevator_no].elevator_state == ELEVATOR_DIR_DOWN_AND_MOVING){
         set_elevator_state(elevator_status, elevator_no, ELEVATOR_DIR_DOWN_AND_STOPPED);
-        //elevator_status[elevator_no].elevator_state = ELEVATOR_DIR_DOWN_AND_STOPPED;
-        //printd(LOG_LEVEL_INFO, sprintf("INFO: Elevator %d STOPPED", elevator_no));
     }
     return 0;
 }
@@ -96,9 +114,6 @@ int open_elevator_door(elevator_status_t* elevator_status, int elevator_no)
     while(door_open_timestamp_us + ELEVATOR_DOOR_OPEN_TIME > get_timestamp_us()){
         usleep(10000);
         if(selected_elevator->obstruction){
-            #if LOG_LEVEL == DEBUG
-                printf("Obstruction Detected");
-            #endif
             door_open_timestamp_us = get_timestamp_us();
         }
     }
@@ -109,17 +124,30 @@ int open_elevator_door(elevator_status_t* elevator_status, int elevator_no)
     #endif
     return 0;
 }
+
+int get_elevator_no_from_order(elevator_status_t* elevator_status, order_event_t* order)
+{
+    //TODO: Implement
+    // elevator ip == elevator _id if the order is a cab request. Else, the elevator id is 0 and can be ignored.
+    for(int i = 0; i < N_ELEVATORS; i++){
+        if(strcmp(elevator_status[i].elevator.ip, order->elevator_id) == 0){;
+            return i;
+        }
+    }
+    return -1;
+}
+
 int at_valid_floor_request(elevator_status_t* elevator_status, int elevator_no, order_queue_t* order_queue)
 {
     elevator_status_t* selected_elevator = &elevator_status[elevator_no];
     for(int i = 0; i < order_queue->size; i++){
 
-        if(order_queue->orders[i].floor != selected_elevator->floor){
-            continue;
-        }
+        if(order_queue->orders[i].floor != selected_elevator->floor) continue;
+        if (order_queue->orders[i].order_status <= SYNCED) continue;
 
         switch(order_queue->orders[i].order_type){
             case GO_TO:
+                if( elevator_no != get_elevator_no_from_order(elevator_status, &order_queue->orders[i])) continue;
                 return 1;
                 break;
             case UP_FROM:
@@ -140,50 +168,34 @@ int at_valid_floor_request(elevator_status_t* elevator_status, int elevator_no, 
     return 0;
 }
 
-int get_elevator_no_from_order(elevator_status_t* elevator_status, order_event_t* order)
-{
-    //TODO: Implement
-    // elevator ip == elevator _id if the order is a cab request. Else, the elevator id is 0 and can be ignored.
-    if (order->order_type != GO_TO) return -1;
-
-    for(int i = 0; i < N_ELEVATORS; i++){
-        if(strcmp(elevator_status[i].elevator.ip, order->elevator_id) == 0){
-            return i;
-        }
-    }
-    printf("Elevator not found\n");
-    return -1;
-}
-
 int is_any_valid_request_in_current_elevator_direction(elevator_status_t* elevator_status, int elevator_no, order_queue_t* order_queue)
 {
     elevator_status_t* selected_elevator = &elevator_status[elevator_no];
     for(int i = 0; i < order_queue->size; i++){
         order_event_t* selected_order = &order_queue->orders[i];
 
-        if (selected_order->order_status == RECIVED) continue;
+        if (selected_order->order_status <= SYNCED) continue;
 
-        if (selected_order->order_type == GO_TO && elevator_no != get_elevator_no_from_order(elevator_status, selected_order)) continue;
-
-        if(order_queue->orders[i].floor != selected_elevator->floor){
-            continue;
+        if (selected_order->order_type == GO_TO){
+            if (get_elevator_no_from_order(elevator_status, selected_order) != elevator_no) continue;
         }
-        switch(order_queue->orders[i].order_type){
-            case GO_TO:
-                return 1;
-                break;
-            case UP_FROM:
-                if(is_elevator_dir_up(selected_elevator)){
+
+        switch(selected_elevator->elevator_state){
+            case ELEVATOR_DIR_UP_AND_MOVING:
+            case ELEVATOR_DIR_UP_AND_STOPPED:
+                if(selected_order->floor > selected_elevator->floor){
                     return 1;
                 }
                 break;
-            case DOWN_FROM:
-                if(is_elevator_dir_down(selected_elevator)){
+            
+            case ELEVATOR_DIR_DOWN_AND_MOVING:
+            case ELEVATOR_DIR_DOWN_AND_STOPPED:
+                if(selected_order->floor < selected_elevator->floor){
                     return 1;
                 }
                 break;
             default:
-                printf("Invalid order type\n");
+                printf("Invalid elevator state\n");
                 break;
         }
     }
@@ -205,6 +217,7 @@ int is_elevator_moving_towards_request(elevator_status_t* elevator_status, int e
 int is_any_elevator_moving_towards_request(elevator_status_t* elevator_status, int requested_flooor)
 {
     for(int i = 0; i < N_ELEVATORS; i++){
+        if (elevator_status[i].alive == false) continue;
         if(is_elevator_moving_towards_request(elevator_status, i, requested_flooor)){
             return 1;
         }   
@@ -230,41 +243,67 @@ int get_closest_idle_elevator(elevator_status_t* elevator_status, int requested_
 
 int set_elevator_dir_towards_floor(elevator_status_t* elevator_status, int elevator_no, int floor)
 {
-    //TODO: Should compare with prev floor because floor can be set to -1 when between floors
-    //TODO: Use Set elevator state function
     if(elevator_status[elevator_no].floor < floor){
-        elevator_status[elevator_no].elevator_state = ELEVATOR_DIR_UP_AND_MOVING;
+        set_elevator_state(elevator_status, elevator_no, ELEVATOR_DIR_UP_AND_MOVING);
     }
     else if(elevator_status[elevator_no].floor > floor){
-        elevator_status[elevator_no].elevator_state = ELEVATOR_DIR_DOWN_AND_MOVING;
+        set_elevator_state(elevator_status, elevator_no, ELEVATOR_DIR_DOWN_AND_MOVING);
     }
     return 0;
 }
 
-/* int complete_cab_request(elevator_status, elevator_no, order_queue)
+int complete_cab_request(elevator_status_t* elevator_status, int elevator_no, order_queue_t* order_queue)
 {
+    pthread_mutex_lock(order_queue->queue_mutex);
+    for(int i = 0; i<order_queue->size; i++){
+        order_event_t* selected_order = &order_queue->orders[i];
+        if(selected_order->order_type != GO_TO) continue;
+        int order_elevator_no = get_elevator_no_from_order(elevator_status, selected_order);
+        if(order_elevator_no == -1){
+            printf("Cab Order Elevator not found. Order Dequeued\n");
+            dequeue_order(order_queue, selected_order);
+            continue;
+        }else if(elevator_status[order_elevator_no].alive == false){
+            printf("Cab Order Elevator is dead. Order Dequeued\n");
+            dequeue_order(order_queue, selected_order);
+            continue;
+        }
+        if(selected_order->order_status != ACTIVE) continue;
+        if(order_queue->orders[i].floor == elevator_status[elevator_no].floor){
+            printf("Order %ld completed. Order Dequeued\n", selected_order->order_id);
+            dequeue_order(order_queue, selected_order);
+        }
+
+    }
+    pthread_mutex_unlock(order_queue->queue_mutex);
     return 0;
 }
-int complete_hall_request(elevator_status, elevator_no, order_queue)
+int complete_hall_request(elevator_status_t* elevator_status,int elevator_no, order_queue_t* order_queue)
 {
+    pthread_mutex_lock(order_queue->queue_mutex);
+    for(int i = 0; i < order_queue->size;i++){
+        if(order_queue->orders[i].order_status != ACTIVE) continue;
+
+    }
+    pthread_mutex_unlock(order_queue->queue_mutex);
     return 0;
 }
- */
+
 
 
 int complete_floor_request(int floor, int elevator_no, elevator_status_t* elevator_status, order_queue_t* order_queue)
 {
     pthread_mutex_lock(order_queue->queue_mutex);
     for(int i = 0; i < order_queue->size;i++){
-        if(order_queue->orders[i].order_status == SYNCED) continue;
+        if(order_queue->orders[i].order_status <= SYNCED) continue;
         if(order_queue->orders[i].order_type==GO_TO){
             if(elevator_no != get_elevator_no_from_order(elevator_status, &order_queue->orders[i])) continue;
         }
         //TODO: assume that person only enters elevator moving in correct direction
         if(order_queue->orders[i].floor == floor){
             //TODO: Should only synched orders be removed?
-            printf("Dequeued");
             dequeue_order(order_queue, &order_queue->orders[i]);
+            printf("Dequeued\n");
             break;
         }
     }
@@ -285,15 +324,11 @@ void* elevator_control(void* arg){
     
     elevator_status_t* selected_elevator = &elevator_status[elevator_no];
     while(1){
-        usleep(100000);
-        /* 
-        if(selected_elevator->floor >= N_FLOORS && is_elevator_dir_up(selected_elevator)){
-            selected_elevator->elevator_state = ELEVATOR_IDLE;
+        if(selected_elevator->alive == false){
+            sleep(1);
+        }else{
+            usleep(100000);
         }
-        if(selected_elevator->floor <= 0 && is_elevator_dir_down(selected_elevator)){
-            selected_elevator->elevator_state = ELEVATOR_IDLE;
-        } */
-
         if(selected_elevator->alive == false){
             printf("Elevator %d is dead\n", elevator_no);
             continue;
@@ -310,10 +345,10 @@ void* elevator_control(void* arg){
         case ELEVATOR_IDLE:
             break;
 
-        case ELEVATOR_DIR_UP_AND_MOVING || ELEVATOR_DIR_DOWN_AND_MOVING:
-            if(selected_elevator->floor == -1) continue;
+        case ELEVATOR_DIR_UP_AND_MOVING:
+        case ELEVATOR_DIR_DOWN_AND_MOVING:
+            if(selected_elevator->at_floor == false) continue;
 
-            //TODO: If any more requests in current direction, continue moving, else set to IDLE
             if(at_valid_floor_request(elevator_status, elevator_no, order_queue)){
                 stop_elevator(elevator_status, elevator_no);
                 open_elevator_door(elevator_status, elevator_no);
@@ -322,13 +357,24 @@ void* elevator_control(void* arg){
                 //complete_hall_request(elevator_status, elevator_no, order_queue);
                 complete_floor_request(elevator_status->floor, elevator_no, elevator_status, order_queue);
                 if(is_any_valid_request_in_current_elevator_direction(elevator_status, elevator_no, order_queue)){
+                    printf("Valid request in current direction\n");
                     start_elevator(elevator_status, elevator_no);
                 }else{
                     set_elevator_state(elevator_status, elevator_no, ELEVATOR_IDLE);
+                    printf("No valid request in current direction\n");
                 }
             }
+            if (selected_elevator->floor == 0 && is_elevator_dir_down(selected_elevator)){
+                set_elevator_state(elevator_status, elevator_no, ELEVATOR_IDLE);
+            }else if(selected_elevator->floor == N_FLOORS && is_elevator_dir_up(selected_elevator)){
+                set_elevator_state(elevator_status, elevator_no, ELEVATOR_IDLE);
+            }
+            break;
+        case ELEVATOR_DIR_UP_AND_STOPPED:
+        case ELEVATOR_DIR_DOWN_AND_STOPPED:
             break;
         default:
+            printf("Invalid elevator state\n");
             break;
         }
     }
@@ -340,7 +386,27 @@ int set_order_status(order_queue_t* order_queue, int index, order_status_t order
     pthread_mutex_lock(order_queue->queue_mutex);
     order_queue->orders[index].order_status = order_status;
     #if LOG_LEVEL >= LOG_LEVEL_INFO
-    printf("INFO: Order %ld status set to %d\n", order_queue->orders[index].order_id, order_status);
+    switch (order_status)
+    {
+    case RECIVED:
+        printf("INFO: \t Order %ld \t set to RECIVED\n", order_queue->orders[index].order_id);
+        break;
+    case SYNCED:
+        printf("INFO: \t Order %ld \t set to SYNCED\n", order_queue->orders[index].order_id);
+        break;
+    case ACTIVE:
+        printf("INFO: \t Order %ld \t set to ACTIVE\n", order_queue->orders[index].order_id);
+        break;
+    case COMPLETED:
+        printf("INFO: \t Order %ld \t set to COMPLETED\n", order_queue->orders[index].order_id);
+        break;
+    default:
+        printf("Invalid order status\n");
+        break;
+    }
+
+
+    //printf("INFO: Order %ld status set to %d\n", order_queue->orders[index].order_id, order_status);
     #endif
     pthread_mutex_unlock(order_queue->queue_mutex);
     return -1;
@@ -357,7 +423,6 @@ void* request_handler(void* arg){
             //printf("Order_Queue_Empty!\n");
             //continue;
         }
-
         for (int i = 0; i < order_queue->size; i++){
             order_event_t slected_order = order_queue->orders[i];
             switch(slected_order.order_status){
@@ -375,7 +440,7 @@ void* request_handler(void* arg){
                             set_elevator_dir_towards_floor(elevator_status, elevator_no, slected_order.floor);
                         }
                     }
-                    else{
+                    else{                        
                         if(is_any_elevator_moving_towards_request(elevator_status, slected_order.floor)){
                             set_order_status(order_queue, i, ACTIVE);
                             //slected_order.order_status = ACTIVE;
@@ -410,7 +475,6 @@ void* request_handler(void* arg){
 
 int elevator_algorithm_init(elevator_status_t* elevator_status, order_queue_t* order_queue)
 {
-    
     for(int i = 0; i < N_ELEVATORS; i++){
         //Init all variables that are controlled locally
         elevator_status[i].elevator_state = ELEVATOR_IDLE;
@@ -421,7 +485,6 @@ int elevator_algorithm_init(elevator_status_t* elevator_status, order_queue_t* o
         elevator_arg[i].order_queue = order_queue;
         pthread_create(&elevator_thread[i], NULL, elevator_control, (void*)&elevator_arg[i]);
     }
-
     pthread_create(&request_handler_thread, NULL, request_handler, (void*)&elevator_arg[0]);
     return 0;
 }
@@ -433,6 +496,8 @@ int elevator_algorithm_kill()
         pthread_cancel(elevator_thread[i]);
         pthread_join(elevator_thread[i], NULL);
     }
+    pthread_cancel(request_handler_thread);
+    pthread_join(request_handler_thread, NULL);
     return 0;
 }
 //TODO: Separate at_floor logic and floor where relevant

@@ -12,7 +12,12 @@
 
 #define LOG_LEVEL LOG_LEVEL_INFO
 
-#define N_ELEVATORS 1
+/*         for(int j = 0; j < MAX_IP_NODES; j++){
+          if(elevator[j].alive){
+            elevator_hardware_set_button_lamp(1, i, button_lights->new->down->floors[i], &elevator[j].elevator);
+          } */
+
+#define N_ELEVATORS MAX_IP_NODES
 #define N_FLOORS 4
 #define N_ORDERS 100
 
