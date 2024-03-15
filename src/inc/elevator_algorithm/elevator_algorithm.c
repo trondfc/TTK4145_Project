@@ -178,15 +178,29 @@ void unreserve_elevators_orders(order_queue_t* queue, elevator_status_t* elevato
     }
 }
 
-void remove_completed_order(order_queue_t* queue, elevator_status_t* elevator){
+void set_completed_order(order_queue_t* queue, elevator_status_t* elevator){
     // remove completed order from queue
     for(int i = 0; i < queue->size; i++){
         if(strcmp(queue->orders[i].controller_id, elevator->elevator.ip) == 0){
             if(elevator->floor == queue->orders[i].floor){
-                dequeue_order(queue, &queue->orders[i]);
+                //dequeue_order(queue, &queue->orders[i]);
+                pthread_mutex_lock(queue->queue_mutex);
+                queue->orders[i].order_status = COMPLETED;
+                strcpy(queue->orders[i].controller_id, "");
+                pthread_mutex_unlock(queue->queue_mutex);
             }
         }
     }
+}
+
+void remove_completed_order(order_queue_t* queue, elevator_status_t* elevator){
+    // remove completed order from queue
+    for(int i = 0; i < queue->size; i++){
+        if(queue->orders[i].order_status == COMPLETED){
+            dequeue_order(queue, &queue->orders[i]);
+        }
+    }
+    
 }
 
 void* thr_handle_orders(void* args){
@@ -315,6 +329,7 @@ void* thr_handle_orders(void* args){
                 break;
             }
 
+            set_completed_order(queue, &elevator[i]);
             remove_completed_order(queue, &elevator[i]);   
             if(!elevator_has_reserved_orders(queue, &elevator[i])){
                 elevator[i].elevator_state = STOP;
