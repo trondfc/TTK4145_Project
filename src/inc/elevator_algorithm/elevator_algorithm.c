@@ -180,6 +180,7 @@ void remove_completed_order(order_queue_t* queue, elevator_status_t* elevator){
 }
 
 void* thr_handle_orders(void* args){
+    printf("Starting thread to handle orders\n");
     elevator_arg_t* elevator_arg = (elevator_arg_t*)args;
     elevator_status_t* elevator = elevator_arg->elevator;
     order_queue_t* queue = elevator_arg->queue;
@@ -199,9 +200,11 @@ void* thr_handle_orders(void* args){
             {
             case STOP:
                 order_event_t* oldest_order = return_oldes_order(queue, &elevator[i]);
+                if(oldest_order == NULL){
+                    break;
+                }
                 reserve_elevator(queue, oldest_order, &elevator[i]);
                 elevator_state_t direction = direction_to_order(oldest_order, &elevator[i]);
-
                 pthread_mutex_lock(&elevator[i].mutex);
                 if(direction == UP){
                     elevator[i].elevator_state = TRANSPORT_UP;
