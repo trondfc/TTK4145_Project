@@ -295,6 +295,9 @@ void* thr_handle_orders(void* args){
             }
 
             remove_completed_order(queue, &elevator[i]);   
+            if(!elevator_has_reserved_orders(queue, &elevator[i])){
+                elevator[i].elevator_state = STOP;
+            }
         }
     }
 }
