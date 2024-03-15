@@ -128,6 +128,7 @@ void* main_elevator_inputs(void* arg){
   while(1){
     elevator_init(g_elevator);
     poll_stopped_elevators(g_elevator);
+    poll_elevator_floor(g_elevator);
     poll_obstructed_elevators(g_elevator);
     poll_elevator_floor(g_elevator);
   }
