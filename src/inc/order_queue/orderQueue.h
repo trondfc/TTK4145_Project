@@ -17,6 +17,7 @@
 #include <time.h>
 #include <ctype.h>
 #include <pthread.h>
+#include <string.h>
 
 
 typedef enum order_types_t {
