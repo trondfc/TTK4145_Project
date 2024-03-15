@@ -228,6 +228,7 @@ void* thr_handle_orders(void* args){
                 if(!elevator_has_reserved_orders(queue, &elevator[i])){
                     pthread_mutex_lock(&elevator[i].mutex);
                     elevator[i].elevator_state = STOP;
+                    printf("Elevator %s is now stopped\n", elevator[i].elevator.ip);
                     pthread_mutex_unlock(&elevator[i].mutex);
                 }
 

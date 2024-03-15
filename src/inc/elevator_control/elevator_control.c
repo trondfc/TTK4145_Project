@@ -293,14 +293,20 @@ void sett_all_button_lights(button_lights_history_t* button_lights, elevator_sta
 void set_motor_direction(elevator_status_t* elevator){
   for(int i = 0; i < MAX_IP_NODES; i++){
     if(elevator[i].alive){
-      if(elevator[i].elevator_state == UP || elevator[i].elevator_state == TRANSPORT_UP){
+
+      if(elevator[i].elevator_state == STOP){
+        if(!elevator[i].at_floor){
+          elevator_hardware_set_motor_direction(DIRN_UP, &elevator[i].elevator);
+        }
+        else{
+          elevator_hardware_set_motor_direction(DIRN_STOP, &elevator[i].elevator);
+        }
+      }
+      else if(elevator[i].elevator_state == UP || elevator[i].elevator_state == TRANSPORT_UP){
         elevator_hardware_set_motor_direction(DIRN_UP, &elevator[i].elevator);
       }
       else if(elevator[i].elevator_state == DOWN || elevator[i].elevator_state == TRANSPORT_DOWN){
         elevator_hardware_set_motor_direction(DIRN_DOWN, &elevator[i].elevator);
-      }
-      else if(elevator[i].elevator_state == STOP){
-        elevator_hardware_set_motor_direction(DIRN_STOP, &elevator[i].elevator);
       }
     }
   }

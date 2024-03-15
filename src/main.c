@@ -142,7 +142,7 @@ void* main_elevator_output(void* arg){
     update_elevator_door_light(g_elevator);
     add_elevator_button_lights(button_lights, queue, g_elevator);
     set_motor_direction(g_elevator);
-    usleep(5*ORDER_POLL_DELAY);
+    usleep(2*ORDER_POLL_DELAY);
   }
 }
 
