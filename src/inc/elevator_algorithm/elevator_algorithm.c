@@ -106,6 +106,20 @@ elevator_state_t direction_to_order(order_event_t* order, elevator_status_t* ele
 }
 
 /**
+ * @brief Function that reserves an elevator for an order
+ * 
+ * @param queue 
+ * @param order 
+ * @param elevator 
+ */
+void reserve_elevator(order_queue_t* queue, order_event_t* order, elevator_status_t* elevator){
+    pthread_mutex_lock(queue->queue_mutex);
+    order->order_status = ACTIVE;
+    strcpy(order->controller_id, elevator->elevator.ip);
+    pthread_mutex_unlock(queue->queue_mutex);
+}
+
+/**
  * @brief Function that sends an elevator to a floor
  * 
  * @param order 
@@ -113,7 +127,7 @@ elevator_state_t direction_to_order(order_event_t* order, elevator_status_t* ele
  * @return true 
  * @return false 
  */
-bool elevator_goto_floor(order_event_t* order, elevator_status_t* elevator){
+bool elevator_goto_floor(order_queue_t* queue, order_event_t* order, elevator_status_t* elevator){
     if(!elevator->alive){
         printf("Elevator %ld is not alive\n", elevator->elevator.ip);
         return 0;
@@ -135,8 +149,8 @@ bool elevator_goto_floor(order_event_t* order, elevator_status_t* elevator){
         elevator->elevator_state = direction_to_order(order, elevator);
         elevator->end_floor = order->floor;
         pthread_mutex_unlock(&elevator->mutex);
+        reserve_elevator(queue, order, elevator);
         return 1;
     }
 }
 
-void 
