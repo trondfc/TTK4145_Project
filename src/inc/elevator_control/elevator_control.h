@@ -49,6 +49,7 @@ typedef struct elevator_status{
   elevator_hardware_info_t elevator;
   pthread_mutex_t mutex;
   bool alive;
+  int end_floor;
   int floor;
   bool at_floor;
   elevator_state_t elevator_state;
