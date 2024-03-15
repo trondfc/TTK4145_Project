@@ -192,9 +192,7 @@ void* thr_handle_orders(void* args){
         for(int i = 0; i < MAX_IP_NODES; i++){
             if(!elevator[i].alive){
                 continue;
-            }
-
-            remove_completed_order(queue, &elevator[i]);    
+            } 
 
             switch (elevator[i].elevator_state)
             {
@@ -295,6 +293,8 @@ void* thr_handle_orders(void* args){
             default:
                 break;
             }
+
+            remove_completed_order(queue, &elevator[i]);   
         }
     }
 }
