@@ -197,7 +197,9 @@ void remove_completed_order(order_queue_t* queue, elevator_status_t* elevator){
     // remove completed order from queue
     for(int i = 0; i < queue->size; i++){
         if(queue->orders[i].order_status == COMPLETED){
+            pthread_mutex_lock(queue->queue_mutex);
             dequeue_order(queue, &queue->orders[i]);
+            pthread_mutex_unlock(queue->queue_mutex);
         }
     }
     
