@@ -103,3 +103,4 @@ void update_elevator_door_light(elevator_status_t* elevator);
 void add_elevator_button_lights(button_lights_history_t* button_lights, order_queue_t* queue, elevator_status_t* elevator);
 void set_changed_button_lights(button_lights_history_t* button_lights, elevator_status_t* elevator);
 void sett_all_button_lights(button_lights_history_t* button_lights, elevator_status_t* elevator);
+void set_motor_direction(elevator_status_t* elevator);

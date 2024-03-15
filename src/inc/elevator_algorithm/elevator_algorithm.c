@@ -144,7 +144,7 @@ void reserve_elevator(order_queue_t* queue, order_event_t* order, elevator_statu
         if(strcmp(order->elevator_id, elevator->elevator.ip) == 0){
             pthread_mutex_lock(queue->queue_mutex);
             order->order_status = ACTIVE;
-        strcpy(order->controller_id, elevator->elevator.ip);
+            strcpy(order->controller_id, elevator->elevator.ip);
             pthread_mutex_unlock(queue->queue_mutex);
         }
     }
