@@ -134,10 +134,19 @@ elevator_state_t direction_to_order(order_event_t* order, elevator_status_t* ele
  * @param elevator 
  */
 void reserve_elevator(order_queue_t* queue, order_event_t* order, elevator_status_t* elevator){
-    pthread_mutex_lock(queue->queue_mutex);
-    order->order_status = ACTIVE;
-    strcpy(order->controller_id, elevator->elevator.ip);
-    pthread_mutex_unlock(queue->queue_mutex);
+    if(order->order_type != GO_TO){
+        pthread_mutex_lock(queue->queue_mutex);
+        order->order_status = ACTIVE;
+        strcpy(order->controller_id, elevator->elevator.ip);
+        pthread_mutex_unlock(queue->queue_mutex);
+    } 
+    else{
+        if(strcmp(order->controller_id, elevator->elevator.ip) == 0){
+            pthread_mutex_lock(queue->queue_mutex);
+            order->order_status = ACTIVE;
+            pthread_mutex_unlock(queue->queue_mutex);
+        }
+    }
 }
 
 void order_completion_timedout(order_queue_t* queue){
