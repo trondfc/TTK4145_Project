@@ -21,7 +21,7 @@ elevator_status_t* elevator_struct_init(){
     strcpy(elevator[i].elevator.ip, "\0");
     elevator[i].alive = false;
     elevator[i].floor = 0;
-    elevator[i].elevator_state = ELEVATOR_IDLE;
+    elevator[i].elevator_state = STOP;
     elevator[i].obstruction = false;
     elevator[i].emergency_stop = false;
     elevator[i].number_of_stop_readings = 0;

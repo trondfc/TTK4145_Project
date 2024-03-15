@@ -38,7 +38,9 @@ typedef enum{
 typedef enum{
   STOP = 0,
   UP = 1,
-  DOWN = 2
+  DOWN = 2,
+  TRANSPORT_UP = 3,
+  TRANSPORT_DOWN = 4,
 }elevator_state_t;
 
 /**

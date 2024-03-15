@@ -32,12 +32,28 @@ void messageReceived(const char * ip, char * data, int datalength){
   printf("Queue size: %d\n", queue->size);
   //printf("Queue capacity: %d\n", queue->capacity);
   for(int i = 0; i < queue->size; i++){
-    printf("\tOrder %d: %ld from flor %d going %d. Status: %s \n", 
+    char status_text[10] = "";
+    if(queue->orders[i].order_status == RECIVED){
+      strcpy(status_text, "RECIVED");
+    }else if(queue->orders[i].order_status == SYNCED){
+      strcpy(status_text, "SYNCED");
+    }else if(queue->orders[i].order_status == NOTIFIED){
+      strcpy(status_text, "NOTIFIED");
+    }else if(queue->orders[i].order_status == ACTIVE){
+      strcpy(status_text, "ACTIVE");
+    }else if(queue->orders[i].order_status == COMPLETED){
+      strcpy(status_text, "COMPLETED");
+    }else{
+      strcpy(status_text, "UNKNOWN");
+    }
+    printf("\tOrder %d: %ld from flor %d going %d. Status: %s. Controlled by %s\n", 
           i, 
           queue->orders[i].order_id, 
           queue->orders[i].floor, 
           queue->orders[i].order_type, 
-          queue->orders[i].order_status == RECIVED ? "RECIVED" : "SYNCED");
+          status_text,
+          queue->orders[i].controller_id
+          );
   }
     
 }
@@ -135,11 +151,30 @@ void* print_elevator_status(void* arg){
     printf("Elevator status\n");
     for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
       if(g_elevator[i].alive){
-        printf("\tElevator %d: %s is %s and %s at floor %d with door %s\n",i, g_elevator[i].elevator.ip,
+
+        char status_text[15] = "";
+        if(g_elevator[i].elevator_state == STOP){
+          strcpy(status_text, "STOP");
+        }else if(g_elevator[i].elevator_state == UP){
+          strcpy(status_text, "UP");
+        }else if(g_elevator[i].elevator_state == DOWN){
+          strcpy(status_text, "DOWN");
+        }else if(g_elevator[i].elevator_state == TRANSPORT_UP){
+          strcpy(status_text, "TRANSPORT_UP");
+        }else if(g_elevator[i].elevator_state == TRANSPORT_DOWN){
+          strcpy(status_text, "TRANSPORT_DOWN");
+        }else{
+          strcpy(status_text, "UNKNOWN");
+        }
+
+        printf("\tElevator %d: %s is %s and %s at floor %d with door %s. Direction is %s\n",
+                  i, 
+                  g_elevator[i].elevator.ip,
                   g_elevator[i].emergency_stop ? "stopped" : "running", 
                   g_elevator[i].obstruction ? "obstructed" : "not obstructed",
                   g_elevator[i].floor,
-                  g_elevator[i].door_open ? "open" : "closed"
+                  g_elevator[i].door_open ? "open" : "closed",
+                  status_text
                   );
       }
     }
@@ -206,7 +241,12 @@ int main()
     exit(-1);
   }
 
+  elevator_arg_t* elevator_args = malloc(sizeof(elevator_arg_t));
+  elevator_args->elevator = g_elevator;
+  elevator_args->queue = queue;
+
   pthread_t send_thread, button_thread, elevator_output_thread, elevator_input_thread , print_elevator_status_thread, elevator_light_thread;
+  pthread_t handle_orders_thread;
 
   keep_alive_init(5000, SLAVE);
   while(1){
@@ -252,10 +292,13 @@ int main()
         pthread_cancel(elevator_input_thread);
         pthread_cancel(elevator_output_thread);
         pthread_cancel(elevator_light_thread);
+        pthread_cancel(handle_orders_thread);
+
         pthread_join(elevator_output_thread, NULL);
         pthread_join(elevator_input_thread, NULL);
         pthread_join(elevator_light_thread, NULL);
-        elevator_algorithm_kill();
+        pthread_join(handle_orders_thread, NULL);
+
         running_threads.elevator_control = false;
       }
 
@@ -279,7 +322,8 @@ int main()
         pthread_create(&elevator_input_thread, NULL, &main_elevator_inputs, NULL);
         pthread_create(&elevator_output_thread, NULL, &main_elevator_output, NULL);
         pthread_create(&elevator_light_thread, NULL, &controll_elevator_button_lights, NULL);
-        elevator_algorithm_init(g_elevator, queue);
+        pthread_create(&handle_orders_thread, NULL, &thr_handle_orders, elevator_args);
+
         running_threads.elevator_control = true;
       }
       if(running_threads.send == false){

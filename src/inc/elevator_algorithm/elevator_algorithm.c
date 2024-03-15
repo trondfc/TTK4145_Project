@@ -18,7 +18,7 @@ bool order_in_elevator_path(order_event_t* order, elevator_status_t* elevator){
         if(elevator->elevator_state == UP){
             return (order->floor >= elevator->floor);
         }
-        else if(order->order_status == DOWN){
+        else if(elevator->elevator_state == DOWN){
             return (order->floor <= elevator->floor);
         }
     }
@@ -62,6 +62,17 @@ bool reserved_order_at_position(order_queue_t* queue, elevator_status_t* elevato
     return 0;
 }
 
+order_event_t* return_reserved_order_at_floor(order_queue_t* queue,elevator_status_t* elevator, int floor){
+    for(int i = 0; i < queue->size; i++){
+        if(strcmp(queue->orders[i].controller_id, elevator->elevator.ip) == 0){
+            if(queue->orders[i].floor == floor){
+                return &queue->orders[i];
+            }
+        }
+    }
+    return NULL;
+}
+
 /**
  * @brief Finds the closest synced order to the elevator
  * 
@@ -69,7 +80,7 @@ bool reserved_order_at_position(order_queue_t* queue, elevator_status_t* elevato
  * @param elevator 
  * @return long 
  */
-long find_closest_order(order_queue_t* queue, elevator_status_t* elevator){
+long return_closest_order(order_queue_t* queue, elevator_status_t* elevator){
     // find closest order to elevator
     int closest_order_id = -1;
     long closest_order_distance = 1000;
@@ -83,6 +94,16 @@ long find_closest_order(order_queue_t* queue, elevator_status_t* elevator){
         }
     }
     return closest_order_id;
+}
+
+order_event_t* return_oldes_order(order_queue_t* queue, elevator_status_t* elevator){
+    // find oldest order in queue
+    for(int i = 0; i < queue->size; i++){
+        if(queue->orders[i].order_status == SYNCED){
+            return &queue->orders[i];
+        }
+    }
+    return NULL;
 }
 
 /**
@@ -119,71 +140,158 @@ void reserve_elevator(order_queue_t* queue, order_event_t* order, elevator_statu
     pthread_mutex_unlock(queue->queue_mutex);
 }
 
-/**
- * @brief Function that sends an elevator to a floor
- * 
- * @param order 
- * @param elevator 
- * @return true 
- * @return false 
- */
-bool elevator_goto_floor(order_queue_t* queue, order_event_t* order, elevator_status_t* elevator){
-    if(!elevator->alive){
-        printf("Elevator %ld is not alive\n", elevator->elevator.ip);
-        return 0;
-    }
-    else if (order->order_type != GO_TO){
-        printf("Order %ld is not a go to order\n", order->order_id);
-        return 0;
-    }
-    else if (elevator->door_open || elevator->emergency_stop || elevator->obstruction){
-        printf("Elevator %ld is not ready to receive orders. Door open: %d, Emergency stop: %d, Obstruction: %d\n", elevator->elevator.ip, elevator->door_open, elevator->emergency_stop, elevator->obstruction);
-        return 0;
-    }
-    else if (order->floor == elevator->floor){
-        printf("Elevator is already at floor %d\n", order->floor);
-        return 0;
-    }
-    else{
-        pthread_mutex_lock(&elevator->mutex);
-        elevator->elevator_state = direction_to_order(order, elevator);
-        elevator->end_floor = order->floor;
-        pthread_mutex_unlock(&elevator->mutex);
-        reserve_elevator(queue, order, elevator);
-        return 1;
+void order_completion_timedout(order_queue_t* queue){
+    // check if any orders have timed out
+    time_t current_time;
+    time(&current_time);
+    for(int i = 0; i < queue->size; i++){
+        if(queue->orders[i].order_status == ACTIVE){
+            if(difftime(current_time, queue->orders[i].timestamp) > ORDER_TIMEOUT){
+                pthread_mutex_lock(queue->queue_mutex);
+                queue->orders[i].order_status = SYNCED;
+                strcpy(queue->orders[i].controller_id, "");
+                pthread_mutex_unlock(queue->queue_mutex);
+            }
+        }
     }
 }
 
-bool reserve_when_goto(order_queue_t* queue, order_event_t* go_to_order, elevator_status_t* elevator){
-    if(!elevator->alive){
-        printf("Elevator %ld is not alive\n", elevator->elevator.ip);
-        return 0;
-    }
-    else if (go_to_order->order_type != GO_TO){
-        printf("Order %ld is not a go to order\n", go_to_order->order_id);
-        return 0;
-    }
-    else if (elevator->door_open || elevator->emergency_stop || elevator->obstruction){
-        printf("Elevator %ld is not ready to receive orders. Door open: %d, Emergency stop: %d, Obstruction: %d\n", elevator->elevator.ip, elevator->door_open, elevator->emergency_stop, elevator->obstruction);
-        return 0;
-    }
+void unreserve_elevators_orders(order_queue_t* queue, elevator_status_t* elevator){
+    // remove reserved order from queue
     for(int i = 0; i < queue->size; i++){
-        if(elevator->elevator_state == UP){
-            if(queue->orders[i].floor > elevator->floor && queue->orders[i].floor <= go_to_order->floor){
-                pthread_mutex_lock(queue->queue_mutex);
-                queue->orders[i].order_status = ACTIVE;
-                strcpy(queue->orders[i].controller_id, elevator->elevator.ip);
-                pthread_mutex_unlock(queue->queue_mutex);
-            }
+        if(strcmp(queue->orders[i].controller_id, elevator->elevator.ip) == 0){
+            pthread_mutex_lock(queue->queue_mutex);
+            queue->orders[i].order_status = SYNCED;
+            strcpy(queue->orders[i].controller_id, "");
+            pthread_mutex_unlock(queue->queue_mutex);
         }
-        if(elevator->elevator_state == DOWN){
-            if(queue->orders[i].floor < elevator->floor && queue->orders[i].floor >= go_to_order->floor){
-                pthread_mutex_lock(queue->queue_mutex);
-                queue->orders[i].order_status = ACTIVE;
-                strcpy(queue->orders[i].controller_id, elevator->elevator.ip);
-                pthread_mutex_unlock(queue->queue_mutex);
+    }
+}
+
+void remove_completed_order(order_queue_t* queue, elevator_status_t* elevator){
+    // remove completed order from queue
+    for(int i = 0; i < queue->size; i++){
+        if(strcmp(queue->orders[i].controller_id, elevator->elevator.ip) == 0){
+            if(elevator->floor == queue->orders[i].floor){
+                dequeue_order(queue, &queue->orders[i]);
             }
         }
     }
-    return 1;
+}
+
+void* thr_handle_orders(void* args){
+    elevator_arg_t* elevator_arg = (elevator_arg_t*)args;
+    elevator_status_t* elevator = elevator_arg->elevator;
+    order_queue_t* queue = elevator_arg->queue;
+
+    while(1){
+        usleep(ORDER_POLL_DELAY);
+        order_completion_timedout(queue);
+
+        for(int i = 0; i < MAX_IP_NODES; i++){
+            if(!elevator[i].alive){
+                continue;
+            }
+
+            remove_completed_order(queue, &elevator[i]);    
+
+            switch (elevator[i].elevator_state)
+            {
+            case STOP:
+                order_event_t* oldest_order = return_oldes_order(queue, &elevator[i]);
+                reserve_elevator(queue, oldest_order, &elevator[i]);
+                elevator_state_t direction = direction_to_order(oldest_order, &elevator[i]);
+
+                pthread_mutex_lock(&elevator[i].mutex);
+                if(direction == UP){
+                    elevator[i].elevator_state = TRANSPORT_UP;
+                }
+                else if(direction == DOWN){
+                    elevator[i].elevator_state = TRANSPORT_DOWN;
+                }
+                pthread_mutex_unlock(&elevator[i].mutex);
+
+                break;
+            
+            case UP:
+                if(!elevator_has_reserved_orders(queue, &elevator[i])){
+                    pthread_mutex_lock(&elevator[i].mutex);
+                    elevator[i].elevator_state = STOP;
+                    pthread_mutex_unlock(&elevator[i].mutex);
+                }
+
+                for(int j = 0; j < queue->size; j++){
+                    if(order_in_elevator_path(&queue->orders[j], &elevator[i])){
+                        reserve_elevator(queue, &queue->orders[j], &elevator[i]);
+                    }
+                }
+
+                break;
+
+            case DOWN:
+                if(!elevator_has_reserved_orders(queue, &elevator[i])){
+                    pthread_mutex_lock(&elevator[i].mutex);
+                    elevator[i].elevator_state = STOP;
+                    pthread_mutex_unlock(&elevator[i].mutex);
+                }
+
+                for(int j = 0; j < queue->size; j++){
+                    if(order_in_elevator_path(&queue->orders[j], &elevator[i])){
+                        reserve_elevator(queue, &queue->orders[j], &elevator[i]);
+                    }
+                }
+
+                break;
+
+            case TRANSPORT_UP:
+                if(reserved_order_at_position(queue, &elevator[i])){
+                    order_event_t* reserved_order = return_reserved_order_at_floor(queue, &elevator[i], elevator[i].floor);
+                    if(reserved_order != NULL){
+                        if(reserved_order->order_type == UP_FROM){
+                            pthread_mutex_lock(&elevator[i].mutex);
+                            elevator[i].elevator_state = UP;
+                            pthread_mutex_unlock(&elevator[i].mutex);
+                        }
+                        else if(reserved_order->order_type == DOWN_FROM){
+                            pthread_mutex_lock(&elevator[i].mutex);
+                            elevator[i].elevator_state = DOWN;
+                            pthread_mutex_unlock(&elevator[i].mutex);
+                        }
+                        else{
+                            pthread_mutex_lock(&elevator[i].mutex);
+                            elevator[i].elevator_state = STOP;
+                            pthread_mutex_unlock(&elevator[i].mutex);
+                        }
+                    }
+                }
+                break;
+
+            case TRANSPORT_DOWN:
+                if(reserved_order_at_position(queue, &elevator[i])){
+                    order_event_t* reserved_order = return_reserved_order_at_floor(queue, &elevator[i], elevator[i].floor);
+                    if(reserved_order != NULL){
+                        if(reserved_order->order_type == UP_FROM){
+                            pthread_mutex_lock(&elevator[i].mutex);
+                            elevator[i].elevator_state = UP;
+                            pthread_mutex_unlock(&elevator[i].mutex);
+                        }
+                        else if(reserved_order->order_type == DOWN_FROM){
+                            pthread_mutex_lock(&elevator[i].mutex);
+                            elevator[i].elevator_state = DOWN;
+                            pthread_mutex_unlock(&elevator[i].mutex);
+                        }
+                        else{
+                            pthread_mutex_lock(&elevator[i].mutex);
+                            elevator[i].elevator_state = STOP;
+                            pthread_mutex_unlock(&elevator[i].mutex);
+                        }
+                    }
+                }
+                break;
+            
+            default:
+                break;
+            }
+        }
+    }
 }
