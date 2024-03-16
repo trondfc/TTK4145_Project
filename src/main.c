@@ -80,6 +80,9 @@ void connectionStatus(const char * ip, int status){
 int main_init(){
   printf("main_init\n");
   sysQueInit(5);
+
+  atexit(dissconnect_all);
+
   send_order_queue_init(messageReceived, connectionStatus);
   g_elevator =  elevator_struct_init();
   button_lights = button_light_struct_init();
@@ -224,6 +227,15 @@ void* main_send(void* arg){
       }
     }
   return NULL;
+}
+
+void dissconnect_all(){
+  for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
+    if(g_elevator[i].alive){
+      printf("Destroying elevator %s\n", g_elevator[i].elevator.ip);
+      elevator_hardware_destroy(&g_elevator[i].elevator);
+    }
+  }
 }
 
 int main()
