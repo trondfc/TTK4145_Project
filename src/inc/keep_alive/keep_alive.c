@@ -159,6 +159,7 @@ void keep_alive_init(int port, node_mode_t mode){
     keep_alive_node_list.self->port = port;
     keep_alive_node_list.self->node_mode = mode;
     strcpy(keep_alive_node_list.self->data, mode == MASTER ? "MASTER" : "SLAVE");
+    keep_alive_node_list.single_master = false;
 
     keep_alive_node_list.nodes = (keep_alive_node_t*)malloc(KEEP_ALIVE_NODE_AMOUNT * sizeof(keep_alive_node_t));
     for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
@@ -352,6 +353,8 @@ void* keep_alive_timeout(void* arg){
                 if(get_timestamp() - list->nodes[i].last_time > KEEP_ALIVE_TIMEOUT_US){
                     list->nodes[i].status = DEAD;
                     list->nodes[i].node_mode = UNDEFINED;
+                    strcpy(list->nodes[i].data, "");
+                    strcmp(list->nodes[i].ip, "");
                     printf("Node %s is dead\n", list->nodes[i].ip);
                 }
             }
