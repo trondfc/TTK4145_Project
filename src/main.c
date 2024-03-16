@@ -88,7 +88,7 @@ void dissconnect_all(){
 
 int main_init(){
   printf("main_init\n");
-  sysQueInit(5);
+  sysQueInit(SYSQUE_TIMEOUT);
 
   atexit(dissconnect_all);
 

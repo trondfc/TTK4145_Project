@@ -20,6 +20,8 @@
 
 #define ORDER_TIMEOUT 30 // 60 seconds
 #define DOOR_OPEN_TIME 3 // 5 seconds
+#define SYSQUE_TIMEOUT 1 // 1 seconds
+#define ACTIVE_NODES_TIMEOUT 3 // 3 seconds
 
 #define TCP_PORT 9000
 #define UDP_PORT 5000
