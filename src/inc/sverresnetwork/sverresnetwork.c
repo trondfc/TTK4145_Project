@@ -319,9 +319,7 @@ void * thr_tcpConnectionListen(void * parameter){
   int optval = 1;
   setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR, &optval, sizeof(optval));
 
-  if(setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &(struct timeval){.tv_sec = 10, .tv_usec = 0}, sizeof(struct timeval)) < 0){
-      printf("Unable to set socket timeout\n");;
-  }
+
   if(setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &(struct timeval){.tv_sec = 10, .tv_usec = 0}, sizeof(struct timeval)) < 0){
       printf("Unable to set socket timeout\n");
   }
