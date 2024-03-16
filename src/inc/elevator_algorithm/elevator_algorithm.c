@@ -187,6 +187,7 @@ void order_completion_timedout(order_queue_t* queue){
     for(int i = 0; i < queue->size; i++){
         if(queue->orders[i].order_status == ACTIVE){
             if(difftime(current_time, queue->orders[i].timestamp) > ORDER_TIMEOUT){
+                printf("Order %ld set to timed out\n", queue->orders[i].order_id);
                 pthread_mutex_lock(queue->queue_mutex);
                 queue->orders[i].order_status = SYNCED;
                 strcpy(queue->orders[i].controller_id, "");
@@ -201,6 +202,7 @@ void unreserve_elevators_orders(order_queue_t* queue, elevator_status_t* elevato
     for(int i = 0; i < queue->size; i++){
         if(strcmp(queue->orders[i].controller_id, elevator->elevator.ip) == 0){
             if(strcmp(queue->orders[i].elevator_id, "") != 0){
+                printf("Order %ld set to unreserved\n", queue->orders[i].order_id);
                 pthread_mutex_lock(queue->queue_mutex);
                 queue->orders[i].order_status = SYNCED;
                 strcpy(queue->orders[i].controller_id, "");
@@ -240,11 +242,11 @@ void set_completed_order(order_queue_t* queue, elevator_status_t* elevator){
                 //printf("Elevator %s is at floor %d\n", elevator->elevator.ip, elevator->floor);
                 time_t current_time;
                 time(&current_time);
-                //printf("\t Delta time: %ld\n", current_time - queue->orders[i].timestamp);
+                printf("\t Delta time: %ld\n", current_time - queue->orders[i].timestamp);
                 if((current_time - queue->orders[i].timestamp) > DOOR_OPEN_TIME){
-                    //printf("Elevator %s has completed order\n", elevator->elevator.ip);
+                    printf("Elevator %s has completed order\n", elevator->elevator.ip);
                     if(!elevator->obstruction){
-                        //printf("Elevator %s has no obstruction\n", elevator->elevator.ip);
+                        printf("Elevator %s has no obstruction\n", elevator->elevator.ip);
                         printf("Order %ld set to completed\n", queue->orders[i].order_id);
                         pthread_mutex_lock(queue->queue_mutex);
                         queue->orders[i].order_status = COMPLETED;
@@ -277,6 +279,7 @@ void remove_passed_orders(order_queue_t* queue, elevator_status_t* elevator){
         if(strcmp(queue->orders[i].controller_id, elevator->elevator.ip) == 0){
             if(elevator->elevator_state == UP || elevator->elevator_state == TRANSPORT_UP){
                 if(queue->orders[i].floor < elevator->floor){
+                    printf("Order %ld set to passed\n", queue->orders[i].order_id);
                     pthread_mutex_lock(queue->queue_mutex);
                     queue->orders[i].order_status = SYNCED;
                     strcpy(queue->orders[i].controller_id, "");
@@ -285,6 +288,7 @@ void remove_passed_orders(order_queue_t* queue, elevator_status_t* elevator){
             }
             if(elevator->elevator_state == DOWN || elevator->elevator_state == TRANSPORT_DOWN){
                 if(queue->orders[i].floor > elevator->floor){
+                    printf("Order %ld set to passed\n", queue->orders[i].order_id);
                     pthread_mutex_lock(queue->queue_mutex);
                     queue->orders[i].order_status = SYNCED;
                     strcpy(queue->orders[i].controller_id, "");
