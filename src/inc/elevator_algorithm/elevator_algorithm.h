@@ -16,8 +16,10 @@ typedef struct {
 /* Prototypes */
 bool order_in_elevator_path(order_event_t* order, elevator_status_t* elevator);
 bool elevator_has_reserved_orders(order_queue_t* queue, elevator_status_t* elevator);
+bool elevator_has_cab_orders(order_queue_t* queue, elevator_status_t* elevator);
 bool reserved_order_at_position(order_queue_t* queue, elevator_status_t* elevator);
 elevator_state_t direction_to_order(order_event_t* order, elevator_status_t* elevator);
+elevator_status_t* get_elevator_by_ip(elevator_status_t* elevator, char* ip);
 void reserve_elevator(order_queue_t* queue, order_event_t* order, elevator_status_t* elevator);
 
 order_event_t* return_reserved_order_at_floor(order_queue_t* queue,elevator_status_t* elevator, int floor);

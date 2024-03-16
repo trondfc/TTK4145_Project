@@ -43,6 +43,27 @@ bool elevator_has_reserved_orders(order_queue_t* queue, elevator_status_t* eleva
     return 0;
 }
 
+
+elevator_status_t* get_elevator_by_ip(elevator_status_t* elevator, char* ip){
+    for(int i = 0; i < MAX_IP_NODES; i++){
+        if(strcmp(elevator[i].elevator.ip, ip) == 0){
+            return &elevator[i];
+        }
+    }
+    return NULL;
+}
+
+bool elevator_has_cab_orders(order_queue_t* queue, elevator_status_t* elevator){
+    for(int i = 0; i < queue->size; i++){
+        if(queue->orders[i].order_type == GO_TO){
+            if(strcmp(queue->orders[i].elevator_id, elevator->elevator.ip) == 0){
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
 /**
  * @brief Returns true if there is a reserved order at the current elevator position
  * 
