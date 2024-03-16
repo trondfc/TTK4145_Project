@@ -20,4 +20,8 @@
 
 #define ORDER_TIMEOUT 30 // 60 seconds
 
+#define TCP_PORT 9000
+#define UDP_PORT 5000
+#define ELEVATOR_PORT 15657
+
 #endif

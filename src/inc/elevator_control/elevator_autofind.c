@@ -69,7 +69,7 @@ void elevator_init_ip(elevator_status_t* elevator, char* ip){
         printf("Elevator %s is not alive\n", elevator[i].elevator.ip);
         pthread_mutex_lock(&elevator[i].mutex);
         strcpy(elevator[i].elevator.ip, ip);
-        strcpy(elevator[i].elevator.port, "15657");
+        strcpy(elevator[i].elevator.port, ELEVATOR_PORT);
         if(elevator_hardware_init(&elevator[i].elevator)){
           elevator[i].alive = true;
           printf("Elevator %s is alive\n", elevator[i].elevator.ip);

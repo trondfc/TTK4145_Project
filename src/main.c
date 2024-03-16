@@ -202,7 +202,7 @@ void* main_send(void* arg){
           if(node_list->nodes[i].connection == DISCONNECTED){
             printf("Connecting to %s\n", node_list->nodes[i].ip);
             node_list->nodes[i].connection = CONNECTED;
-            send_order_queue_connect(node_list->nodes[i].ip, 9000);
+            send_order_queue_connect(node_list->nodes[i].ip, TCP_PORT);
             sleep(1);
           }
           //printf("Sending order to %s\n", node_list->nodes[i].ip);
@@ -255,7 +255,7 @@ int main()
   pthread_t send_thread, button_thread, elevator_output_thread, elevator_input_thread , print_elevator_status_thread, elevator_light_thread;
   pthread_t handle_orders_thread;
 
-  keep_alive_init(5000, SLAVE);
+  keep_alive_init(UDP_PORT, SLAVE);
   while(1){
     keep_alive_node_list_t* node_list = get_node_list();
     if(node_list->self->node_mode == SLAVE){
@@ -279,7 +279,7 @@ int main()
       }
 
       if(running_threads.recv == false){
-        send_order_queue_listen(9000);
+        send_order_queue_listen(TCP_PORT);
         running_threads.recv = true;
       }
       if(running_threads.button_input == true){
