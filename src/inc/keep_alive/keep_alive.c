@@ -127,7 +127,7 @@ int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, i
  * @param data_size 
  */
 void udp_receive_callback(const char* ip, char* data, int data_size){
-    //printf("Received data from %s \t %s\n", ip,data);
+    printf("Received data from %s \t %s\n", ip,data);
     if(keep_alive_node_list.single_master == true){
         return;
     }

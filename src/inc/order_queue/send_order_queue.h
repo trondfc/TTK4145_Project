@@ -19,7 +19,7 @@
 
 void send_order_queue_init(TMessageCallback messageCallback, TTcpConnectionCallback connectionCallback);
 
-void send_order_queue_connect(char * ip, int port);
+int send_order_queue_connect(char * ip, int port);
 void send_order_queue_listen(int port);
 void send_order_queue_close_connection(char * ip);
 

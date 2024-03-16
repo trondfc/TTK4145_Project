@@ -306,7 +306,7 @@ thr_tcpConnectionListen(void * parameter){
   int optval = 1;
   setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR, &optval, sizeof(optval));
 
-  printf("===================== trying to bind\n")
+  printf("===================== trying to bind\n");
   if(bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
     error("ERROR on binding");
 
@@ -357,8 +357,7 @@ tcp_startConnectionListening(int port){
 }
 
 
-void 
-tcp_openConnection(char * ip,int port){
+int tcp_openConnection(char * ip,int port){
   int sockfd;
   struct sockaddr_in serv_addr;
 
@@ -376,7 +375,7 @@ tcp_openConnection(char * ip,int port){
   if(res < 0){
     // error("ERROR connecting");
     if(m_log) fprintf(stderr,"WARNING: sverresnetwork: Tried to open connection to %s:%d but failed\n",ip,port);
-    return;
+    return 0;
   }
 
   // Have a connection; register it and make the callback.
@@ -391,7 +390,7 @@ tcp_openConnection(char * ip,int port){
   pthread_t thread;
   res = pthread_create(&thread, NULL, thr_tcpMessageListen,(void *) lfd);
   if(res != 0) error("pthread_create failed");
-
+  return 1;
 }
 
 

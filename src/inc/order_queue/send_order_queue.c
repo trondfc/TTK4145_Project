@@ -25,8 +25,8 @@ void send_order_queue_init(TMessageCallback messageCallback, TTcpConnectionCallb
  * @param ip 
  * @param port 
  */
-void send_order_queue_connect(char * ip, int port){
-    tcp_openConnection(ip, port);
+int send_order_queue_connect(char * ip, int port){
+    return tcp_openConnection(ip, port);
 }
 
 /**

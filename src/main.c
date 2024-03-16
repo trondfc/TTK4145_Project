@@ -217,9 +217,11 @@ void* main_send(void* arg){
           //printf("Connection status: %d\n", node_list->nodes[i].connection);
           if(node_list->nodes[i].connection == DISCONNECTED){
             printf("Connecting to %s\n", node_list->nodes[i].ip);
-            node_list->nodes[i].connection = CONNECTED;
-            send_order_queue_connect(node_list->nodes[i].ip, TCP_PORT);
-            sleep(1);
+            if(send_order_queue_connect(node_list->nodes[i].ip, TCP_PORT)){
+              printf("Connected to %s\n", node_list->nodes[i].ip);
+              node_list->nodes[i].connection = CONNECTED;
+              sleep(1);
+            }
           }
           //printf("Sending order to %s\n", node_list->nodes[i].ip);
           pthread_mutex_lock(queue->queue_mutex);
