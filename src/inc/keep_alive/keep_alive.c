@@ -354,7 +354,7 @@ void* keep_alive_timeout(void* arg){
                     list->nodes[i].status = DEAD;
                     list->nodes[i].node_mode = UNDEFINED;
                     strcpy(list->nodes[i].data, "");
-                    strcmp(list->nodes[i].ip, "");
+                    strspy(list->nodes[i].ip, "");
                     printf("Node %s is dead\n", list->nodes[i].ip);
                 }
             }
