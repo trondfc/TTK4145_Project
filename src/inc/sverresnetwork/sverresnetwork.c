@@ -186,7 +186,7 @@ udp_broadcast(int port,char * data, int dataLength){
   }
 
   int res = sendto(s, data, dataLength, 0, (struct sockaddr *) &si_other, slen);
-  if(res==-1)  error("udp_broadcast: sendto()");
+  if(res==-1)  printf("udp_broadcast: sendto()");
 
   close(s);
 }
