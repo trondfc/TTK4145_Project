@@ -356,6 +356,7 @@ void* keep_alive_timeout(void* arg){
                     strcpy(list->nodes[i].data, "");
                     strcpy(list->nodes[i].ip, "");
                     printf("Node %s is dead\n", list->nodes[i].ip);
+                    send_order_queue_close_connection(list->nodes[i].ip);
                 }
             }
         }
