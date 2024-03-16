@@ -90,8 +90,6 @@ int main_init(){
   printf("main_init\n");
   sysQueInit(SYSQUE_TIMEOUT);
 
-  atexit(dissconnect_all);
-
   send_order_queue_init(messageReceived, connectionStatus);
   g_elevator =  elevator_struct_init();
   button_lights = button_light_struct_init();
@@ -159,7 +157,6 @@ void* main_elevator_output(void* arg){
   printf("elevator_outputs");
   while(1){
 
-    set_motor_direction(g_elevator);
     update_elevator_floor_lights(g_elevator);
     update_elevator_stop_light(g_elevator);
     update_elevator_door_light(g_elevator);

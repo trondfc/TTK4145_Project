@@ -281,6 +281,7 @@ void sett_all_button_lights(button_lights_history_t* button_lights, elevator_sta
             elevator_hardware_set_button_lamp(2, i, button_lights->new->cab[j]->floors[i], &elevator[j].elevator);
           }
       }
+      usleep(ORDER_POLL_DELAY);
     }
     memcpy(button_lights->old->up, button_lights->new->up, sizeof(floor_buttons_t));
     memcpy(button_lights->old->down, button_lights->new->down, sizeof(floor_buttons_t));
