@@ -41,6 +41,8 @@ void messageReceived(const char * ip, char * data, int datalength){
       strcpy(status_text, "NOTIFIED");
     }else if(queue->orders[i].order_status == ACTIVE){
       strcpy(status_text, "ACTIVE");
+    }else if(queue->orders[i].order_status == AT_FLOOR){
+      strcpy(status_text, "AT_FLOOR");
     }else if(queue->orders[i].order_status == COMPLETED){
       strcpy(status_text, "COMPLETED");
     }else{

@@ -182,16 +182,18 @@ void set_at_floor(order_queue_t* queue, elevator_status_t* elevator){
     // remove completed order from queue
     for(int i = 0; i < queue->size; i++){
         if(strcmp(queue->orders[i].controller_id, elevator->elevator.ip) == 0){
-            if(elevator->floor == queue->orders[i].floor){
-                time_t current_time;
-                time(&current_time);
-                pthread_mutex_lock(queue->queue_mutex);
-                queue->orders[i].order_status = AT_FLOOR;
-                queue->orders[i].timestamp = current_time;
-                pthread_mutex_unlock(queue->queue_mutex);
-                pthread_mutex_lock(&elevator->mutex);
-                elevator->door_open = true;
-                pthread_mutex_unlock(&elevator->mutex);
+            if(queue->orders[i].order_status == ACTIVE){
+                if(elevator->floor == queue->orders[i].floor){
+                    time_t current_time;
+                    time(&current_time);
+                    pthread_mutex_lock(queue->queue_mutex);
+                    queue->orders[i].order_status = AT_FLOOR;
+                    queue->orders[i].timestamp = current_time;
+                    pthread_mutex_unlock(queue->queue_mutex);
+                    pthread_mutex_lock(&elevator->mutex);
+                    elevator->door_open = true;
+                    pthread_mutex_unlock(&elevator->mutex);
+                }
             }
         }
     }
@@ -202,10 +204,14 @@ void set_completed_order(order_queue_t* queue, elevator_status_t* elevator){
     for(int i = 0; i < queue->size; i++){
         if(strcmp(queue->orders[i].controller_id, elevator->elevator.ip) == 0){
             if(queue->orders[i].order_status == AT_FLOOR){
+                //printf("Elevator %s is at floor %d\n", elevator->elevator.ip, elevator->floor);
                 time_t current_time;
                 time(&current_time);
-                if(difftime(current_time, queue->orders[i].timestamp) > DOOR_OPEN_TIME){
+                //printf("\t Delta time: %ld\n", current_time - queue->orders[i].timestamp);
+                if((current_time - queue->orders[i].timestamp) > DOOR_OPEN_TIME){
+                    //printf("Elevator %s has completed order\n", elevator->elevator.ip);
                     if(!elevator->obstruction){
+                        //printf("Elevator %s has no obstruction\n", elevator->elevator.ip);
                         pthread_mutex_lock(queue->queue_mutex);
                         queue->orders[i].order_status = COMPLETED;
                         pthread_mutex_unlock(queue->queue_mutex);
