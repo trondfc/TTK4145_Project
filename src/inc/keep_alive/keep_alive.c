@@ -156,6 +156,7 @@ void keep_alive_init(int port, node_mode_t mode){
 
     keep_alive_node_list.self = (keep_alive_node_t*)malloc(sizeof(keep_alive_node_t));
     strcpy(keep_alive_node_list.self->ip, get_host_ip());
+    strcpy(keep_alive_node_list.host_ip, keep_alive_node_list.self->ip);
     keep_alive_node_list.self->port = port;
     keep_alive_node_list.self->node_mode = mode;
     strcpy(keep_alive_node_list.self->data, mode == MASTER ? "MASTER" : "SLAVE");
@@ -325,7 +326,7 @@ void* keep_alive_update(void* arg){
             if((get_timestamp() - last_contact_timestamp) > NO_ACTIVE_NODES_TIMEOUT_US){
                 if(list->single_master == false){
                     printf("No active nodes for %d us. Setting single master\n", NO_ACTIVE_NODES_TIMEOUT_US);
-                    //strcpy(list->self->ip, "127.0.0.1");
+                    strcpy(list->host_ip, "127.0.0.1");
                     list->single_master = true;
                 }
                 //exit(1);
