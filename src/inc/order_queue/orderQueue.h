@@ -31,7 +31,8 @@ typedef enum order_status_t{
     SYNCED = 1,
     NOTIFIED = 2,
     ACTIVE = 3,
-    COMPLETED = 4
+    AT_FLOOR = 4,
+    COMPLETED = 5
 }order_status_t;
 
 typedef struct order_event_t {

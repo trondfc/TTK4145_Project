@@ -19,6 +19,7 @@
 #define ORDER_SYNC_DELAY 500 * 1000 // 500 ms
 
 #define ORDER_TIMEOUT 30 // 60 seconds
+#define DOOR_OPEN_TIME 3 // 5 seconds
 
 #define TCP_PORT 9000
 #define UDP_PORT 5000

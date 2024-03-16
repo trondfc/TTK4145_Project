@@ -27,6 +27,7 @@ void order_completion_timedout(order_queue_t* queue);
 void unreserve_elevators_orders(order_queue_t* queue, elevator_status_t* elevator);
 
 
+void set_at_floor(order_queue_t* queue, elevator_status_t* elevator);
 void set_completed_order(order_queue_t* queue, elevator_status_t* elevator);
 void remove_completed_order(order_queue_t* queue, elevator_status_t* elevator);
 
