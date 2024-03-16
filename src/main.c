@@ -356,7 +356,7 @@ int main()
       }
     }
     if(node_list->single_master){
-      elevator_status_t* elevator = get_elevator_by_ip(g_elevator, node_list->self->ip);
+      elevator_status_t* elevator = get_elevator_by_ip(g_elevator, node_list->host_ip;
       if(elevator != NULL){
         if(!elevator_has_cab_orders(queue, elevator)){
           printf("Single master and no orders, shutting down\n");
