@@ -121,9 +121,15 @@ int elevator_hardware_get_button_signal(elevator_hardware_button_type_t button, 
     assert(button < N_BUTTONS);
 
     pthread_mutex_lock(&hardware->sockmtx);
-    send(hardware->sockfd, (char[4]) {6, button, floor}, 4, MSG_NOSIGNAL);
+    if(send(hardware->sockfd, (char[4]) {6, button, floor}, 4, MSG_NOSIGNAL) == -1){
+        pthread_mutex_unlock(&hardware->sockmtx);
+        return -1;
+    }
     char buf[4];
-    recv(hardware->sockfd, buf, 4, 0);
+    if(recv(hardware->sockfd, buf, 4, 0) == -1){
+        pthread_mutex_unlock(&hardware->sockmtx);
+        return -1;
+    }
     pthread_mutex_unlock(&hardware->sockmtx);
     
     return buf[1];
