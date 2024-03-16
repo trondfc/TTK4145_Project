@@ -204,6 +204,9 @@ void unreserve_elevators_orders(order_queue_t* queue, elevator_status_t* elevato
             if(strcmp(queue->orders[i].elevator_id, "") != 0){
                 printf("Order %ld set to unreserved\n", queue->orders[i].order_id);
                 pthread_mutex_lock(queue->queue_mutex);
+                time_t current_time;
+                time(&current_time);
+                queue->orders[i].timestamp = current_time;
                 queue->orders[i].order_status = SYNCED;
                 strcpy(queue->orders[i].controller_id, "");
                 pthread_mutex_unlock(queue->queue_mutex);
