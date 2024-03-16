@@ -328,6 +328,8 @@ void* keep_alive_update(void* arg){
                     printf("No active nodes for %d us. Setting single master\n", NO_ACTIVE_NODES_TIMEOUT_US);
                     strcpy(list->host_ip, "127.0.0.1");
                     list->single_master = true;
+                    system("kill -9 $(pgrep -f elevatorserver) && elevatorserver");
+
                 }
                 //exit(1);
             }
