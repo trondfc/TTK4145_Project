@@ -322,6 +322,10 @@ void* thr_handle_orders(void* args){
                 if(oldest_order == NULL){
                     break;
                 }
+                pthread_mutex_lock(&elevator[i].mutex);
+                elevator[i].door_open = false;
+                pthread_mutex_unlock(&elevator[i].mutex);
+                
                 reserve_elevator(queue, oldest_order, &elevator[i]);
                 elevator_state_t direction = direction_to_order(oldest_order, &elevator[i]);
                 pthread_mutex_lock(&elevator[i].mutex);
