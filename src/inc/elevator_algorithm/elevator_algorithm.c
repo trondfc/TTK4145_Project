@@ -262,7 +262,7 @@ void* thr_handle_orders(void* args){
 
             switch (elevator[i].elevator_state)
             {
-            case STOP:
+            case STOP: ;
                 order_event_t* oldest_order = return_oldes_order(queue, &elevator[i]);
                 if(oldest_order == NULL){
                     break;
@@ -290,7 +290,7 @@ void* thr_handle_orders(void* args){
 
                 break;
             
-            case UP:
+            case UP: ;
                 if(!elevator_has_reserved_orders(queue, &elevator[i])){
                     pthread_mutex_lock(&elevator[i].mutex);
                     elevator[i].elevator_state = STOP;
@@ -306,7 +306,7 @@ void* thr_handle_orders(void* args){
 
                 break;
 
-            case DOWN:
+            case DOWN: ;
                 if(!elevator_has_reserved_orders(queue, &elevator[i])){
                     pthread_mutex_lock(&elevator[i].mutex);
                     elevator[i].elevator_state = STOP;
@@ -321,7 +321,7 @@ void* thr_handle_orders(void* args){
 
                 break;
 
-            case TRANSPORT_UP:
+            case TRANSPORT_UP: ;
                 if(reserved_order_at_position(queue, &elevator[i])){
                     order_event_t* reserved_order = return_reserved_order_at_floor(queue, &elevator[i], elevator[i].floor);
                     if(reserved_order != NULL){
@@ -344,7 +344,7 @@ void* thr_handle_orders(void* args){
                 }
                 break;
 
-            case TRANSPORT_DOWN:
+            case TRANSPORT_DOWN: ;
                 if(reserved_order_at_position(queue, &elevator[i])){
                     order_event_t* reserved_order = return_reserved_order_at_floor(queue, &elevator[i], elevator[i].floor);
                     if(reserved_order != NULL){
