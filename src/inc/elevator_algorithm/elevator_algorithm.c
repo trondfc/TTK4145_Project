@@ -250,8 +250,15 @@ void* thr_handle_orders(void* args){
 
         for(int i = 0; i < MAX_IP_NODES; i++){
             if(!elevator[i].alive){
+                unreserve_elevators_orders(queue, &elevator[i]);
                 continue;
-            } 
+            }
+
+            if(elevator[i].emergency_stop){
+                unreserve_elevators_orders(queue, &elevator[i]);
+                elevator[i].elevator_state = STOP;
+                continue;
+            }
 
             switch (elevator[i].elevator_state)
             {
