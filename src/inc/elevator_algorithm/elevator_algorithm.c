@@ -215,7 +215,7 @@ void set_at_floor(order_queue_t* queue, elevator_status_t* elevator){
     for(int i = 0; i < queue->size; i++){
         if(strcmp(queue->orders[i].controller_id, elevator->elevator.ip) == 0){
             if(queue->orders[i].order_status == ACTIVE){
-                if(elevator->floor == queue->orders[i].floor){
+                if(elevator->floor == queue->orders[i].floor && elevator->at_floor){
                     printf("Order %ld set to at floor, elevator flor is %d\n", queue->orders[i].order_id, elevator->floor);
                     time_t current_time;
                     time(&current_time);
