@@ -419,7 +419,9 @@ void* thr_handle_orders(void* args){
             set_completed_order(queue, &elevator[i]);
             remove_completed_order(queue, &elevator[i]);   
             if(!elevator_has_reserved_orders(queue, &elevator[i])){
+                pthread_mutex_lock(&elevator[i].mutex);
                 elevator[i].elevator_state = STOP;
+                pthread_mutex_unlock(&elevator[i].mutex);
             }
         }
     }
