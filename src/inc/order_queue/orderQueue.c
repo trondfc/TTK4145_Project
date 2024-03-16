@@ -105,7 +105,7 @@ void dequeue_order(order_queue_t *queue, order_event_t *order){
             return;
         }
         else{
-            printf("Order not in queue\n");
+            //printf("Order not in queue\n");
             return;
         }
     }

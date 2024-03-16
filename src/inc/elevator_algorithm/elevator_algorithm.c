@@ -238,6 +238,29 @@ void remove_completed_order(order_queue_t* queue, elevator_status_t* elevator){
     
 }
 
+void remove_passed_orders(order_queue_t* queue, elevator_status_t* elevator){
+    for(int i = 0; i < queue->size; i++){
+        if(strcmp(queue->orders[i].controller_id, elevator->elevator.ip) == 0){
+            if(elevator->elevator_state == UP || elevator->elevator_state == TRANSPORT_UP){
+                if(queue->orders[i].floor < elevator->floor){
+                    pthread_mutex_lock(queue->queue_mutex);
+                    queue->orders[i].order_status = SYNCED;
+                    strcpy(queue->orders[i].controller_id, "");
+                    pthread_mutex_unlock(queue->queue_mutex);
+                }
+            }
+            if(elevator->elevator_state == DOWN || elevator->elevator_state == TRANSPORT_DOWN){
+                if(queue->orders[i].floor > elevator->floor){
+                    pthread_mutex_lock(queue->queue_mutex);
+                    queue->orders[i].order_status = SYNCED;
+                    strcpy(queue->orders[i].controller_id, "");
+                    pthread_mutex_unlock(queue->queue_mutex);
+                }
+            }
+        }
+    }
+}
+
 void* thr_handle_orders(void* args){
     printf("Starting thread to handle orders\n");
     elevator_arg_t* elevator_arg = (elevator_arg_t*)args;
@@ -370,7 +393,7 @@ void* thr_handle_orders(void* args){
             default:
                 break;
             }
-
+            remove_passed_orders(queue, &elevator[i]);
             set_at_floor(queue, &elevator[i]);
             set_completed_order(queue, &elevator[i]);
             remove_completed_order(queue, &elevator[i]);   

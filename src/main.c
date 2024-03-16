@@ -81,7 +81,7 @@ void dissconnect_all(){
   for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
     if(g_elevator[i].alive){
       printf("Destroying elevator %s\n", g_elevator[i].elevator.ip);
-      elevator_hardware_destroy(&g_elevator[i].elevator);
+      //elevator_hardware_destroy(&g_elevator[i].elevator);
     }
   }
 }
@@ -305,7 +305,7 @@ int main()
           if(g_elevator[i].alive){
             printf("========================================================================");
             printf("Destroying elevator %s\n", g_elevator[i].elevator.ip);
-            elevator_hardware_destroy(&g_elevator[i].elevator);
+            //elevator_hardware_destroy(&g_elevator[i].elevator);
           }
         }
         running_threads.button_input = false;
