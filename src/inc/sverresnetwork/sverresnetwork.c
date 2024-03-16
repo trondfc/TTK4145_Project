@@ -107,6 +107,13 @@ thr_udpListen(void * arg){
   int optval = 1;
   setsockopt(threadListItem->socket,SOL_SOCKET,SO_REUSEADDR, &optval, sizeof(optval));
 
+    if(setsockopt(threadListItem->socket, SOL_SOCKET, SO_RCVTIMEO, &(struct timeval){.tv_sec = 1, .tv_usec = 0}, sizeof(struct timeval)) < 0){
+        printf("Unable to set socket timeout\n");
+    }
+    if(setsockopt(threadListItem->socket, SOL_SOCKET, SO_SNDTIMEO, &(struct timeval){.tv_sec = 1, .tv_usec = 0}, sizeof(struct timeval)) < 0){
+        printf("Unable to set socket timeout\n");
+    }
+
   int res = bind(threadListItem->socket,(struct sockaddr *) &si_me, sizeof(si_me));
   if(res == -1) error("thr_udpListen:bind");
 
@@ -176,6 +183,13 @@ udp_broadcast(int port,char * data, int dataLength){
 
   int optval = 1;
   setsockopt(s,SOL_SOCKET,SO_BROADCAST, &optval, sizeof(optval));
+
+  if(setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &(struct timeval){.tv_sec = 1, .tv_usec = 0}, sizeof(struct timeval)) < 0){
+      printf("Unable to set socket timeout\n");
+  }
+  if(setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, &(struct timeval){.tv_sec = 1, .tv_usec = 0}, sizeof(struct timeval)) < 0){
+      printf("Unable to set socket timeout\n");
+  }
 
   memset((char *) &si_other, 0, sizeof(si_other));
   si_other.sin_family = AF_INET;
@@ -284,8 +298,7 @@ thr_tcpMessageListen(void * parameter){
   }
 }
 
-void * 
-thr_tcpConnectionListen(void * parameter){
+void * thr_tcpConnectionListen(void * parameter){
   int sockfd, newsockfd, port;
   socklen_t clilen;
   struct sockaddr_in serv_addr, cli_addr;
@@ -305,6 +318,13 @@ thr_tcpConnectionListen(void * parameter){
 
   int optval = 1;
   setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR, &optval, sizeof(optval));
+
+  if(setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &(struct timeval){.tv_sec = 1, .tv_usec = 0}, sizeof(struct timeval)) < 0){
+      printf("Unable to set socket timeout\n");;
+  }
+  if(setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &(struct timeval){.tv_sec = 1, .tv_usec = 0}, sizeof(struct timeval)) < 0){
+      printf("Unable to set socket timeout\n");
+  }
 
   if(bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
     error("ERROR on binding");
