@@ -120,8 +120,17 @@ long return_closest_order(order_queue_t* queue, elevator_status_t* elevator){
 order_event_t* return_oldes_order(order_queue_t* queue, elevator_status_t* elevator){
     // find oldest order in queue
     for(int i = 0; i < queue->size; i++){
-        if(queue->orders[i].order_status == SYNCED){
-            return &queue->orders[i];
+        if(queue->orders[i].order_type != GO_TO){
+            if(queue->orders[i].order_status == SYNCED){
+                return &queue->orders[i];
+            }
+        }
+        else{
+            if(strcmp(queue->orders[i].elevator_id, elevator->elevator.ip) == 0){
+                if(queue->orders[i].order_status == SYNCED){
+                    return &queue->orders[i];
+                }
+            }
         }
     }
     return NULL;
