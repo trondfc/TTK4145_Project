@@ -398,13 +398,14 @@ int tcp_send(char * ip,char * data, int datalength){
   if(socket==0){
     // The connection is nonexistent: Must notify
     if(m_log) printf("SverresNetwork: Tried to write to a nonexistant connection: %s\n",ip);
+    error("Nonexistant connection");
     m_connectionCallback(ip,0);
   }
 
   int res = write(socket,data,datalength);
   if(res != datalength){
     if(m_log) printf("SverresNetwork: Writing failed to %s:%d Got %d/%d Closing\n",ip,socket,res,datalength);
-//    error("write:");
+    error("write:");
     if(m_log) printf("SverresNetwork: Closed a connection to %s - socket %d\n",ip,socket);
     m_connectionCallback(ip,0);
     conn_remove(ip);
