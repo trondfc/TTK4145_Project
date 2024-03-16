@@ -360,6 +360,7 @@ int main()
       if(elevator != NULL){
         if(!elevator_has_cab_orders(queue, elevator)){
           printf("Single master and no orders, shutting down\n");
+          sleep(2);
           exit(0);
         }
       }

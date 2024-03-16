@@ -325,7 +325,7 @@ void* keep_alive_update(void* arg){
             if((get_timestamp() - last_contact_timestamp) > NO_ACTIVE_NODES_TIMEOUT_US){
                 if(list->single_master == false){
                     printf("No active nodes for %d us. Setting single master\n", NO_ACTIVE_NODES_TIMEOUT_US);
-                    strcpy(list->self->ip, "127.0.0.1");
+                    //strcpy(list->self->ip, "127.0.0.1");
                     list->single_master = true;
                 }
                 //exit(1);
