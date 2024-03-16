@@ -9,6 +9,15 @@
  */
 #include "elevator_control.h"
 
+void close_elevator_hardware(char* ip){
+  extern elevator_status_t *g_elevator;
+  for(int i = 0; i < MAX_IP_NODES; i++){
+    if(strcmp(ip, g_elevator[i].elevator.ip) == 0){
+      elevator_hardware_destroy(&g_elevator[i].elevator);
+    }
+  }
+}
+
 /**
  * @brief initializes a button_lights_history_t struct with malloc 
  * 
@@ -193,11 +202,9 @@ void add_elevator_button_lights(button_lights_history_t* button_lights, order_qu
     }
   }
 
-  keep_alive_node_list_t* node_list = get_node_list();
-
   for(int i = 0; i < queue->size; i++){
 
-    if(queue->orders[i].order_status >= SYNCED ||node_list->single_master){
+    if(queue->orders[i].order_status >= SYNCED){
       //printf("Adding order %ld to button lights\n", queue->orders[i].order_id);
       if(queue->orders[i].order_type == 0){
         button_lights->new->up->floors[queue->orders[i].floor] = true;

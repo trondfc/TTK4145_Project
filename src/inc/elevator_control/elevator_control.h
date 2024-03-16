@@ -10,7 +10,6 @@
 #pragma once
 
 #include "../elevator_hardware/elevator_hardware.h"
-#include "../keep_alive/keep_alive.h"
 #include "../order_queue/orderQueue.h"
 #include "../config.h"
 
@@ -89,6 +88,9 @@ typedef struct button_lights_history{
   button_lights_t *new;
 }button_lights_history_t;
 
+
+
+void close_elevator_hardware(char* ip);
 
 button_lights_history_t* button_light_struct_init();
 void poll_stopped_elevators(elevator_status_t* elevator);

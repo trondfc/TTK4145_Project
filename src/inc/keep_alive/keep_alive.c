@@ -353,6 +353,7 @@ void* keep_alive_timeout(void* arg){
                 if(get_timestamp() - list->nodes[i].last_time > KEEP_ALIVE_TIMEOUT_US){
                     printf("Node %s is dead\n", list->nodes[i].ip);
                     send_order_queue_close_connection(list->nodes[i].ip);
+                    close_elevator_hardware(list->nodes[i].ip);
                     list->nodes[i].status = DEAD;
                     list->nodes[i].node_mode = UNDEFINED;
                     strcpy(list->nodes[i].data, "");
