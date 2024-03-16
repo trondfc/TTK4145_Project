@@ -20,7 +20,7 @@ elevator_status_t* elevator_struct_init(){
   for(int i = 0; i < MAX_ELEVATORS; i++){
     strcpy(elevator[i].elevator.ip, "\0");
     elevator[i].alive = false;
-    elevator[i].floor = 0;
+    elevator[i].floor = -1;
     elevator[i].elevator_state = STOP;
     elevator[i].obstruction = false;
     elevator[i].emergency_stop = false;
