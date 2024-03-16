@@ -351,12 +351,12 @@ void* keep_alive_timeout(void* arg){
         for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
             if(list->nodes[i].status == ALIVE){
                 if(get_timestamp() - list->nodes[i].last_time > KEEP_ALIVE_TIMEOUT_US){
+                    printf("Node %s is dead\n", list->nodes[i].ip);
+                    send_order_queue_close_connection(list->nodes[i].ip);
                     list->nodes[i].status = DEAD;
                     list->nodes[i].node_mode = UNDEFINED;
                     strcpy(list->nodes[i].data, "");
                     strcpy(list->nodes[i].ip, "");
-                    printf("Node %s is dead\n", list->nodes[i].ip);
-                    send_order_queue_close_connection(list->nodes[i].ip);
                 }
             }
         }
