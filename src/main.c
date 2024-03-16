@@ -142,11 +142,16 @@ void* main_elevator_inputs(void* arg){
   while(1){
     elevator_init(g_elevator);
     poll_stopped_elevators(g_elevator);
-    poll_elevator_floor(g_elevator);
     poll_obstructed_elevators(g_elevator);
-    poll_elevator_floor(g_elevator);
   }
   return NULL;
+}
+
+void* elevator_floor_input(void* arg){
+  while(1){
+    poll_elevator_floor(g_elevator);
+    usleep(ORDER_POLL_DELAY);
+  }
 }
 
 void* main_elevator_output(void* arg){
@@ -267,7 +272,7 @@ int main()
   elevator_args->queue = queue;
 
   pthread_t send_thread, button_thread, elevator_output_thread, elevator_input_thread , print_elevator_status_thread, elevator_light_thread;
-  pthread_t handle_orders_thread;
+  pthread_t handle_orders_thread, elevator_floor_thread;
 
   keep_alive_init(UDP_PORT, SLAVE);
   while(1){
@@ -311,12 +316,14 @@ int main()
 
       if(running_threads.elevator_control == true){
         pthread_cancel(elevator_input_thread);
+        pthread_cancel(elevator_floor_thread);
         pthread_cancel(elevator_output_thread);
         pthread_cancel(elevator_light_thread);
         pthread_cancel(handle_orders_thread);
 
         pthread_join(elevator_output_thread, NULL);
         pthread_join(elevator_input_thread, NULL);
+        pthread_join(elevator_floor_thread, NULL);
         pthread_join(elevator_light_thread, NULL);
         pthread_join(handle_orders_thread, NULL);
 
@@ -340,7 +347,9 @@ int main()
       }
 
       if(running_threads.elevator_control == false){
+        usleep(MS_TO_US(100));
         pthread_create(&elevator_input_thread, NULL, &main_elevator_inputs, NULL);
+        pthread_create(&elevator_floor_thread, NULL, &elevator_floor_input, NULL);
         pthread_create(&elevator_output_thread, NULL, &main_elevator_output, NULL);
         pthread_create(&elevator_light_thread, NULL, &controll_elevator_button_lights, NULL);
         pthread_create(&handle_orders_thread, NULL, &thr_handle_orders, elevator_args);

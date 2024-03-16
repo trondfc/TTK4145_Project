@@ -133,7 +133,6 @@ void poll_elevator_floor(elevator_status_t* elevator){
       }
     }
   }
-  usleep(ORDER_POLL_DELAY);
 }
 
 /**
