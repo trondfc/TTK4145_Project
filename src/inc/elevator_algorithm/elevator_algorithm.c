@@ -191,7 +191,7 @@ void unreserve_elevators_orders(order_queue_t* queue, elevator_status_t* elevato
     // remove reserved order from queue
     for(int i = 0; i < queue->size; i++){
         if(strcmp(queue->orders[i].controller_id, elevator->elevator.ip) == 0){
-            if(strcmp(queue->orders[i].elevator_id, "") == 0){
+            if(strcmp(queue->orders[i].elevator_id, "") != 0){
                 pthread_mutex_lock(queue->queue_mutex);
                 queue->orders[i].order_status = SYNCED;
                 strcpy(queue->orders[i].controller_id, "");
