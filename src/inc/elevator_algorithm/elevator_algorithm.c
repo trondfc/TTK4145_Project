@@ -216,6 +216,7 @@ void set_at_floor(order_queue_t* queue, elevator_status_t* elevator){
         if(strcmp(queue->orders[i].controller_id, elevator->elevator.ip) == 0){
             if(queue->orders[i].order_status == ACTIVE){
                 if(elevator->floor == queue->orders[i].floor){
+                    printf("Order %ld set to at floor\n", queue->orders[i].order_id);
                     time_t current_time;
                     time(&current_time);
                     pthread_mutex_lock(queue->queue_mutex);
@@ -244,6 +245,7 @@ void set_completed_order(order_queue_t* queue, elevator_status_t* elevator){
                     //printf("Elevator %s has completed order\n", elevator->elevator.ip);
                     if(!elevator->obstruction){
                         //printf("Elevator %s has no obstruction\n", elevator->elevator.ip);
+                        printf("Order %ld set to completed\n", queue->orders[i].order_id);
                         pthread_mutex_lock(queue->queue_mutex);
                         queue->orders[i].order_status = COMPLETED;
                         pthread_mutex_unlock(queue->queue_mutex);
