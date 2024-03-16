@@ -147,9 +147,10 @@ void* main_elevator_inputs(void* arg){
   return NULL;
 }
 
-void* elevator_floor_input(void* arg){
+void* elevator_motor_control(void* arg){
   while(1){
     poll_elevator_floor(g_elevator);
+    set_motor_direction(g_elevator);
     usleep(ORDER_POLL_DELAY);
   }
 }
@@ -157,17 +158,13 @@ void* elevator_floor_input(void* arg){
 void* main_elevator_output(void* arg){
   printf("elevator_outputs");
   while(1){
-    for(int i = 0; i < 3; i++){
-      set_motor_direction(g_elevator);
-      usleep(2*ORDER_POLL_DELAY);
-    }
 
     set_motor_direction(g_elevator);
     update_elevator_floor_lights(g_elevator);
     update_elevator_stop_light(g_elevator);
     update_elevator_door_light(g_elevator);
     add_elevator_button_lights(button_lights, queue, g_elevator);
-    usleep(2*ORDER_POLL_DELAY);
+    usleep(5*ORDER_POLL_DELAY);
   }
 }
 
@@ -349,7 +346,7 @@ int main()
       if(running_threads.elevator_control == false){
         usleep(MS_TO_US(100));
         pthread_create(&elevator_input_thread, NULL, &main_elevator_inputs, NULL);
-        pthread_create(&elevator_floor_thread, NULL, &elevator_floor_input, NULL);
+        pthread_create(&elevator_floor_thread, NULL, &elevator_motor_control, NULL);
         pthread_create(&elevator_output_thread, NULL, &main_elevator_output, NULL);
         pthread_create(&elevator_light_thread, NULL, &controll_elevator_button_lights, NULL);
         pthread_create(&handle_orders_thread, NULL, &thr_handle_orders, elevator_args);
