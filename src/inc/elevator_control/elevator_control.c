@@ -299,7 +299,12 @@ void set_motor_direction(elevator_status_t* elevator){
       }
       else if(elevator[i].elevator_state == STOP){
         if(!elevator[i].at_floor){
-          elevator_hardware_set_motor_direction(DIRN_UP, &elevator[i].elevator);
+          if(elevator[i].floor < NO_FLOORS - 1){
+            elevator_hardware_set_motor_direction(DIRN_UP, &elevator[i].elevator);
+          }
+          else if(elevator[i].floor > 0){
+            elevator_hardware_set_motor_direction(DIRN_DOWN, &elevator[i].elevator);
+          }
         }
         else{
           elevator_hardware_set_motor_direction(DIRN_STOP, &elevator[i].elevator);
