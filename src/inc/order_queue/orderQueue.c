@@ -99,13 +99,10 @@ void dequeue_order(order_queue_t *queue, order_event_t *order){
     for(int i = 0; i < queue->size; i++){
         if(queue->orders[i].order_id == order->order_id){
             for(int j = i; j < queue->size - 1; j++){
-                queue->orders[j] = queue->orders[j + 1];
+                //queue->orders[j] = queue->orders[j + 1];
+                memcpy(&queue->orders[j], &queue->orders[j + 1], sizeof(order_event_t));
             }
             queue->size--;
-            return;
-        }
-        else{
-            //printf("Order not in queue\n");
             return;
         }
     }
