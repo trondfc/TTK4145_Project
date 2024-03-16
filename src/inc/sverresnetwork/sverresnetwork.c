@@ -306,7 +306,6 @@ thr_tcpConnectionListen(void * parameter){
   int optval = 1;
   setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR, &optval, sizeof(optval));
 
-  printf("===================== trying to bind\n");
   if(bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
     error("ERROR on binding");
 
