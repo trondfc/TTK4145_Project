@@ -9,7 +9,6 @@
 #include "inc/order_queue/send_order_queue.h"
 #include "inc/keep_alive/keep_alive.h"
 #include "inc/logger.h"
-#include "inc/types.h"
 #include "inc/config.h"
 #include "inc/elevator_control/elevator_autofind.h"
 #include "inc/elevator_algorithm/elevator_algorithm.h"

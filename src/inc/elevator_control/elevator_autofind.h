@@ -17,7 +17,6 @@
 #include <unistd.h>
 #include <stdbool.h>
 
-#include "../types.h"
 #include "../keep_alive/keep_alive.h"
 #include "../elevator_hardware/elevator_hardware.h"
 #include "../elevator_control/elevator_control.h"
