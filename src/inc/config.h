@@ -22,6 +22,7 @@
 #define DOOR_OPEN_TIME 3 // 5 seconds
 #define SYSQUE_TIMEOUT 1 // 1 seconds
 #define ACTIVE_NODES_TIMEOUT 3 // 3 seconds
+#define KEEP_ALIVE_TIMEOUT_US SEC_TO_US(1) 
 
 #define TCP_PORT 9000
 #define UDP_PORT 5000

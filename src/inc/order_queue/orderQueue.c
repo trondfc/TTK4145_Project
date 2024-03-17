@@ -45,7 +45,7 @@ long ConcatenateNumbers(char * a, int b, int c){
     }
 
     sprintf(str, "%s%d%d", aClean, b, c);
-    printf("Order ID: %s\n", str);
+    //printf("Order ID: %s\n", str);
     return atol(str);
 }
 
@@ -74,7 +74,7 @@ void enqueue_order(order_queue_t *queue, order_event_t *order){
     //pthread_mutex_lock(queue->queue_mutex);
     for (int i = 0; i < queue->size; i++){
         if(queue->orders[i].order_id == order->order_id){
-            printf("Order already in queue\n");
+            //printf("Order already in queue\n");
             return;
         }
     }

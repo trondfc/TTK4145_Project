@@ -52,9 +52,7 @@ int elevator_hardware_init(elevator_hardware_info_t* hardware){
     };
     struct addrinfo* res;
     getaddrinfo(hardware->ip, hardware->port, &hints, &res);
-    //printf("Trying to connect to %s \n", hardware->ip);
     int fail = connect(hardware->sockfd, res->ai_addr, res->ai_addrlen);
-    //printf("Connected to %s \n", hardware->ip);
     //assert(fail == 0 && "Unable to connect to simulator server");
     if(fail != 0){
         return 0;

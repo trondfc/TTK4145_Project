@@ -53,35 +53,24 @@ int compare_ips(char* a, char* b){
  * @param ip 
  */
 void elevator_init_ip(elevator_status_t* elevator, char* ip){
-  printf("elevator_autofind: setting up elevator %s \n", ip);
   bool node_alive = false;
   for(int i = 0; i < MAX_ELEVATORS; i++){
     if(compare_ips(ip, elevator[i].elevator.ip)){
       if(elevator[i].alive){
-        printf("elevator_autofind:  Elevator %s is already alive\n", elevator[i].elevator.ip);
         node_alive = true;
         break;
       }
     }
   }
   if(!node_alive){
-    keep_alive_node_list_t* node_list = get_node_list();
     for(int i = 0; i < MAX_ELEVATORS; i++){
       if(!elevator[i].alive){
-        printf("Elevator %s is not alive\n", elevator[i].elevator.ip);
         pthread_mutex_lock(&elevator[i].mutex);
         strcpy(elevator[i].elevator.ip, ip);
-        //char port[10];
-        //sprintf(port, "%d", ELEVATOR_PORT);
-        //strcpy(elevator[i].elevator.port, port);
         sprintf(elevator[i].elevator.port, "%d", ELEVATOR_PORT);
         if(elevator_hardware_init(&elevator[i].elevator)){
           elevator[i].alive = true;
-          printf("Elevator %s is alive\n", elevator[i].elevator.ip);
         }
-        // if(node_list->single_master){
-        //   strcpy(elevator[i].elevator.ip, node_list->self->ip);
-        // }
         pthread_mutex_unlock(&elevator[i].mutex);
         break;
       }

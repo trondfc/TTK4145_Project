@@ -25,10 +25,8 @@ char* get_host_ip(){
     FILE *fp;
     int size = 60*sizeof(char);
     char* ip_address = (char*)malloc(size);
-    //char ip_address[100];
     fp = popen("hostname -I | grep -E -o \"([0-9]{1,3}\\.){3}[0-9]{1,3}\"", "r");
     fgets(ip_address, size, fp);
-    //printf("System IP Address is: %s\n", ip_address);
     pclose(fp);
     for (int i = 0; i < size; i++){
         if (ip_address[i] == '\n'){
@@ -36,7 +34,6 @@ char* get_host_ip(){
             break;
         }
     }
-    //printf("System IP Address is: %s\n", ip_address);
     return ip_address;
 }
 
@@ -61,7 +58,6 @@ void* keep_alive_send(void* arg){
     keep_alive_node_list_t* list = (keep_alive_node_list_t*)arg;
     while(1){
         if(list->single_master == false){
-            //printf("Sending keep alive, mode: %d\n", list->self->node_mode);
             udp_broadcast(list->self->port, list->self->data, sizeof(list->self->data));
         }
         usleep(BRODCAST_INTERVAL_US);
@@ -83,13 +79,10 @@ int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, i
             list->nodes[i].last_time = get_timestamp();
             list->nodes[i].status = ALIVE;
             if(strcmp(list->nodes[i].data, "MASTER") == 0){
-                //printf("Setting node %s to MASTER\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = MASTER;
             } else if(strcmp(list->nodes[i].data, "SLAVE") == 0){
-                //printf("Setting node %s to SLAVE\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = SLAVE;
             } else {
-                //printf("Setting node %s to UNDEFINED\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = UNDEFINED;
             }
             strncpy(list->nodes[i].data, data, sizeof(list->nodes[i].data) - 1);
@@ -103,13 +96,10 @@ int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, i
             strcpy(list->nodes[i].ip, ip);
             strcpy(list->nodes[i].data, data);
             if(strcmp(list->nodes[i].data, "MASTER") == 0){
-                //printf("New node. Setting node %s to MASTER\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = MASTER;
             } else if(strcmp(list->nodes[i].data, "SLAVE") == 0){
-                //printf("New node. Setting node %s to SLAVE\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = SLAVE;
             } else {
-                //printf("New node. Setting node %s to UNDEFINED\n", list->nodes[i].ip);
                 list->nodes[i].node_mode = UNDEFINED;
             }
             return 0;
@@ -127,17 +117,15 @@ int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, i
  * @param data_size 
  */
 void udp_receive_callback(const char* ip, char* data, int data_size){
-    printf("Received data from %s \t %s\n", ip,data);
+    //printf("Received data from %s \t %s\n", ip,data);
     if(keep_alive_node_list.single_master == true){
         if(strcmp(data, "MASTER") == 0 || strcmp(data, "SLAVE") == 0){
             keep_alive_node_list_t* node_list = get_node_list();
             extern elevator_status_t *g_elevator;
             elevator_status_t* elevator = get_elevator_by_ip(g_elevator, node_list->self->ip);
-            printf("UDP: looking for elevator at %s", node_list->host_ip);
             if(elevator == NULL){
                 return;
             }
-            printf("UDP: found elevator %s",elevator->elevator.ip);
             extern order_queue_t* queue;
             if(!elevator_has_reserved_orders(queue, elevator)){
                 exit(0);
@@ -244,7 +232,6 @@ long ipv4_to_int(char* ip)
     char* formated_ipv4 = (char*)calloc(sizeof(char), MAX_IP_LEN);
     token = strtok(ip_copy, delim);
     while(token != NULL){
-        //printf("%s\n", token);
         char segment[4] = "000";
         strncpy(segment + strlen(segment) - strlen(token), token, strlen(token));
         //strncat(formated_ipv4, segment, sizeof(formated_ipv4)-strlen(formated_ipv4)-1);
@@ -252,7 +239,7 @@ long ipv4_to_int(char* ip)
         token = strtok(NULL, delim);
     }
 
-    printf("formated ip: %s\n", formated_ipv4);
+    //printf("formated ip: %s\n", formated_ipv4);
     long ip_int = atol(formated_ipv4);
 
     free(ip_copy);

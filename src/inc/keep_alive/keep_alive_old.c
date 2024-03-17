@@ -23,10 +23,8 @@ char* get_host_ip(){
     FILE *fp;
     int size = 100*sizeof(char);
     char* ip_address = (char*)malloc(size);
-    //char ip_address[100];
     fp = popen("hostname -I | grep -E -o \"([0-9]{1,3}\\.){3}[0-9]{1,3}\"", "r");
     fgets(ip_address, size, fp);
-    //printf("System IP Address is: %s\n", ip_address);
     pclose(fp);
     for (int i = 0; i < size; i++)
     {

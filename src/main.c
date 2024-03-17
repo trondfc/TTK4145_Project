@@ -25,12 +25,10 @@ button_lights_history_t *button_lights;
 
 
 void messageReceived(const char * ip, char * data, int datalength){
-  //printf("Received message from %s\n",ip);
 
   send_order_queue_deserialize(data, queue);
 
   printf("Queue size: %d\n", queue->size);
-  //printf("Queue capacity: %d\n", queue->capacity);
   for(int i = 0; i < queue->size; i++){
     char status_text[10] = "";
     if(queue->orders[i].order_status == RECIVED){
@@ -94,9 +92,6 @@ int main_init(){
   g_elevator =  elevator_struct_init();
   button_lights = button_light_struct_init();
   queue = create_order_queue(QUEUE_SIZE);
-  
-  printf("sysQueInit\n");
-
 
   return 0;
 }
@@ -120,13 +115,11 @@ void* main_button_input(void* arg){
   while(1){
     for(int i = 0; i <KEEP_ALIVE_NODE_AMOUNT; i++){
       if(g_elevator[i].alive){
-        //printf("Polling elevator %s\n", g_elevator[i].elevator.ip);
         if(poll_new_orders(&g_elevator[i].elevator, queue)){
           for(int j = 0; j < queue->size; j++){
-            printf("%d \t Order ID: %ld\n", j , queue->orders[j].order_id);
+            printf("Order added %d \t Order ID: %ld\n", j , queue->orders[j].order_id);
           }
         } else{
-          //printf("Elevator %s has no new orders\n", elevator[i].elevator.ip);
         }
       usleep(ORDER_POLL_DELAY);
       }
@@ -210,24 +203,17 @@ void* main_send(void* arg){
       keep_alive_node_list_t* node_list = get_node_list();
       for(uint8_t i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
         if(node_list->nodes[i].status == ALIVE){
-          //printf("found node at %s\n", node_list->nodes[i].ip);
-          //printf("Connection status: %d\n", node_list->nodes[i].connection);
           if(node_list->nodes[i].connection == DISCONNECTED){
-            printf("Connecting to %s\n", node_list->nodes[i].ip);
             if(send_order_queue_connect(node_list->nodes[i].ip, TCP_PORT)){
-              printf("Connected to %s\n", node_list->nodes[i].ip);
               node_list->nodes[i].connection = CONNECTED;
               sleep(1);
             }
           }
-          //printf("Sending order to %s\n", node_list->nodes[i].ip);
           pthread_mutex_lock(queue->queue_mutex);
           if(send_order_queue_send_order(node_list->nodes[i].ip ,queue)){
-            //printf("Order sent to %s\n", node_list->nodes[i].ip);
             for(int i = 0; i < queue->size; i++){
               if(queue->orders[i].order_status == RECIVED){
                 queue->orders[i].order_status = SYNCED;
-                printf("Order %ld is now synced\n", queue->orders[i].order_id);
               }
             }
           }

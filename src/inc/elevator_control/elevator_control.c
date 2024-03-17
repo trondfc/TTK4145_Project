@@ -57,7 +57,6 @@ void poll_stopped_elevators(elevator_status_t* elevator){
   for(uint8_t i = 0; i < MAX_IP_NODES; i++){
     if(elevator[i].alive){
       int temp = elevator_hardware_get_stop_signal(&elevator[i].elevator);
-      //printf("elevator %d %s is alive: %d\n",i, elevator[i].elevator.ip, elevator[i].alive);
       if(temp == 1){
         if(elevator[i].emergency_stop == false && elevator[i].number_of_stop_readings == 0){
           printf("Elevator %s has stopped\n", elevator[i].elevator.ip);
@@ -103,14 +102,12 @@ void poll_obstructed_elevators(elevator_status_t* elevator){
     if(elevator[i].alive){
       
       if(elevator_hardware_get_obstruction_signal(&elevator[i].elevator)){
-        //printf("Elevator %s is obstructed\n", elevator[i].elevator.ip);
         pthread_mutex_lock(&elevator[i].mutex);
         elevator[i].obstruction = true;
         pthread_mutex_unlock(&elevator[i].mutex);
 
       }
       else{
-        //printf("Elevator %s is not obstructed\n", elevator[i].elevator.ip);
         pthread_mutex_lock(&elevator[i].mutex);
         elevator[i].obstruction = false;
         pthread_mutex_unlock(&elevator[i].mutex);
@@ -205,7 +202,6 @@ void add_elevator_button_lights(button_lights_history_t* button_lights, order_qu
   for(int i = 0; i < queue->size; i++){
 
     if(queue->orders[i].order_status >= SYNCED){
-      //printf("Adding order %ld to button lights\n", queue->orders[i].order_id);
       if(queue->orders[i].order_type == 0){
         button_lights->new->up->floors[queue->orders[i].floor] = true;
       }
@@ -231,9 +227,7 @@ void add_elevator_button_lights(button_lights_history_t* button_lights, order_qu
  */
 void set_changed_button_lights(button_lights_history_t* button_lights, elevator_status_t* elevator){
     for(int i = 0; i < NO_FLOORS; i++){
-      //printf("floor up %d: new: %d old: %d\n", i, button_lights->new->up->floors[i], button_lights->old->up->floors[i]);
       if(button_lights->new->up->floors[i] != button_lights->old->up->floors[i]){
-        //printf("Button light up %d has changed\n", i);
         for(int j = 0; j < MAX_IP_NODES; j++){
           if(elevator[j].alive){
             elevator_hardware_set_button_lamp(0, i, button_lights->new->up->floors[i], &elevator[j].elevator);
@@ -241,7 +235,6 @@ void set_changed_button_lights(button_lights_history_t* button_lights, elevator_
         }
       }
       if(button_lights->new->down->floors[i] != button_lights->old->down->floors[i]){
-        //printf("Button light down %d has changed\n", i);
         for(int j = 0; j < MAX_IP_NODES; j++){
           if(elevator[j].alive){
             elevator_hardware_set_button_lamp(1, i, button_lights->new->down->floors[i], &elevator[j].elevator);
@@ -250,7 +243,6 @@ void set_changed_button_lights(button_lights_history_t* button_lights, elevator_
       }
       for(int j = 0; j < MAX_IP_NODES; j++){
         if(button_lights->new->cab[j]->floors[i] != button_lights->old->cab[j]->floors[i]){
-          //printf("Button light cab %d %d has changed\n", j, i);
           if(elevator[j].alive){
             elevator_hardware_set_button_lamp(2, i, button_lights->new->cab[j]->floors[i], &elevator[j].elevator);
           }
@@ -303,31 +295,25 @@ void set_motor_direction(elevator_status_t* elevator){
 
       if(elevator[i].door_open){
         elevator_hardware_set_motor_direction(DIRN_STOP, &elevator[i].elevator);
-        printf("MOTOR_DIR: Setting motor to DIRN_STOP\n");
       }
       else if(elevator[i].elevator_state == STOP){
         if(!elevator[i].at_floor){
           if(elevator[i].floor < NO_FLOORS - 1){
             elevator_hardware_set_motor_direction(DIRN_UP, &elevator[i].elevator);
-        printf("MOTOR_DIR: Setting motor to DIRN_UP\n");
           }
           else if(elevator[i].floor > 0){
             elevator_hardware_set_motor_direction(DIRN_DOWN, &elevator[i].elevator);
-        printf("MOTOR_DIR: Setting motor to DIRN_DOWN\n");
           }
         }
         else{
           elevator_hardware_set_motor_direction(DIRN_STOP, &elevator[i].elevator);
-        printf("MOTOR_DIR: Setting motor to DIRN_STOP\n");
         }
       }
       else if(elevator[i].elevator_state == UP || elevator[i].elevator_state == TRANSPORT_UP){
         elevator_hardware_set_motor_direction(DIRN_UP, &elevator[i].elevator);
-        printf("MOTOR_DIR: Setting motor to DIRN_UP\n");
       }
       else if(elevator[i].elevator_state == DOWN || elevator[i].elevator_state == TRANSPORT_DOWN){
         elevator_hardware_set_motor_direction(DIRN_DOWN, &elevator[i].elevator);
-        printf("MOTOR_DIR: Setting motor to DIRN_DOWN\n");
       }
     }
   }

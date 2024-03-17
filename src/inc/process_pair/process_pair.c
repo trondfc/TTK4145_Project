@@ -135,7 +135,7 @@ void* sysQueTimeout(void* arg){
             if(PROSESS_PAIR_DEBUG){
                 printf("msg time is: %s \n", ctime(&msgTime));
                 printf("sys time is: %s \n\n", ctime(&currentTime));
-                printf("Ping not received for 2 seconds\n");
+                printf("Ping not received for %d seconds\n", data->sysQueTimeout);
                 printf("Making master and spawning new slave\n");
             }
             makeMaster(data);

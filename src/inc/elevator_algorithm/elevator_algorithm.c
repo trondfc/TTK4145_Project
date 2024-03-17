@@ -165,7 +165,6 @@ elevator_state_t direction_to_order(order_event_t* order, elevator_status_t* ele
  */
 void reserve_elevator(order_queue_t* queue, order_event_t* order, elevator_status_t* elevator){
     if(order->order_type != GO_TO){
-        printf("Elevator %s is reserving order %ld of type GO_TO\n", elevator->elevator.ip, order->order_id);
         pthread_mutex_lock(queue->queue_mutex);
         order->order_status = ACTIVE;
         strcpy(order->controller_id, elevator->elevator.ip);
@@ -173,7 +172,6 @@ void reserve_elevator(order_queue_t* queue, order_event_t* order, elevator_statu
     } 
     else{
         if(strcmp(order->elevator_id, elevator->elevator.ip) == 0){
-        printf("Elevator %s is reserving order %ld of type UP or DOWN\n", elevator->elevator.ip, order->order_id);
             pthread_mutex_lock(queue->queue_mutex);
             order->order_status = ACTIVE;
             strcpy(order->controller_id, elevator->elevator.ip);
@@ -189,7 +187,6 @@ void order_completion_timedout(order_queue_t* queue){
     for(int i = 0; i < queue->size; i++){
         if(queue->orders[i].order_status == ACTIVE){
             if(difftime(current_time, queue->orders[i].timestamp) > ORDER_TIMEOUT){
-                printf("Order %ld set to timed out\n", queue->orders[i].order_id);
                 pthread_mutex_lock(queue->queue_mutex);
                 queue->orders[i].order_status = SYNCED;
                 strcpy(queue->orders[i].controller_id, "");
@@ -205,7 +202,6 @@ void unreserve_elevators_orders(order_queue_t* queue, elevator_status_t* elevato
     for(int i = 0; i < queue->size; i++){
         if(strcmp(queue->orders[i].controller_id, elevator->elevator.ip) == 0){
             if(strcmp(queue->orders[i].elevator_id, "") != 0){
-                printf("Order %ld set to unreserved\n", queue->orders[i].order_id);
                 pthread_mutex_lock(queue->queue_mutex);
                 time_t current_time;
                 time(&current_time);
@@ -224,7 +220,6 @@ void set_at_floor(order_queue_t* queue, elevator_status_t* elevator){
         if(strcmp(queue->orders[i].controller_id, elevator->elevator.ip) == 0){
             if(queue->orders[i].order_status == ACTIVE){
                 if(elevator->floor == queue->orders[i].floor && elevator->at_floor){
-                    printf("Order %ld set to at floor, elevator flor is %d\n", queue->orders[i].order_id, elevator->floor);
                     time_t current_time;
                     time(&current_time);
                     pthread_mutex_lock(queue->queue_mutex);
@@ -245,14 +240,10 @@ void set_completed_order(order_queue_t* queue, elevator_status_t* elevator){
     for(int i = 0; i < queue->size; i++){
         if(strcmp(queue->orders[i].controller_id, elevator->elevator.ip) == 0){
             if(queue->orders[i].order_status == AT_FLOOR){
-                //printf("Elevator %s is at floor %d\n", elevator->elevator.ip, elevator->floor);
                 time_t current_time;
                 time(&current_time);
-                printf("\t Delta time: %ld\n", current_time - queue->orders[i].timestamp);
                 if((current_time - queue->orders[i].timestamp) > DOOR_OPEN_TIME){
-                    printf("Elevator %s has completed order\n", elevator->elevator.ip);
                     if(!elevator->obstruction){
-                        printf("Elevator %s has no obstruction\n", elevator->elevator.ip);
                         printf("Order %ld set to completed\n", queue->orders[i].order_id);
                         pthread_mutex_lock(queue->queue_mutex);
                         queue->orders[i].order_status = COMPLETED;
@@ -285,7 +276,6 @@ void remove_passed_orders(order_queue_t* queue, elevator_status_t* elevator){
         if(strcmp(queue->orders[i].controller_id, elevator->elevator.ip) == 0){
             if(elevator->elevator_state == UP || elevator->elevator_state == TRANSPORT_UP){
                 if(queue->orders[i].floor < elevator->floor){
-                    printf("Order %ld set to passed\n", queue->orders[i].order_id);
                     pthread_mutex_lock(queue->queue_mutex);
                     queue->orders[i].order_status = SYNCED;
                     strcpy(queue->orders[i].controller_id, "");
@@ -294,7 +284,6 @@ void remove_passed_orders(order_queue_t* queue, elevator_status_t* elevator){
             }
             if(elevator->elevator_state == DOWN || elevator->elevator_state == TRANSPORT_DOWN){
                 if(queue->orders[i].floor > elevator->floor){
-                    printf("Order %ld set to passed\n", queue->orders[i].order_id);
                     pthread_mutex_lock(queue->queue_mutex);
                     queue->orders[i].order_status = SYNCED;
                     strcpy(queue->orders[i].controller_id, "");
@@ -320,7 +309,6 @@ void* thr_handle_orders(void* args){
                 unreserve_elevators_orders(queue, &elevator[i]);
                 continue;
             }
-            printf("========================== Elevator %s is alive and getting orders\n", elevator[i].elevator.ip);
 
             if(elevator[i].emergency_stop){
                 unreserve_elevators_orders(queue, &elevator[i]);
@@ -331,7 +319,6 @@ void* thr_handle_orders(void* args){
             switch (elevator[i].elevator_state)
             {
             case STOP: ;
-            printf("STOP: elevator is stoped, getting new order\n");
                 order_event_t* oldest_order = return_oldes_order(queue, &elevator[i]);
                 if(oldest_order == NULL){
                     break;
@@ -342,26 +329,21 @@ void* thr_handle_orders(void* args){
                 
                 reserve_elevator(queue, oldest_order, &elevator[i]);
                 elevator_state_t direction = direction_to_order(oldest_order, &elevator[i]);
-                printf("STOP: Elevator (%d) %s got order %ld of type %d %s\n", i, elevator[i].elevator.ip, oldest_order->order_id, oldest_order->order_type, (direction == UP) ? "UP" : "DOWN");
                 pthread_mutex_lock(&elevator[i].mutex);
                 if(direction == UP){
                     if(oldest_order->order_type == GO_TO){
                         elevator[i].elevator_state = UP;
-                        printf("ELEVATOR_STATE: Setting state to UP\n");
                     }
                     else{
                         elevator[i].elevator_state = TRANSPORT_UP;
-                        printf("ELEVATOR_STATE: Setting state to TRANSPORT_UP\n");
                     }
                 }
                 else if(direction == DOWN){
                     if(oldest_order->order_type == GO_TO){
                         elevator[i].elevator_state = DOWN;
-                        printf("ELEVATOR_STATE: Setting state to DOWN\n");
                     }
                     else{
                         elevator[i].elevator_state = TRANSPORT_DOWN;
-                        printf("ELEVATOR_STATE: Setting state to TRANSPORT_DOWN\n");
                     }
                 }
                 pthread_mutex_unlock(&elevator[i].mutex);
@@ -369,11 +351,9 @@ void* thr_handle_orders(void* args){
                 break;
             
             case UP: ;
-                printf("CASE: elevator (%d) %s is in case UP",i, elevator->elevator.ip);
                 if(!elevator_has_reserved_orders(queue, &elevator[i])){
                     pthread_mutex_lock(&elevator[i].mutex);
                     elevator[i].elevator_state = STOP;
-                    printf("UP: Elevator %s is now stopped\n", elevator[i].elevator.ip);
                     pthread_mutex_unlock(&elevator[i].mutex);
                 }
 
@@ -386,7 +366,6 @@ void* thr_handle_orders(void* args){
                 break;
 
             case DOWN: ;
-                printf("CASE: elevator (%d) %s is in case DOWN",i, elevator->elevator.ip);
                 if(!elevator_has_reserved_orders(queue, &elevator[i])){
                     pthread_mutex_lock(&elevator[i].mutex);
                     elevator[i].elevator_state = STOP;
@@ -402,7 +381,6 @@ void* thr_handle_orders(void* args){
                 break;
 
             case TRANSPORT_UP: ;
-                printf("CASE: elevator (%d) %s is in case TRANSPORT_UP",i, elevator->elevator.ip);
                 if(!elevator_has_reserved_orders(queue, &elevator[i])){
                     pthread_mutex_lock(&elevator[i].mutex);
                     elevator[i].elevator_state = STOP;
@@ -432,7 +410,6 @@ void* thr_handle_orders(void* args){
                 break;
 
             case TRANSPORT_DOWN: ;
-                printf("CASE: elevator (%d) %s is in case TRANSPORT_DOWN",i, elevator->elevator.ip);
                 if(!elevator_has_reserved_orders(queue, &elevator[i])){
                     pthread_mutex_lock(&elevator[i].mutex);
                     elevator[i].elevator_state = STOP;
@@ -470,7 +447,6 @@ void* thr_handle_orders(void* args){
             remove_completed_order(queue, &elevator[i]);   
             if(!elevator_has_reserved_orders(queue, &elevator[i])){
                 pthread_mutex_lock(&elevator[i].mutex);
-                printf("Elevatro has no reserved orders, setting state to STOPED");
                 elevator[i].elevator_state = STOP;
                 pthread_mutex_unlock(&elevator[i].mutex);
             }
