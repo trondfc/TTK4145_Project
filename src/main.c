@@ -423,6 +423,12 @@ int main()
       }else{
         printf("Elevator has no reserved orders\n");
         sleep(1);
+        if(elevator_has_reserved_orders(queue, elevator)){
+          printf("Elevator got reserved orders\n");
+          continue;
+        }
+        printf("Elevator in SINGLE_MASTER mode and has no reserved orders\n");
+        printf("SHUTTING DOWN\n");
         exit(0);
       }
 
