@@ -1,6 +1,5 @@
 /**
  * @file process_pair.c
- * @author Trondfc ()
  * @brief library for process pair communication
  *         needs file "keyfile" in the same directory as the executable
  * @version 0.1
