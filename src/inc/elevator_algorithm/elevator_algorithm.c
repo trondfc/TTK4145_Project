@@ -317,11 +317,8 @@ void* thr_handle_orders(void* args){
 
         for(int i = 0; i < MAX_IP_NODES; i++){
             if(!elevator[i].alive){
-                keep_alive_node_list_t* node_list = get_node_list();
-                if(!node_list->single_master){
-                    unreserve_elevators_orders(queue, &elevator[i]);
-                    continue;
-                }
+                unreserve_elevators_orders(queue, &elevator[i]);
+                continue;
             }
             printf("========================== Elevator %s is alive and getting orders\n", elevator[i].elevator.ip);
 
