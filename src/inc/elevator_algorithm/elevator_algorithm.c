@@ -321,6 +321,7 @@ void* thr_handle_orders(void* args){
                     continue;
                 }
             }
+            printf("========================== Elevator %s is alive and getting orders\n", elevator[i].elevator.ip);
 
             if(elevator[i].emergency_stop){
                 unreserve_elevators_orders(queue, &elevator[i]);
