@@ -274,9 +274,15 @@ int main()
   pthread_t send_thread, button_thread, elevator_output_thread, elevator_input_thread , print_elevator_status_thread, elevator_light_thread;
   pthread_t handle_orders_thread, elevator_floor_thread;
 
+  bool orders_removed = false;
+
   keep_alive_init(UDP_PORT, SLAVE);
   while(1){
     keep_alive_node_list_t* node_list = get_node_list();
+    /////////////////////////////////////////////////////////////////
+    //                  SLAVE
+    /////////////////////////////////////////////////////////////////
+
     if(node_list->self->node_mode == SLAVE){
       printf("Slave\n");
 
@@ -322,9 +328,14 @@ int main()
 
         running_threads.elevator_control = false;
       }
+    }
+    /////////////////////////////////////////////////////////////////
+    //                  MASTER
+    /////////////////////////////////////////////////////////////////
 
-    }else if(node_list->self->node_mode == MASTER){
+    else if(node_list->self->node_mode == MASTER){
       printf("Master\n");
+
       if(running_threads.recv == true){
         for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
           if(node_list->nodes[i].connection == CONNECTED){
@@ -359,15 +370,62 @@ int main()
         running_threads.button_input = true;
       }
     }
-    if(node_list->single_master){
-      elevator_status_t* elevator = get_elevator_by_ip(g_elevator, node_list->self->ip);
-      if(elevator != NULL){
-        if(!elevator_has_cab_orders(queue, elevator)){
-          printf("Single master and no orders, shutting down\n");
-          sleep(2);
-          exit(0);
-        }
+
+    /////////////////////////////////////////////////////////////////
+    //                  SINGLE MASTER
+    /////////////////////////////////////////////////////////////////
+
+    else if(node_list->self->node_mode == SINGLE_MASTER){
+      printf("Single master\n");
+
+      if(orders_removed == false){
+        remove_all_orders(queue, g_elevator);
+      
+        order_event_t stop_order;
+        strcpy(stop_order.elevator_id, "127.0.0.1");
+        stop_order.floor = 0;
+        stop_order.order_type = UP_FROM;
+        stop_order.order_id = GenerateOrderID(&stop_order);
+        printf("Order 3 ID: %ld\n", stop_order.order_id);
+
+        enqueue_order(queue, &stop_order);
+
+        orders_removed = true;
       }
+
+
+      if(running_threads.recv == true){
+        for(int i = 0; i < KEEP_ALIVE_NODE_AMOUNT; i++){
+          if(node_list->nodes[i].connection == CONNECTED){
+            send_order_queue_close_connection(node_list->nodes[i].ip);
+          }
+        }
+        running_threads.recv = false;
+      }
+      if(running_threads.print_elevator_status == false){
+        pthread_create(&print_elevator_status_thread, NULL, &print_elevator_status, NULL);
+        running_threads.print_elevator_status = true;
+      }
+      if(running_threads.elevator_control == false){
+        usleep(MS_TO_US(100));
+        pthread_create(&elevator_input_thread, NULL, &main_elevator_inputs, NULL);
+        pthread_create(&elevator_floor_thread, NULL, &elevator_motor_control, NULL);
+        pthread_create(&elevator_output_thread, NULL, &main_elevator_output, NULL);
+        pthread_create(&elevator_light_thread, NULL, &controll_elevator_button_lights, NULL);
+        pthread_create(&handle_orders_thread, NULL, &thr_handle_orders, elevator_args);
+
+        running_threads.elevator_control = true;
+      }
+
+      elevator_status_t* elevator = get_elevator_by_ip(g_elevator, node_list->self->ip);
+      if(elevator_has_reserved_orders(queue, elevator)){
+        printf("Elevator has reserved orders\n");
+      }else{
+        printf("Elevator has no reserved orders\n");
+        sleep(1);
+        exit(0);
+      }
+
     }
     sleep(1);
   }

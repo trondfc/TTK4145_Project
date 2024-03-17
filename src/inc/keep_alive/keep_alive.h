@@ -34,7 +34,8 @@
 typedef enum{
     SLAVE = 0,
     MASTER = 1,
-    UNDEFINED = 2
+    SINGLE_MASTER = 2,
+    UNDEFINED = 3
 }node_mode_t;
 
 typedef enum{

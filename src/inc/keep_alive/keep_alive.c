@@ -328,6 +328,7 @@ void* keep_alive_update(void* arg){
                     printf("No active nodes for %d us. Setting single master\n", NO_ACTIVE_NODES_TIMEOUT_US);
                     strcpy(list->host_ip, "127.0.0.1");
                     list->single_master = true;
+                    list->self->node_mode = SINGLE_MASTER;
                     system("kill -9 $(pgrep -f elevatorserver)");
                     system("gnome-terminal -- elevatorserver");
 

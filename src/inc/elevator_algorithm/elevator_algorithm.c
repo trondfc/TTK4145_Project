@@ -278,6 +278,15 @@ void remove_completed_order(order_queue_t* queue, elevator_status_t* elevator){
     
 }
 
+void remove_all_orders(order_queue_t* queue, elevator_status_t* elevator){
+    for(int i = 0; i < queue->size; i++){
+        pthread_mutex_lock(queue->queue_mutex);
+        queue->orders[i].order_status = SYNCED;
+        strcpy(queue->orders[i].controller_id, "");
+        pthread_mutex_unlock(queue->queue_mutex);
+    }
+}
+
 void remove_passed_orders(order_queue_t* queue, elevator_status_t* elevator){
     for(int i = 0; i < queue->size; i++){
         if(strcmp(queue->orders[i].controller_id, elevator->elevator.ip) == 0){
