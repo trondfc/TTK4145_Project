@@ -191,6 +191,7 @@ void order_completion_timedout(order_queue_t* queue){
                 pthread_mutex_lock(queue->queue_mutex);
                 queue->orders[i].order_status = SYNCED;
                 strcpy(queue->orders[i].controller_id, "");
+                queue->orders[i].timestamp = current_time;
                 pthread_mutex_unlock(queue->queue_mutex);
             }
         }
