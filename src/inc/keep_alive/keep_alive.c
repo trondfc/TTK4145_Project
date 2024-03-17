@@ -127,8 +127,22 @@ int update_node_list(keep_alive_node_list_t* list, const char* ip, char* data, i
  * @param data_size 
  */
 void udp_receive_callback(const char* ip, char* data, int data_size){
-    //printf("Received data from %s \t %s\n", ip,data);
+    printf("Received data from %s \t %s\n", ip,data);
     if(keep_alive_node_list.single_master == true){
+        if(strcmp(data, "MASTER") == 0 || strcmp(data, "SLAVE") == 0){
+            keep_alive_node_list_t* node_list = get_node_list();
+            extern elevator_status_t *g_elevator;
+            elevator_status_t* elevator = get_elevator_by_ip(g_elevator, node_list->self->ip);
+            printf("UDP: looking for elevator at %s", node_list->host_ip);
+            if(elevator == NULL){
+                return;
+            }
+            printf("UDP: found elevator %s",elevator->elevator.ip);
+            extern order_queue_t* queue;
+            if(!elevator_has_reserved_orders(queue, elevator)){
+                exit(0);
+            }
+        }
         return;
     }
 
@@ -156,6 +170,7 @@ void keep_alive_init(int port, node_mode_t mode){
 
     keep_alive_node_list.self = (keep_alive_node_t*)malloc(sizeof(keep_alive_node_t));
     strcpy(keep_alive_node_list.self->ip, get_host_ip());
+    strcpy(keep_alive_node_list.host_ip, keep_alive_node_list.self->ip);
     keep_alive_node_list.self->port = port;
     keep_alive_node_list.self->node_mode = mode;
     strcpy(keep_alive_node_list.self->data, mode == MASTER ? "MASTER" : "SLAVE");
@@ -325,8 +340,18 @@ void* keep_alive_update(void* arg){
             if((get_timestamp() - last_contact_timestamp) > NO_ACTIVE_NODES_TIMEOUT_US){
                 if(list->single_master == false){
                     printf("No active nodes for %d us. Setting single master\n", NO_ACTIVE_NODES_TIMEOUT_US);
-                    strcpy(list->self->ip, "127.0.0.1";
+                    strcpy(list->self->ip, "127.0.0.1");
+
+                    extern order_queue_t *queue;
+                    for(int i = 0; i < queue->size; i++){
+                        if(strcmp(queue->orders[i].elevator_id, list->host_ip) == 0){
+                            strcpy(queue->orders[i].elevator_id, list->self->ip);
+                        }
+                    }
+
                     list->single_master = true;
+                    system("kill -9 $(pgrep -f elevatorserver)");
+                    system("gnome-terminal -- elevatorserver");
                 }
                 //exit(1);
             }

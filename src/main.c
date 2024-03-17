@@ -241,6 +241,12 @@ void* main_send(void* arg){
 
 int main()
 {
+
+
+  system("kill -9 $(pgrep -f elevatorserver)");
+  system("gnome-terminal -- elevatorserver");
+  usleep(MS_TO_US(100));
+
   struct running_threads_s{
     bool keep_alive;
     bool button_input;
@@ -360,7 +366,7 @@ int main()
       if(elevator != NULL){
         if(!elevator_has_cab_orders(queue, elevator)){
           printf("Single master and no orders, shutting down\n");
-          exit(0);
+          //exit(0);
         }
       }
     }
