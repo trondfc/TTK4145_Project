@@ -96,7 +96,7 @@ void elevator_init_ip(elevator_status_t* elevator, char* ip){
  */
 void elevator_init(elevator_status_t* elevator){
 keep_alive_node_list_t* node_list = get_node_list();
-  elevator_init_ip(elevator, node_list->host_ip);
+  elevator_init_ip(elevator, node_list->self->ip);
   for(int i = 0; i < MAX_ELEVATORS; i++){
     if(strcmp(node_list->nodes[i].ip, "\0") == 0){
       continue;

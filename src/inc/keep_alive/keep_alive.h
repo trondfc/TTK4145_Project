@@ -20,6 +20,7 @@
 #include "../sverresnetwork/sverresnetwork.h"
 #include "../order_queue/send_order_queue.h"
 #include "../elevator_control/elevator_control.h"
+#include "../elevator_algorithm/elevator_algorithm.h"
 #include "../config.h"
 
 #define KEEP_ALIVE_NODE_AMOUNT MAX_IP_NODES
