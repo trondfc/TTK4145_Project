@@ -1,7 +1,10 @@
 # output files
-.out
-.exe
-.o
+*.out
+*.exe
+*.o
 build/*
+
+#vscode
+.vscode/*
 
 #secrets

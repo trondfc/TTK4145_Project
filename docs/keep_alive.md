@@ -1,0 +1,14 @@
+### Keep alive stucture
+- mutex
+- node_count_alive
+- node_count_master
+- node_count_slave
+- host_state
+- nodes[N]
+  - ip
+  - port
+  - data
+  - last_time
+  - node_mode
+  - status
+  - conection
